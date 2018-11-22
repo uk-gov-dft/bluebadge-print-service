@@ -2,7 +2,6 @@ logging:
   level:
     root: ${APP_LOGGING_LEVEL:INFO}
     uk.gov.dft.bluebadge.service: ${APP_LOGGING_LEVEL:DEBUG}
-
 management:
   server:
     port: 8881
@@ -12,22 +11,18 @@ management:
     web:
       exposure:
         include: '*'
-
 blue-badge:
   auth-server:
     url: http://localhost:8380/bb_auth
     client-id: bb_user_management_id
      ***REMOVED***
-
 spring:
   jackson:
     date-format: uk.gov.dft.bluebadge.common.api.RFC3339DateFormat
     serialization:
       write-dates-as-timestamps: false
-
 server:
   port: 8880
   servlet:
     context-path: /uk-gov-dft/print-service/1.0.0
-
 springfox.documentation.swagger.v2.path: /api-docs
