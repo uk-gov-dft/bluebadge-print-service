@@ -254,7 +254,7 @@
         }
       }
     }
-  }
+  },
   "options": {
     "java8" : true,
     "sortParamsByRequiredFlag" : false,

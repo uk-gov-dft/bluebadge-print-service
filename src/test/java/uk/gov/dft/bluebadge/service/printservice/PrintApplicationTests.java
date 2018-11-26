@@ -13,12 +13,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 import uk.gov.dft.bluebadge.service.printservice.config.SecurityConfig;
 
 @SpringBootTest(
-  classes = PrintServiceApplication.class,
+  classes = PrintApplication.class,
   properties = {"management.server.port=19991"}
 )
 @RunWith(SpringRunner.class)
 @ActiveProfiles({"test", "dev"})
-public class PrintServiceApplicationTests {
+public class PrintApplicationTests {
 
   @Autowired 
   private SecurityConfig securityConfig;

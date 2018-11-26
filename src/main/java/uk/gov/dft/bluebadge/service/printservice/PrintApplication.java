@@ -10,9 +10,9 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)
 @ComponentScan(basePackages = "uk.gov.dft.bluebadge")
 @EnableSwagger2
-public class PrintServiceApplication {
+public class PrintApplication {
 
   public static void main(String[] args) {
-    SpringApplication.run(PrintServiceApplication.class, args);
+    SpringApplication.run(PrintApplication.class, args);
   }
 }
