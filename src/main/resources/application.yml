@@ -26,3 +26,9 @@ server:
   servlet:
     context-path: /uk-gov-dft/print-service/1.0.0
 springfox.documentation.swagger.v2.path: /api-docs
+
+amazon:
+  profile: default
+  s3bucket: dev-dft-badges
+  thumbnail-height-px: 300
+  signed-url-duration-ms: 60000
