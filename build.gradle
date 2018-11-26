@@ -213,30 +213,21 @@ task unzipGenerated(type: Copy) {
 
 task generateModel(dependsOn: 'unzipGenerated', type: Sync) {
     group = "GenerateAPI"
-    from "${buildDir}/unpacked/spring-server/generated/src/main/java/uk/gov/dft/bluebadge/model/referencedata/generated"
+    from "${buildDir}/unpacked/spring-server/src/main/java/uk/gov/dft/bluebadge/model/printservice/generated"
     include "**/*.java"
     exclude '**/CommonResponse.java'
     exclude '**/ErrorErrors.java'
     exclude '**/Error.java'
-    into "src/generated/java/uk/gov/dft/bluebadge/model/referencedata/generated"
+    into "src/generated/java/uk/gov/dft/bluebadge/model/printservice/generated"
 }
 
 task generateService(dependsOn: 'unzipGenerated', type: Sync) {
     group = "GenerateAPI"
-    from "${buildDir}/unpacked/spring-server/generated/src/main/java/uk/gov/dft/bluebadge/service/referencedata/generated"
+    from "${buildDir}/unpacked/spring-server/generated/src/main/java/uk/gov/dft/bluebadge/service/printservice/generated"
     exclude '**/Swagger2SpringBoot.java'
     exclude '**/RFC3339DateFormat.java'
     exclude '**/*ApiController.java'
-    into "src/generated/java/uk/gov/dft/bluebadge/service/referencedata/generated"
-}
-
-task createDatabaseSchemaZip(type: Zip) {
-    def targetFilename = getTheVersion() + "_schema.zip"
-    from 'database-schema/'
-    include '*'
-    include '*/*'
-    archiveName targetFilename
-    destinationDir(file("build/database-schema"))
+    into "src/generated/java/uk/gov/dft/bluebadge/service/printservice/generated"
 }
 
 task outputComputedVersion {
