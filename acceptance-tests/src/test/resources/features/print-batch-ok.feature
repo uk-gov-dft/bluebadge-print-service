@@ -55,3 +55,33 @@ Feature: Verify Print batch ok
     And request batches
     When method POST
     Then status 200
+    And def actualPrintBatchOutput = read('../actual-print-batch-output.xml')
+    And def expectedPrintBatchOutput = read('../expected-print-batch-output.xml')
+    Then match actualPrintBatchOutput == expectedPrintBatchOutput
+
+
+  # Examples of using XML
+  Scenario: Verify valid print file (matching file as a whole)
+    Given def actualPrintBatchOutput = read('../actual-print-batch-output.xml')
+    And def expectedPrintBatchOutput = read('../expected-print-batch-output.xml')
+    Then match actualPrintBatchOutput == expectedPrintBatchOutput
+
+  Scenario: Verify valid print file (matching properties)
+    Given def someXml = read('../actual-print-batch-output.xml')
+    Then match someXml/BadgePrintExtract/Batch/Filename == 'BADGEEXTRACT180808120021.xml'
+    And match someXml count(/BadgePrintExtract/Batch) == 1
+
+  # Basic test to show xml matching
+  Scenario: Verify valid print batch basic xml
+    Given def someXml = <miguel><gil>value</gil></miguel>
+    Then match someXml.miguel.gil == 'value'
+
+  Scenario: Verify valid print file read simple xml file
+    Given def someXmlFile = read('../my-xml.xml')
+    Then match someXmlFile == '<miguel><gil>value</gil></miguel>'
+    Then match someXmlFile.miguel.gil == 'value'
+
+  Scenario: Verify valid print file read 2 files only difference is whitespace
+    Given def someXmlFile = read('../my-xml.xml')
+    Given def someXmlFileWhitespaceDifferent = read('../my-xml-whitespace-different.xml')
+    Then match someXmlFile == someXmlFileWhitespaceDifferent
