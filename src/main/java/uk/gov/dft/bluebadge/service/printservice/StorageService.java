@@ -1,5 +1,7 @@
 package uk.gov.dft.bluebadge.service.printservice;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLEncoder;
@@ -7,8 +9,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.util.StringUtils;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.internal.Mimetypes;
@@ -35,26 +36,31 @@ public class StorageService {
 		this.transferManager = transferManager;
 	}
 
-	public boolean upload(MultipartFile file) throws IOException, InterruptedException {
+	public boolean upload(File file) throws IOException, InterruptedException {
 		Objects.requireNonNull(file, "File is null");
-		if (file.isEmpty()) {
+		if (file.length() == 0) {
 			throw new IllegalArgumentException("Upload failed. Batch file is empty");
 		}
 		
-		log.info("Uploading document to S3. {}, size:{}", file.getOriginalFilename(), file.getSize());
+		log.info("Uploading document to S3. {}, size:{}", file.getName(), file.length());
 		
-		String keyName = UUID.randomUUID().toString() + "-" + file.getOriginalFilename();
+		String keyName = UUID.randomUUID().toString() + "-" + file.getCanonicalPath();
 		keyName = URLEncoder.encode(keyName, ENCODING_CHAR_SET);
 		
-		ObjectMetadata meta = new ObjectMetadata();
-		meta.setContentLength(file.getSize());
-		String mimetype = Mimetypes.getInstance().getMimetype(file.getOriginalFilename());
-		meta.setContentType(mimetype);
-		
-		Upload upload = transferManager.upload(s3Config.getS3Bucket(), keyName, file.getInputStream(), meta);
+		Upload upload = transferManager.upload(s3Config.getS3Bucket(), keyName, new FileInputStream(file), setMetaData(file));
 		UploadResult uploadResult = upload.waitForUploadResult();
 		URL url = amazonS3.getUrl(uploadResult.getBucketName(), uploadResult.getKey());
 		
-		return true;
+		return !StringUtils.isEmpty(url);
 	}
+
+	private ObjectMetadata setMetaData(File file) {
+		ObjectMetadata meta = new ObjectMetadata();
+		meta.setContentLength(file.length());
+		String mimetype = Mimetypes.getInstance().getMimetype(file.getName());
+		meta.setContentType(mimetype);
+		return meta;
+	}
+	
+
 }
