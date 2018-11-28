@@ -1,23 +1,17 @@
 package uk.gov.dft.bluebadge.model.printservice.generated;
 
-import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import java.util.List;
-import uk.gov.dft.bluebadge.model.printservice.generated.LocalAuthority;
-import org.springframework.validation.annotation.Validated;
+import java.util.Objects;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
+import org.springframework.validation.annotation.Validated;
 
-/**
- * Batch
- */
+/** Batch */
 @Validated
-
-public class Batch   {
+public class Batch {
   @JsonProperty("filename")
   private String filename = null;
 
@@ -32,11 +26,10 @@ public class Batch   {
 
   /**
    * Get filename
+   *
    * @return filename
-  **/
+   */
   @ApiModelProperty(value = "")
-
-
   public String getFilename() {
     return filename;
   }
@@ -60,12 +53,11 @@ public class Batch   {
 
   /**
    * Get localAuthorities
+   *
    * @return localAuthorities
-  **/
+   */
   @ApiModelProperty(value = "")
-
   @Valid
-
   public List<LocalAuthority> getLocalAuthorities() {
     return localAuthorities;
   }
@@ -73,7 +65,6 @@ public class Batch   {
   public void setLocalAuthorities(List<LocalAuthority> localAuthorities) {
     this.localAuthorities = localAuthorities;
   }
-
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -84,8 +75,8 @@ public class Batch   {
       return false;
     }
     Batch batch = (Batch) o;
-    return Objects.equals(this.filename, batch.filename) &&
-        Objects.equals(this.localAuthorities, batch.localAuthorities);
+    return Objects.equals(this.filename, batch.filename)
+        && Objects.equals(this.localAuthorities, batch.localAuthorities);
   }
 
   @Override
@@ -97,7 +88,7 @@ public class Batch   {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class Batch {\n");
-    
+
     sb.append("    filename: ").append(toIndentedString(filename)).append("\n");
     sb.append("    localAuthorities: ").append(toIndentedString(localAuthorities)).append("\n");
     sb.append("}");
@@ -105,8 +96,7 @@ public class Batch   {
   }
 
   /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
+   * Convert the given object to string with each line indented by 4 spaces (except the first line).
    */
   private String toIndentedString(java.lang.Object o) {
     if (o == null) {
@@ -115,4 +105,3 @@ public class Batch   {
     return o.toString().replace("\n", "\n    ");
   }
 }
-

@@ -1,22 +1,15 @@
 package uk.gov.dft.bluebadge.model.printservice.generated;
 
-import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import uk.gov.dft.bluebadge.model.printservice.generated.LetterAddress;
-import uk.gov.dft.bluebadge.model.printservice.generated.Name;
-import org.springframework.validation.annotation.Validated;
+import java.util.Objects;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
+import org.springframework.validation.annotation.Validated;
 
-/**
- * BadgeDetails
- */
+/** BadgeDetails */
 @Validated
-
-public class BadgeDetails   {
+public class BadgeDetails {
   @JsonProperty("badgeIdentifier")
   private String badgeIdentifier = null;
 
@@ -57,11 +50,10 @@ public class BadgeDetails   {
 
   /**
    * Get badgeIdentifier
+   *
    * @return badgeIdentifier
-  **/
+   */
   @ApiModelProperty(example = "6 digit badge number in DfT system", value = "")
-
-
   public String getBadgeIdentifier() {
     return badgeIdentifier;
   }
@@ -77,11 +69,14 @@ public class BadgeDetails   {
 
   /**
    * Get printedBadgeReference
+   *
    * @return printedBadgeReference
-  **/
-  @ApiModelProperty(example = "first 6 characters is 'badgeIdentifier' 7th character is the issue number this will always be 0 DDBB – month/year of birth of badge_holder, G - Gender (X=Male, Y=Female, Z=Not Specified) MMYY - month/year of badge expiry e.g. 'AA12BB 0 0290X1220'", value = "")
-
-
+   */
+  @ApiModelProperty(
+    example =
+        "first 6 characters is 'badgeIdentifier' 7th character is the issue number this will always be 0 DDBB – month/year of birth of badge_holder, G - Gender (X=Male, Y=Female, Z=Not Specified) MMYY - month/year of badge expiry e.g. 'AA12BB 0 0290X1220'",
+    value = ""
+  )
   public String getPrintedBadgeReference() {
     return printedBadgeReference;
   }
@@ -97,11 +92,10 @@ public class BadgeDetails   {
 
   /**
    * Get startDate
+   *
    * @return startDate
-  **/
+   */
   @ApiModelProperty(example = "badge start date '2018-08-03'", value = "")
-
-
   public String getStartDate() {
     return startDate;
   }
@@ -117,11 +111,10 @@ public class BadgeDetails   {
 
   /**
    * Get expiryDate
+   *
    * @return expiryDate
-  **/
+   */
   @ApiModelProperty(example = "badge expiry date '2020-08-03'", value = "")
-
-
   public String getExpiryDate() {
     return expiryDate;
   }
@@ -137,11 +130,10 @@ public class BadgeDetails   {
 
   /**
    * Get dispatchMethodCode
+   *
    * @return dispatchMethodCode
-  **/
+   */
   @ApiModelProperty(example = "deliver to LA - 'C', deliver to home - 'M'", value = "")
-
-
   public String getDispatchMethodCode() {
     return dispatchMethodCode;
   }
@@ -157,11 +149,10 @@ public class BadgeDetails   {
 
   /**
    * Get fastTrackCode
+   *
    * @return fastTrackCode
-  **/
+   */
   @ApiModelProperty(example = "based on deliver_option_code 'Y' or 'N'", value = "")
-
-
   public String getFastTrackCode() {
     return fastTrackCode;
   }
@@ -177,11 +168,14 @@ public class BadgeDetails   {
 
   /**
    * Get postageCode
+   *
    * @return postageCode
-  **/
-  @ApiModelProperty(example = "example 'SC' if deliver_option_code = 'STAND', 'SD1' if deliver_option_code = 'FAST'", value = "")
-
-
+   */
+  @ApiModelProperty(
+    example =
+        "example 'SC' if deliver_option_code = 'STAND', 'SD1' if deliver_option_code = 'FAST'",
+    value = ""
+  )
   public String getPostageCode() {
     return postageCode;
   }
@@ -197,11 +191,14 @@ public class BadgeDetails   {
 
   /**
    * Get photo
+   *
    * @return photo
-  **/
-  @ApiModelProperty(example = "aws-s3-url to image, in case if image not provided - url to default palceholder          image", value = "")
-
-
+   */
+  @ApiModelProperty(
+    example =
+        "aws-s3-url to image, in case if image not provided - url to default palceholder          image",
+    value = ""
+  )
   public String getPhoto() {
     return photo;
   }
@@ -217,11 +214,14 @@ public class BadgeDetails   {
 
   /**
    * Get barCodeData
+   *
    * @return barCodeData
-  **/
-  @ApiModelProperty(example = "last 7 characters of the 'printedBadgeReference' for PERSON badge, last 5 characters of the 'printedBadgeReference' for ORGANISATION badge, e.g. '44X0621'", value = "")
-
-
+   */
+  @ApiModelProperty(
+    example =
+        "last 7 characters of the 'printedBadgeReference' for PERSON badge, last 5 characters of the 'printedBadgeReference' for ORGANISATION badge, e.g. '44X0621'",
+    value = ""
+  )
   public String getBarCodeData() {
     return barCodeData;
   }
@@ -237,12 +237,11 @@ public class BadgeDetails   {
 
   /**
    * Get name
+   *
    * @return name
-  **/
+   */
   @ApiModelProperty(value = "")
-
   @Valid
-
   public Name getName() {
     return name;
   }
@@ -258,12 +257,11 @@ public class BadgeDetails   {
 
   /**
    * Get letterAddress
+   *
    * @return letterAddress
-  **/
+   */
   @ApiModelProperty(value = "")
-
   @Valid
-
   public LetterAddress getLetterAddress() {
     return letterAddress;
   }
@@ -271,7 +269,6 @@ public class BadgeDetails   {
   public void setLetterAddress(LetterAddress letterAddress) {
     this.letterAddress = letterAddress;
   }
-
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -282,31 +279,44 @@ public class BadgeDetails   {
       return false;
     }
     BadgeDetails badgeDetails = (BadgeDetails) o;
-    return Objects.equals(this.badgeIdentifier, badgeDetails.badgeIdentifier) &&
-        Objects.equals(this.printedBadgeReference, badgeDetails.printedBadgeReference) &&
-        Objects.equals(this.startDate, badgeDetails.startDate) &&
-        Objects.equals(this.expiryDate, badgeDetails.expiryDate) &&
-        Objects.equals(this.dispatchMethodCode, badgeDetails.dispatchMethodCode) &&
-        Objects.equals(this.fastTrackCode, badgeDetails.fastTrackCode) &&
-        Objects.equals(this.postageCode, badgeDetails.postageCode) &&
-        Objects.equals(this.photo, badgeDetails.photo) &&
-        Objects.equals(this.barCodeData, badgeDetails.barCodeData) &&
-        Objects.equals(this.name, badgeDetails.name) &&
-        Objects.equals(this.letterAddress, badgeDetails.letterAddress);
+    return Objects.equals(this.badgeIdentifier, badgeDetails.badgeIdentifier)
+        && Objects.equals(this.printedBadgeReference, badgeDetails.printedBadgeReference)
+        && Objects.equals(this.startDate, badgeDetails.startDate)
+        && Objects.equals(this.expiryDate, badgeDetails.expiryDate)
+        && Objects.equals(this.dispatchMethodCode, badgeDetails.dispatchMethodCode)
+        && Objects.equals(this.fastTrackCode, badgeDetails.fastTrackCode)
+        && Objects.equals(this.postageCode, badgeDetails.postageCode)
+        && Objects.equals(this.photo, badgeDetails.photo)
+        && Objects.equals(this.barCodeData, badgeDetails.barCodeData)
+        && Objects.equals(this.name, badgeDetails.name)
+        && Objects.equals(this.letterAddress, badgeDetails.letterAddress);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(badgeIdentifier, printedBadgeReference, startDate, expiryDate, dispatchMethodCode, fastTrackCode, postageCode, photo, barCodeData, name, letterAddress);
+    return Objects.hash(
+        badgeIdentifier,
+        printedBadgeReference,
+        startDate,
+        expiryDate,
+        dispatchMethodCode,
+        fastTrackCode,
+        postageCode,
+        photo,
+        barCodeData,
+        name,
+        letterAddress);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class BadgeDetails {\n");
-    
+
     sb.append("    badgeIdentifier: ").append(toIndentedString(badgeIdentifier)).append("\n");
-    sb.append("    printedBadgeReference: ").append(toIndentedString(printedBadgeReference)).append("\n");
+    sb.append("    printedBadgeReference: ")
+        .append(toIndentedString(printedBadgeReference))
+        .append("\n");
     sb.append("    startDate: ").append(toIndentedString(startDate)).append("\n");
     sb.append("    expiryDate: ").append(toIndentedString(expiryDate)).append("\n");
     sb.append("    dispatchMethodCode: ").append(toIndentedString(dispatchMethodCode)).append("\n");
@@ -321,8 +331,7 @@ public class BadgeDetails   {
   }
 
   /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
+   * Convert the given object to string with each line indented by 4 spaces (except the first line).
    */
   private String toIndentedString(java.lang.Object o) {
     if (o == null) {
@@ -331,4 +340,3 @@ public class BadgeDetails   {
     return o.toString().replace("\n", "\n    ");
   }
 }
-

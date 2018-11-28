@@ -1,23 +1,17 @@
 package uk.gov.dft.bluebadge.model.printservice.generated;
 
-import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
 import java.util.List;
-import uk.gov.dft.bluebadge.model.printservice.generated.BadgeDetails;
-import org.springframework.validation.annotation.Validated;
+import java.util.Objects;
 import javax.validation.Valid;
 import javax.validation.constraints.*;
+import org.springframework.validation.annotation.Validated;
 
-/**
- * LocalAuthority
- */
+/** LocalAuthority */
 @Validated
-
-public class LocalAuthority   {
+public class LocalAuthority {
   @JsonProperty("laCode")
   private String laCode = null;
 
@@ -50,11 +44,10 @@ public class LocalAuthority   {
 
   /**
    * Get laCode
+   *
    * @return laCode
-  **/
+   */
   @ApiModelProperty(example = "LA short code 'ABERD'", value = "")
-
-
   public String getLaCode() {
     return laCode;
   }
@@ -70,11 +63,10 @@ public class LocalAuthority   {
 
   /**
    * Get laName
+   *
    * @return laName
-  **/
+   */
   @ApiModelProperty(example = "LA description 'Aberdinshire council'", value = "")
-
-
   public String getLaName() {
     return laName;
   }
@@ -90,11 +82,14 @@ public class LocalAuthority   {
 
   /**
    * Get issuingCountry
+   *
    * @return issuingCountry
-  **/
-  @ApiModelProperty(example = "Country 'E' = English 'S' = Scottish 'W' = Welsh 'N' = Northern Ireland, convert this from LA metadata", value = "")
-
-
+   */
+  @ApiModelProperty(
+    example =
+        "Country 'E' = English 'S' = Scottish 'W' = Welsh 'N' = Northern Ireland, convert this from LA metadata",
+    value = ""
+  )
   public String getIssuingCountry() {
     return issuingCountry;
   }
@@ -110,11 +105,14 @@ public class LocalAuthority   {
 
   /**
    * Get languageCode
+   *
    * @return languageCode
-  **/
-  @ApiModelProperty(example = "if LA Nation = Wales 'EW', If LA Nation = England, Northern Ireland or Scotland then 'E'", value = "")
-
-
+   */
+  @ApiModelProperty(
+    example =
+        "if LA Nation = Wales 'EW', If LA Nation = England, Northern Ireland or Scotland then 'E'",
+    value = ""
+  )
   public String getLanguageCode() {
     return languageCode;
   }
@@ -130,11 +128,14 @@ public class LocalAuthority   {
 
   /**
    * Get clockType
+   *
    * @return clockType
-  **/
-  @ApiModelProperty(example = "Northern Ireland = 'STANDARD', Wales = 'WALLET', England = 'STANDARD', Scotland = 'STANDARD'", value = "")
-
-
+   */
+  @ApiModelProperty(
+    example =
+        "Northern Ireland = 'STANDARD', Wales = 'WALLET', England = 'STANDARD', Scotland = 'STANDARD'",
+    value = ""
+  )
   public String getClockType() {
     return clockType;
   }
@@ -150,11 +151,10 @@ public class LocalAuthority   {
 
   /**
    * Get phoneNumber
+   *
    * @return phoneNumber
-  **/
+   */
   @ApiModelProperty(example = "phone number '01234 567890' - from LA metadata", value = "")
-
-
   public String getPhoneNumber() {
     return phoneNumber;
   }
@@ -170,11 +170,10 @@ public class LocalAuthority   {
 
   /**
    * Get emailAddress
+   *
    * @return emailAddress
-  **/
+   */
   @ApiModelProperty(example = "email 'enquiries@dcuc.gov.uk' - from LA metadata", value = "")
-
-
   public String getEmailAddress() {
     return emailAddress;
   }
@@ -198,12 +197,11 @@ public class LocalAuthority   {
 
   /**
    * Get badges
+   *
    * @return badges
-  **/
+   */
   @ApiModelProperty(value = "")
-
   @Valid
-
   public List<BadgeDetails> getBadges() {
     return badges;
   }
@@ -211,7 +209,6 @@ public class LocalAuthority   {
   public void setBadges(List<BadgeDetails> badges) {
     this.badges = badges;
   }
-
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -222,26 +219,27 @@ public class LocalAuthority   {
       return false;
     }
     LocalAuthority localAuthority = (LocalAuthority) o;
-    return Objects.equals(this.laCode, localAuthority.laCode) &&
-        Objects.equals(this.laName, localAuthority.laName) &&
-        Objects.equals(this.issuingCountry, localAuthority.issuingCountry) &&
-        Objects.equals(this.languageCode, localAuthority.languageCode) &&
-        Objects.equals(this.clockType, localAuthority.clockType) &&
-        Objects.equals(this.phoneNumber, localAuthority.phoneNumber) &&
-        Objects.equals(this.emailAddress, localAuthority.emailAddress) &&
-        Objects.equals(this.badges, localAuthority.badges);
+    return Objects.equals(this.laCode, localAuthority.laCode)
+        && Objects.equals(this.laName, localAuthority.laName)
+        && Objects.equals(this.issuingCountry, localAuthority.issuingCountry)
+        && Objects.equals(this.languageCode, localAuthority.languageCode)
+        && Objects.equals(this.clockType, localAuthority.clockType)
+        && Objects.equals(this.phoneNumber, localAuthority.phoneNumber)
+        && Objects.equals(this.emailAddress, localAuthority.emailAddress)
+        && Objects.equals(this.badges, localAuthority.badges);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(laCode, laName, issuingCountry, languageCode, clockType, phoneNumber, emailAddress, badges);
+    return Objects.hash(
+        laCode, laName, issuingCountry, languageCode, clockType, phoneNumber, emailAddress, badges);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class LocalAuthority {\n");
-    
+
     sb.append("    laCode: ").append(toIndentedString(laCode)).append("\n");
     sb.append("    laName: ").append(toIndentedString(laName)).append("\n");
     sb.append("    issuingCountry: ").append(toIndentedString(issuingCountry)).append("\n");
@@ -255,8 +253,7 @@ public class LocalAuthority   {
   }
 
   /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
+   * Convert the given object to string with each line indented by 4 spaces (except the first line).
    */
   private String toIndentedString(java.lang.Object o) {
     if (o == null) {
@@ -265,4 +262,3 @@ public class LocalAuthority   {
     return o.toString().replace("\n", "\n    ");
   }
 }
-

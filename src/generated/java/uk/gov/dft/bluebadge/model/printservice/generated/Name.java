@@ -1,20 +1,14 @@
 package uk.gov.dft.bluebadge.model.printservice.generated;
 
-import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.springframework.validation.annotation.Validated;
-import javax.validation.Valid;
+import java.util.Objects;
 import javax.validation.constraints.*;
+import org.springframework.validation.annotation.Validated;
 
-/**
- * Name
- */
+/** Name */
 @Validated
-
-public class Name   {
+public class Name {
   @JsonProperty("forename")
   private String forename = null;
 
@@ -28,11 +22,10 @@ public class Name   {
 
   /**
    * Get forename
+   *
    * @return forename
-  **/
+   */
   @ApiModelProperty(example = "John Smith (badge_holder)", value = "")
-
-
   public String getForename() {
     return forename;
   }
@@ -48,11 +41,14 @@ public class Name   {
 
   /**
    * Get surname
+   *
    * @return surname
-  **/
-  @ApiModelProperty(example = "If holder_name is greater than 27 characters, at the first space delimited of the string, split onto 'surname'", value = "")
-
-
+   */
+  @ApiModelProperty(
+    example =
+        "If holder_name is greater than 27 characters, at the first space delimited of the string, split onto 'surname'",
+    value = ""
+  )
   public String getSurname() {
     return surname;
   }
@@ -60,7 +56,6 @@ public class Name   {
   public void setSurname(String surname) {
     this.surname = surname;
   }
-
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -71,8 +66,8 @@ public class Name   {
       return false;
     }
     Name name = (Name) o;
-    return Objects.equals(this.forename, name.forename) &&
-        Objects.equals(this.surname, name.surname);
+    return Objects.equals(this.forename, name.forename)
+        && Objects.equals(this.surname, name.surname);
   }
 
   @Override
@@ -84,7 +79,7 @@ public class Name   {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class Name {\n");
-    
+
     sb.append("    forename: ").append(toIndentedString(forename)).append("\n");
     sb.append("    surname: ").append(toIndentedString(surname)).append("\n");
     sb.append("}");
@@ -92,8 +87,7 @@ public class Name   {
   }
 
   /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
+   * Convert the given object to string with each line indented by 4 spaces (except the first line).
    */
   private String toIndentedString(java.lang.Object o) {
     if (o == null) {
@@ -102,4 +96,3 @@ public class Name   {
     return o.toString().replace("\n", "\n    ");
   }
 }
-
