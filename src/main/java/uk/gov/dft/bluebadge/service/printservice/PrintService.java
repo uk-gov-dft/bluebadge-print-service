@@ -1,50 +1,53 @@
 package uk.gov.dft.bluebadge.service.printservice;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDate;
+import java.net.URL;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-
-import org.springframework.stereotype.Service;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import uk.gov.dft.bluebadge.model.printservice.generated.Batches;
 
 @Service
 @Slf4j
 public class PrintService {
-	
-	private final StorageService s3;
-	
-	public PrintService(StorageService s3) {
-		this.s3 = s3;
-	}
 
-	public void print(Batches batch) throws IOException, InterruptedException {
-		File jsonFile = convertAndSave(batch);
+  private final StorageService s3;
 
-		try {
-			boolean uploaded = s3.upload(jsonFile);
-			log.debug("Json file {} has been uploaded: {}", jsonFile.getName(), uploaded ? "yes" : "no");			
-		} finally {
-			boolean deleted = jsonFile.delete();
-			log.debug("Temporary json file {} has been deleted: {}", jsonFile.getName(), deleted ? "yes" : "no");			
-		}
-	}
+  public PrintService(StorageService s3) {
+    this.s3 = s3;
+  }
 
-	private File convertAndSave(Batches src) throws IOException {
-		ObjectMapper mapper = new ObjectMapper();
+  public void print(Batches batch) throws IOException, InterruptedException {
+    File jsonFile = convertAndSave(batch);
 
-		String filename = System.getProperty("java.io.tmpdir") + 
-											"printbatch_" + 
-											LocalDate.now().format(DateTimeFormatter.ofPattern("YYYYMMddHHmmss")) + 
-											".json";
-		log.debug("Convert batches payload to temporary file {}", filename);
-		File jsonFile = new File(filename);
-		mapper.writeValue(jsonFile, src);
+    try {
+      URL s3URL = s3.upload(jsonFile);
+      log.debug("Json file {} has been uploaded, URL: {}", jsonFile.getName(), s3URL.toString());
+    } finally {
+      boolean deleted = jsonFile.delete();
+      log.debug(
+          "Json file {} {} been deleted from temporary folder",
+          jsonFile.getName(),
+          deleted ? "has" : "hasn't");
+    }
+  }
 
-		return jsonFile;
-	}
+  private File convertAndSave(Batches src) throws IOException {
+    ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+
+    String filename =
+        System.getProperty("java.io.tmpdir")
+            + "printbatch_"
+            + LocalDateTime.now().format(DateTimeFormatter.ofPattern("YYYYMMddHHmmss"))
+            + ".json";
+    log.debug("Convert and save batches payload to temporary json file {}", filename);
+    File jsonFile = new File(filename);
+    mapper.writeValue(jsonFile, src);
+
+    return jsonFile;
+  }
 }

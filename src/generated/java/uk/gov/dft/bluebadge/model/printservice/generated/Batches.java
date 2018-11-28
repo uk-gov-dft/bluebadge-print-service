@@ -1,19 +1,13 @@
 package uk.gov.dft.bluebadge.model.printservice.generated;
 
-import java.util.Objects;
 import java.util.ArrayList;
-import java.util.List;
-import uk.gov.dft.bluebadge.model.printservice.generated.Batch;
-import org.springframework.validation.annotation.Validated;
-import javax.validation.Valid;
+import java.util.Objects;
 import javax.validation.constraints.*;
+import org.springframework.validation.annotation.Validated;
 
-/**
- * Batches
- */
+/** Batches */
 @Validated
-
-public class Batches extends ArrayList<Batch>  {
+public class Batches extends ArrayList<Batch> {
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -41,8 +35,7 @@ public class Batches extends ArrayList<Batch>  {
   }
 
   /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
+   * Convert the given object to string with each line indented by 4 spaces (except the first line).
    */
   private String toIndentedString(java.lang.Object o) {
     if (o == null) {
@@ -51,4 +44,3 @@ public class Batches extends ArrayList<Batch>  {
     return o.toString().replace("\n", "\n    ");
   }
 }
-

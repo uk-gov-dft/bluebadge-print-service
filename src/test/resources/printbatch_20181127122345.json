@@ -1,18 +1,3 @@
-@print-service-print-batch
-Feature: Verify Print batch ok
-
-  Background:
-    * url baseUrl
-    * def result = callonce read('./oauth2.feature')
-    * header Authorization = 'Bearer ' + result.accessToken
-    * def S3Utils = Java.type('uk.gov.service.printservice.test.utils.S3Utils')
-    * def System = Java.type('java.lang.System')
-	* def s3 = new S3Utils()
-	* def bucketName = 'uk-gov-dft-' + System.getenv('bb_env') +'-printer' 
-
-  Scenario: Verify valid print batch
-    * def batches =
-    """
 [ {
   "filename" : "filename1",
   "localAuthorities" : [ {
@@ -123,14 +108,3 @@ Feature: Verify Print batch ok
     } ]
   } ]
 } ]
-    """
-    
-    * def beforeCount = s3.getNumberOfFilesInABucket(bucketName)
-    Given path 'printBatch'
-    And request batches
-    When method POST
-    Then status 200
-    * def afterCount = s3.getNumberOfFilesInABucket(bucketName)
-    * assert afterCount > beforeCount
-    * assert afterCount - 1 == beforeCount
-    

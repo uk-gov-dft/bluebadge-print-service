@@ -2,14 +2,18 @@ package uk.gov.dft.bluebadge.service.printservice;
 
 import io.swagger.annotations.ApiParam;
 import javax.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.dft.bluebadge.common.api.model.Error;
 import uk.gov.dft.bluebadge.common.controller.AbstractController;
+import uk.gov.dft.bluebadge.common.service.exception.InternalServerException;
 import uk.gov.dft.bluebadge.model.printservice.generated.Batches;
 import uk.gov.dft.bluebadge.service.printservice.generated.controller.PrintBatchApi;
 
 @RestController
+@Slf4j
 public class PrintController extends AbstractController implements PrintBatchApi {
 
   private PrintService service;
@@ -19,10 +23,16 @@ public class PrintController extends AbstractController implements PrintBatchApi
   }
 
   @Override
-  // todo: add permissions
-  // @PreAuthorize("hasAuthority('PERM_PRINT-BATCH')")
+  // todo: add permissions something like @PreAuthorize("hasAuthority('PERM_PRINT')")
   public ResponseEntity<Void> printBatch(@ApiParam() @Valid @RequestBody Batches batch) {
-    service.print(batch);
+    try {
+      service.print(batch);
+    } catch (Exception e) {
+      log.error(e.getMessage());
+      Error error = new Error();
+      error.setMessage(e.getMessage());
+      throw new InternalServerException(error);
+    }
     return ResponseEntity.ok().build();
   }
 }
