@@ -1,21 +1,16 @@
-@print-service-print-btch
+@print-service-print-btch.validation
 Feature: Verify Print batch ok validation
 
   Background:
     * url baseUrl
     * def result = callonce read('./oauth2.feature')
     * header Authorization = 'Bearer ' + result.accessToken
-    #* def cmdLineUtilsConfig = {}
-      #* def DbUtils = Java.type('uk.gov.service.bluebadge.test.utils.DbUtils')
-    #* def CommandLineUtils = Java.type('uk.gov.service.bluebadge.test.utils.CommandLineUtils')
-    #* def cmdLineUtils = new CommandLineUtils(cmdLineUtilsConfig)
-    * def executeShellScript =
+    * def validateXmlPrintBatchRequest =
     """
     function(script) {
-      var CommandLineUtils = Java.type('uk.gov.service.bluebadge.test.utils.CommandLineUtils')
-      var cmdLineUtilsConfig = {}
-      var cmdLineUtils = new CommandLineUtils(cmdLineUtilsConfig);
-      return cmdLineUtils.runScript(script);
+      var XMLValidator = Java.type('uk.gov.service.printservice.test.utils.XMLValidator');
+      var xmlValidator = new XMLValidator();
+      return xmlValidator.validate(script, 'BadgePrintExtract.xsd');
     }
     """
 
@@ -69,26 +64,12 @@ Feature: Verify Print batch ok validation
     When method POST
     #Then status 200
     And def actualPrintBatchOutput = read('../actual-print-batch-output.xml')
-    #And def isValid = call cmdLineUtils.runScript('testPrintBatchXmlFile.sh')
-    #And print 'isValid=' + isValid
-  #, 'actual-print-batch-output.xml');
-    #And match isValid == true
     And def expectedPrintBatchOutput = read('../expected-print-batch-output.xml')
     And match actualPrintBatchOutput == expectedPrintBatchOutput
-    * def myfunction =
-    """
-    function(s) {
-      return "mys";
-    }
-    """
-
-    #And def isValid2 =  executeShellScript('../testPrintBatchXmlFile.sh')
-    And def isValid2 =  executeShellScript('pwd')
-    And print "isValid2=" + isValid2
-    And match isValid2 == true
-    And def myresult = myfunction('hola')
-    And print "myresult=" + myresult
-    And match myresult == "mys"
+    And def validFileActualResult = validateXmlPrintBatchRequest('actual-print-batch-output.xml')
+    And match validFileActualResult == true
+    And def invalidFileActualResult = validateXmlPrintBatchRequest('invalid-languageCode-in-output-actual-print-batch-output.xml')
+    And match invalidFileActualResult == false
 
 
   # Examples of using XML
@@ -104,13 +85,13 @@ Feature: Verify Print batch ok validation
 
   # Basic test to show xml matching
   Scenario: Verify valid print batch basic xml
-    Given def someXml = <miguel><gil>value</gil></miguel>
-    Then match someXml.miguel.gil == 'value'
+    Given def someXml = <name><surname>value</surname></name>
+    Then match someXml.name.surname == 'value'
 
   Scenario: Verify valid print file read simple xml file
     Given def someXmlFile = read('../my-xml.xml')
-    Then match someXmlFile == '<miguel><gil>value</gil></miguel>'
-    Then match someXmlFile.miguel.gil == 'value'
+    Then match someXmlFile == '<name><surname>value</surname></name>'
+    Then match someXmlFile.name.surname == 'value'
 
   Scenario: Verify valid print file read 2 files only difference is whitespace
     Given def someXmlFile = read('../my-xml.xml')
