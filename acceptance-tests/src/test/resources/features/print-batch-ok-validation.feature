@@ -6,7 +6,6 @@ Feature: Verify Print batch ok
     * def result = callonce read('./oauth2.feature')
     * header Authorization = 'Bearer ' + result.accessToken
     * def cmdLineUtilsConfig = {}
-      #* def DbUtils = Java.type('uk.gov.service.bluebadge.test.utils.DbUtils')
     * def CommandLineUtils = Java.type('uk.gov.service.bluebadge.test.utils.CommandLineUtils')
     * def cmdLineUtils = new CommandLineUtils(cmdLineUtilsConfig)
 
@@ -60,10 +59,6 @@ Feature: Verify Print batch ok
     When method POST
     Then status 200
     And def actualPrintBatchOutput = read('../actual-print-batch-output.xml')
-    #And def isValid = call commandLineUtils.runScript('testPrintBatchXmlFile.sh')
-    #And print 'isValid:', isValid
-  #, 'actual-print-batch-output.xml');
-    #And match isValid == true
     And def expectedPrintBatchOutput = read('../expected-print-batch-output.xml')
     And match actualPrintBatchOutput == expectedPrintBatchOutput
 
