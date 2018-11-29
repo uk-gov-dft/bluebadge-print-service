@@ -1,0 +1,3 @@
+blue-badge:
+  auth-server:
+    url: http://authorisation-service:8380/bb_auth

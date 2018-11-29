@@ -7,8 +7,8 @@ Feature: Verify Print batch ok
     * header Authorization = 'Bearer ' + result.accessToken
     * def S3Utils = Java.type('uk.gov.service.printservice.test.utils.S3Utils')
     * def System = Java.type('java.lang.System')
-	* def s3 = new S3Utils()
-	* def bucketName = 'uk-gov-dft-' + System.getenv('bb_env') +'-printer' 
+    * def s3 = new S3Utils()
+    * def bucketName = 'uk-gov-dft-' + System.getenv('bb_env') +'-printer'
 
   Scenario: Verify valid print batch
     * def batches =
@@ -124,7 +124,7 @@ Feature: Verify Print batch ok
   } ]
 } ]
     """
-    
+
     * def beforeCount = s3.getNumberOfFilesInABucket(bucketName)
     Given path 'printBatch'
     And request batches
@@ -133,4 +133,4 @@ Feature: Verify Print batch ok
     * def afterCount = s3.getNumberOfFilesInABucket(bucketName)
     * assert afterCount > beforeCount
     * assert afterCount - 1 == beforeCount
-    
+
