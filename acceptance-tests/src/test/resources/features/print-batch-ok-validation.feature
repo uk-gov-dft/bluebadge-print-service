@@ -1,5 +1,5 @@
-@print-service-print-btch
-Feature: Verify Print batch ok
+@print-service-print-btch.validation
+Feature: Verify Print batch ok validation
 
   Background:
     * url baseUrl
