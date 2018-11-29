@@ -76,13 +76,13 @@ Feature: Verify Print batch ok validation
 
   # Basic test to show xml matching
   Scenario: Verify valid print batch basic xml
-    Given def someXml = <miguel><gil>value</gil></miguel>
-    Then match someXml.miguel.gil == 'value'
+    Given def someXml = <name><surname>value</surname></name>
+    Then match someXml.name.surname == 'value'
 
   Scenario: Verify valid print file read simple xml file
     Given def someXmlFile = read('../my-xml.xml')
-    Then match someXmlFile == '<miguel><gil>value</gil></miguel>'
-    Then match someXmlFile.miguel.gil == 'value'
+    Then match someXmlFile == '<name><surname>value</surname></name>'
+    Then match someXmlFile.name.surname == 'value'
 
   Scenario: Verify valid print file read 2 files only difference is whitespace
     Given def someXmlFile = read('../my-xml.xml')
