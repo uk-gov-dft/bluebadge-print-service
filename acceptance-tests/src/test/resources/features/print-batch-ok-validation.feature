@@ -1,14 +1,23 @@
 @print-service-print-btch
-Feature: Verify Print batch ok
+Feature: Verify Print batch ok validation
 
   Background:
     * url baseUrl
     * def result = callonce read('./oauth2.feature')
     * header Authorization = 'Bearer ' + result.accessToken
-    * def cmdLineUtilsConfig = {}
+    #* def cmdLineUtilsConfig = {}
       #* def DbUtils = Java.type('uk.gov.service.bluebadge.test.utils.DbUtils')
-    * def CommandLineUtils = Java.type('uk.gov.service.bluebadge.test.utils.CommandLineUtils')
-    * def cmdLineUtils = new CommandLineUtils(cmdLineUtilsConfig)
+    #* def CommandLineUtils = Java.type('uk.gov.service.bluebadge.test.utils.CommandLineUtils')
+    #* def cmdLineUtils = new CommandLineUtils(cmdLineUtilsConfig)
+    * def executeShellScript =
+    """
+    function(script) {
+      var CommandLineUtils = Java.type('uk.gov.service.bluebadge.test.utils.CommandLineUtils')
+      var cmdLineUtilsConfig = {}
+      var cmdLineUtils = new CommandLineUtils(cmdLineUtilsConfig);
+      return cmdLineUtils.runScript(script);
+    }
+    """
 
   Scenario: Verify valid print batch
     * def batches =
@@ -58,14 +67,28 @@ Feature: Verify Print batch ok
     Given path 'printBatch'
     And request batches
     When method POST
-    Then status 200
+    #Then status 200
     And def actualPrintBatchOutput = read('../actual-print-batch-output.xml')
-    #And def isValid = call commandLineUtils.runScript('testPrintBatchXmlFile.sh')
-    #And print 'isValid:', isValid
+    #And def isValid = call cmdLineUtils.runScript('testPrintBatchXmlFile.sh')
+    #And print 'isValid=' + isValid
   #, 'actual-print-batch-output.xml');
     #And match isValid == true
     And def expectedPrintBatchOutput = read('../expected-print-batch-output.xml')
     And match actualPrintBatchOutput == expectedPrintBatchOutput
+    * def myfunction =
+    """
+    function(s) {
+      return "mys";
+    }
+    """
+
+    #And def isValid2 =  executeShellScript('../testPrintBatchXmlFile.sh')
+    And def isValid2 =  executeShellScript('pwd')
+    And print "isValid2=" + isValid2
+    And match isValid2 == true
+    And def myresult = myfunction('hola')
+    And print "myresult=" + myresult
+    And match myresult == "mys"
 
 
   # Examples of using XML

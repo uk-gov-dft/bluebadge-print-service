@@ -25,18 +25,20 @@ public class CommandLineUtils {
   }
 
   public boolean runScript(String script) throws IOException, InterruptedException {
-    //log.info("Karate Command Line Utils. Running script: {}", script);
-    /*
-        //ProcessBuilder pb = new ProcessBuilder("myshellScript.sh", "myArg1", "myArg2");
-        ProcessBuilder pb = new ProcessBuilder(script);
+    log.info("Karate Command Line Utils. Running script: {}", script);
 
-        //    pb.directory(new File("myDir"));
-        Process p = pb.start();
-        p.wait(5000);
-        System.out.println("-------exitValue=" + p.exitValue());
-        System.out.println("-------outputStream=" + p.getOutputStream());
-        System.out.println("-------errorStream=" + p.getErrorStream());
-    */
+    //ProcessBuilder pb = new ProcessBuilder("myshellScript.sh", "myArg1", "myArg2");
+    ProcessBuilder pb = new ProcessBuilder(script);
+
+    System.out.println("directory=" + pb.directory());
+
+    //    pb.directory(new File("myDir"));
+    Process p = pb.start();
+    p.wait(5000);
+    System.out.println("-------exitValue=" + p.exitValue());
+    System.out.println("-------outputStream=" + p.getOutputStream());
+    System.out.println("-------errorStream=" + p.getErrorStream());
+
     return true;
   }
 }
