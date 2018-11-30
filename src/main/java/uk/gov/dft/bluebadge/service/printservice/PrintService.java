@@ -7,12 +7,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.dft.bluebadge.model.printservice.generated.Batch;
-import uk.gov.dft.bluebadge.model.printservice.generated.Batches;
 
 @Service
 @Slf4j
@@ -24,39 +21,22 @@ public class PrintService {
     this.s3 = s3;
   }
 
-  public void print(Batches batch) throws IOException, InterruptedException {
-    List<File> jsonBatchFiles = convertAndSave(batch);
+  public void print(Batch batch) throws IOException, InterruptedException {
+    File jsonFile = convertAndSave(batch);
 
-    for (File jsonFile : jsonBatchFiles) {
-      try {
-        URL s3URL = s3.upload(jsonFile);
-        log.debug("Json file {} has been uploaded, URL: {}", jsonFile.getName(), s3URL.toString());
-      } finally {
-        boolean deleted = jsonFile.delete();
-        log.debug(
-            "Json file {} {} been deleted from temporary folder",
-            jsonFile.getName(),
-            deleted ? "has" : "hasn't");
-      }
+    try {
+      URL s3URL = s3.upload(jsonFile);
+      log.debug("Json file {} has been uploaded, URL: {}", jsonFile.getName(), s3URL.toString());
+    } finally {
+      boolean deleted = jsonFile.delete();
+      log.debug(
+          "Json file {} {} been deleted from temporary folder",
+          jsonFile.getName(),
+          deleted ? "has" : "hasn't");
     }
   }
 
-  private List<File> convertAndSave(Batches src) throws IOException {
-    List<File> list = new ArrayList<>();
-    src.stream()
-        .forEach(
-            batch -> {
-              try {
-                list.add(saveFile(batch));
-              } catch (Exception e) {
-                log.error("Couldn't convert/save batch {} into json file", batch.toString());
-              }
-            });
-
-    return list;
-  }
-
-  private File saveFile(Batch batch) throws Exception {
+  private File convertAndSave(Batch batch) throws IOException {
     ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
     String filename =
         System.getProperty("java.io.tmpdir")

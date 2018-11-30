@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import uk.gov.dft.bluebadge.common.api.model.CommonResponse;
-import uk.gov.dft.bluebadge.model.printservice.generated.Batches;
+import uk.gov.dft.bluebadge.model.printservice.generated.Batch;
 
 @Api(value = "PrintBatch", description = "the PrintBatch API")
 public interface PrintBatchApi {
@@ -61,7 +61,7 @@ public interface PrintBatchApi {
     method = RequestMethod.POST
   )
   default ResponseEntity<Void> printBatch(
-      @ApiParam(value = "Batch badges to be send for printing") @Valid @RequestBody Batches batch) {
+      @ApiParam(value = "Batch badges to be send for printing") @Valid @RequestBody Batch batch) {
     if (getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
     } else {
       log.warn(

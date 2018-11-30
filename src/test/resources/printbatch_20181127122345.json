@@ -1,5 +1,6 @@
-[ {
+{
   "filename" : "filename1",
+  "batchType": "STANDARD",
   "localAuthorities" : [ {
     "laCode" : "ABERD",
     "laName" : "Aberdinshire council",
@@ -107,4 +108,4 @@
       }
     } ]
   } ]
-} ]
+}

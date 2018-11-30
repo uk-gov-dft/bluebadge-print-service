@@ -30,7 +30,7 @@
               "description":"Batch badges to be send for printing",
               "required":false,
               "schema":{
-                "$ref":"#/definitions/Batches"
+                "$ref":"#/definitions/Batch"
               }
             }
           ],

@@ -5,7 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.payload;
+import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.batchPayload;
 
 import java.net.URL;
 import lombok.SneakyThrows;
@@ -43,7 +43,7 @@ public class PrintServiceTest {
   public void print() {
     URL s3Url = new URL("http://path_to_printbatch.json");
     when(s3.upload(any())).thenReturn(s3Url);
-    service.print(payload());
-    verify(s3, times(2)).upload(any());
+    service.print(batchPayload());
+    verify(s3, times(1)).upload(any());
   }
 }
