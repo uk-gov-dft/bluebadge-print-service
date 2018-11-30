@@ -15,6 +15,7 @@ Feature: Verify Print batch ok
     """
 [ {
   "filename" : "filename1",
+  "batchType": "STANDARD",
   "localAuthorities" : [ {
     "laCode" : "ABERD",
     "laName" : "Aberdinshire council",

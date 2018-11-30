@@ -1,46 +1,46 @@
-{  
-  "spec":{  
+{
+  "spec":{
     "swagger":"2.0",
-    "info":{  
+    "info":{
       "version":"1.0",
       "title":"Print service API"
     },
     "host":"virtserver.swaggerhub.com",
     "basePath":"/uk-gov-dft/print-service/1.0",
-    "schemes":[  
+    "schemes":[
       "https"
     ],
-    "paths":{  
-      "/printBatch":{  
-        "post":{  
-          "tags":[  
+    "paths":{
+      "/printBatch":{
+        "post":{
+          "tags":[
             "print batch"
           ],
           "summary":"Creates a batch of badges to be send for printing",
-          "consumes":[  
+          "consumes":[
             "application/json"
           ],
-          "produces":[  
+          "produces":[
             "application/json"
           ],
-          "parameters":[  
-            {  
+          "parameters":[
+            {
               "in":"body",
               "name":"batch",
               "description":"Batch badges to be send for printing",
               "required":false,
-              "schema":{  
+              "schema":{
                 "$ref":"#/definitions/Batches"
               }
             }
           ],
-          "responses":{  
-            "200":{  
+          "responses":{
+            "200":{
               "description":"OK."
             },
-            "400":{  
+            "400":{
               "description":"Invalid request",
-              "schema":{  
+              "schema":{
                 "$ref":"#/definitions/CommonResponse"
               }
             }
@@ -48,207 +48,211 @@
         }
       }
     },
-    "definitions":{  
-      "Batches":{  
+    "definitions":{
+      "Batches":{
         "type":"array",
-        "items":{  
+        "items":{
           "$ref":"#/definitions/Batch"
         }
       },
-      "Batch":{  
+      "Batch":{
         "type":"object",
-        "properties":{  
-          "filename":{  
+        "properties":{
+          "filename":{
             "type":"string"
           },
-          "localAuthorities":{  
+          "batchType":{
+            "type":"string",
+            "example":"FASTTRACK, STANDARD or LA"
+          },
+          "localAuthorities":{
             "type":"array",
-            "items":{  
+            "items":{
               "$ref":"#/definitions/LocalAuthority"
             }
           }
         }
       },
-      "Name":{  
+      "Name":{
         "type":"object",
-        "properties":{  
-          "forename":{  
+        "properties":{
+          "forename":{
             "type":"string",
             "example":"John Smith (badge_holder)"
           },
-          "surname":{  
+          "surname":{
             "type":"string",
             "example":"If holder_name is greater than 27 characters, at the first space delimited of the string, split onto 'surname'"
           }
         }
       },
-      "LetterAddress":{  
+      "LetterAddress":{
         "type":"object",
-        "properties":{  
-          "nameLine":{  
+        "properties":{
+          "nameLine":{
             "type":"string",
             "example":"John Smith (badge_holder) regardless if we deliver to home or council"
           },
-          "addressLine1":{  
+          "addressLine1":{
             "type":"string",
             "example":"person or council 'address line 1' depends on dispatchMethodCode"
           },
-          "addressLine2":{  
+          "addressLine2":{
             "type":"string",
             "example":"person or council 'address line 2' depends on dispatchMethodCode"
           },
-          "town":{  
+          "town":{
             "type":"string",
             "example":"person or council 'town' depends on dispatchMethodCode"
           },
-          "country":{  
+          "country":{
             "type":"string",
             "example":"always 'United Kingdom'"
           },
-          "postcode":{  
+          "postcode":{
             "type":"string",
             "example":"person or council 'postcode' depends on dispatchMethodCode"
           }
         }
       },
-      "BadgeDetails":{  
+      "BadgeDetails":{
         "type":"object",
-        "properties":{  
-          "badgeIdentifier":{  
+        "properties":{
+          "badgeIdentifier":{
             "type":"string",
             "example":"6 digit badge number in DfT system"
           },
-          "printedBadgeReference":{  
+          "printedBadgeReference":{
             "type":"string",
             "example":"first 6 characters is 'badgeIdentifier' 7th character is the issue number this will always be 0 DDBB – month/year of birth of badge_holder, G - Gender (X=Male, Y=Female, Z=Not Specified) MMYY - month/year of badge expiry e.g. 'AA12BB 0 0290X1220'"
           },
-          "startDate":{  
+          "startDate":{
             "type":"string",
             "example":"badge start date '2018-08-03'"
           },
-          "expiryDate":{  
+          "expiryDate":{
             "type":"string",
             "example":"badge expiry date '2020-08-03'"
           },
-          "dispatchMethodCode":{  
+          "dispatchMethodCode":{
             "type":"string",
             "example":"deliver to LA - 'C', deliver to home - 'M'"
           },
-          "fastTrackCode":{  
+          "fastTrackCode":{
             "type":"string",
             "example":"based on deliver_option_code 'Y' or 'N'"
           },
-          "postageCode":{  
+          "postageCode":{
             "type":"string",
             "example":"example 'SC' if deliver_option_code = 'STAND', 'SD1' if deliver_option_code = 'FAST'"
           },
-          "photo":{  
+          "photo":{
             "type":"string",
             "example":"aws-s3-url to image, in case if image not provided - url to default palceholder          image"
           },
-          "barCodeData":{  
+          "barCodeData":{
             "type":"string",
             "example":"last 7 characters of the 'printedBadgeReference' for PERSON badge, last 5 characters of the 'printedBadgeReference' for ORGANISATION badge, e.g. '44X0621'"
           },
-          "name":{  
+          "name":{
             "$ref":"#/definitions/Name"
           },
-          "letterAddress":{  
+          "letterAddress":{
             "$ref":"#/definitions/LetterAddress"
           }
         }
       },
-      "LocalAuthority":{  
+      "LocalAuthority":{
         "type":"object",
-        "properties":{  
-          "laCode":{  
+        "properties":{
+          "laCode":{
             "type":"string",
             "example":"LA short code 'ABERD'"
           },
-          "laName":{  
+          "laName":{
             "type":"string",
             "example":"LA description 'Aberdinshire council'"
           },
-          "issuingCountry":{  
+          "issuingCountry":{
             "type":"string",
             "example":"Country 'E' = English 'S' = Scottish 'W' = Welsh 'N' = Northern Ireland, convert this from LA metadata"
           },
-          "languageCode":{  
+          "languageCode":{
             "type":"string",
             "example":"if LA Nation = Wales 'EW', If LA Nation = England, Northern Ireland or Scotland then 'E'"
           },
-          "clockType":{  
+          "clockType":{
             "type":"string",
             "example":"Northern Ireland = 'STANDARD', Wales = 'WALLET', England = 'STANDARD', Scotland = 'STANDARD'"
           },
-          "phoneNumber":{  
+          "phoneNumber":{
             "type":"string",
             "example":"phone number '01234 567890' - from LA metadata"
           },
-          "emailAddress":{  
+          "emailAddress":{
             "type":"string",
             "example":"email 'enquiries@dcuc.gov.uk' - from LA metadata"
           },
-          "badges":{  
+          "badges":{
             "type":"array",
-            "items":{  
+            "items":{
               "$ref":"#/definitions/BadgeDetails"
             }
           }
         }
       },
-      "CommonResponse":{  
+      "CommonResponse":{
         "type":"object",
-        "properties":{  
-          "apiVersion":{  
+        "properties":{
+          "apiVersion":{
             "type":"string"
           },
-          "context":{  
+          "context":{
             "type":"string"
           },
-          "id":{  
+          "id":{
             "type":"string"
           },
-          "method":{  
+          "method":{
             "type":"string"
           },
-          "error":{  
+          "error":{
             "$ref":"#/definitions/Error"
           }
         }
       },
-      "Error":{  
+      "Error":{
         "type":"object",
-        "properties":{  
-          "code":{  
+        "properties":{
+          "code":{
             "type":"integer"
           },
-          "message":{  
+          "message":{
             "type":"string"
           },
-          "errors":{  
+          "errors":{
             "type":"array",
-            "items":{  
+            "items":{
               "$ref":"#/definitions/Error_errors"
             }
           }
         }
       },
-      "Error_errors":{  
-        "properties":{  
-          "field":{  
+      "Error_errors":{
+        "properties":{
+          "field":{
             "type":"string"
           },
-          "reason":{  
+          "reason":{
             "type":"string"
           },
-          "message":{  
+          "message":{
             "type":"string"
           },
-          "location":{  
+          "location":{
             "type":"string"
           },
-          "locationType":{  
+          "locationType":{
             "type":"string"
           }
         }

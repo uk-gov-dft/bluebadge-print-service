@@ -44,6 +44,6 @@ public class PrintServiceTest {
     URL s3Url = new URL("http://path_to_printbatch.json");
     when(s3.upload(any())).thenReturn(s3Url);
     service.print(payload());
-    verify(s3, times(1)).upload(any());
+    verify(s3, times(2)).upload(any());
   }
 }

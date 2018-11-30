@@ -13,6 +13,7 @@ public class TestDataFixtures {
   public static Batches payload() {
     Batches batches = new Batches();
     batches.add(batch1());
+    batches.add(batch2());
 
     return batches;
   }
@@ -20,6 +21,16 @@ public class TestDataFixtures {
   private static Batch batch1() {
     Batch batch = new Batch();
     batch.setFilename("filename1");
+    batch.batchType("STANDARD");
+    batch.setLocalAuthorities(Arrays.asList(authority1(), authority2()));
+
+    return batch;
+  }
+
+  private static Batch batch2() {
+    Batch batch = new Batch();
+    batch.setFilename("filename2");
+    batch.batchType("FASTTRACK");
     batch.setLocalAuthorities(Arrays.asList(authority1(), authority2()));
 
     return batch;
