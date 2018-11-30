@@ -10,11 +10,11 @@ Feature: Verify Print batch ok validation
     * def cmdLineUtils = new CommandLineUtils(cmdLineUtilsConfig)
 
   Scenario: Verify valid print batch
-    * def batches =
+    * def batch =
     """
-    [
       {
         "filename": "1.xml",
+        "batchType": "STANDARD",
         "localAuthorities": [
           {
             "laCode": "",
@@ -52,10 +52,9 @@ Feature: Verify Print batch ok validation
           }
         ]
       }
-    ]
     """
     Given path 'printBatch'
-    And request batches
+    And request batch
     When method POST
     Then status 200
     And def actualPrintBatchOutput = read('../actual-print-batch-output.xml')

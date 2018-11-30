@@ -11,9 +11,9 @@ Feature: Verify Print batch ok
     * def bucketName = 'uk-gov-dft-' + System.getenv('bb_env') +'-printer'
 
   Scenario: Verify valid print batch
-    * def batches =
+    * def batch =
     """
-[ {
+ {
   "filename" : "filename1",
   "batchType": "STANDARD",
   "localAuthorities" : [ {
@@ -123,12 +123,12 @@ Feature: Verify Print batch ok
       }
     } ]
   } ]
-} ]
+} 
     """
 
     * def beforeCount = s3.getNumberOfFilesInABucket(bucketName)
     Given path 'printBatch'
-    And request batches
+    And request batch
     When method POST
     Then status 200
     * def afterCount = s3.getNumberOfFilesInABucket(bucketName)
