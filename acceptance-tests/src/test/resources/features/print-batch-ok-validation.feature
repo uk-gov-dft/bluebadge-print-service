@@ -1,21 +1,20 @@
-@print-service-print-btch
-Feature: Verify Print batch ok
+@print-service-print-btch.validation
+Feature: Verify Print batch ok validation
 
   Background:
     * url baseUrl
     * def result = callonce read('./oauth2.feature')
     * header Authorization = 'Bearer ' + result.accessToken
     * def cmdLineUtilsConfig = {}
-      #* def DbUtils = Java.type('uk.gov.service.bluebadge.test.utils.DbUtils')
     * def CommandLineUtils = Java.type('uk.gov.service.bluebadge.test.utils.CommandLineUtils')
     * def cmdLineUtils = new CommandLineUtils(cmdLineUtilsConfig)
 
   Scenario: Verify valid print batch
-    * def batches =
+    * def batch =
     """
-    [
       {
         "filename": "1.xml",
+        "batchType": "STANDARD",
         "localAuthorities": [
           {
             "laCode": "",
@@ -53,17 +52,12 @@ Feature: Verify Print batch ok
           }
         ]
       }
-    ]
     """
     Given path 'printBatch'
-    And request batches
+    And request batch
     When method POST
     Then status 200
     And def actualPrintBatchOutput = read('../actual-print-batch-output.xml')
-    #And def isValid = call commandLineUtils.runScript('testPrintBatchXmlFile.sh')
-    #And print 'isValid:', isValid
-  #, 'actual-print-batch-output.xml');
-    #And match isValid == true
     And def expectedPrintBatchOutput = read('../expected-print-batch-output.xml')
     And match actualPrintBatchOutput == expectedPrintBatchOutput
 
@@ -81,13 +75,13 @@ Feature: Verify Print batch ok
 
   # Basic test to show xml matching
   Scenario: Verify valid print batch basic xml
-    Given def someXml = <miguel><gil>value</gil></miguel>
-    Then match someXml.miguel.gil == 'value'
+    Given def someXml = <name><surname>value</surname></name>
+    Then match someXml.name.surname == 'value'
 
   Scenario: Verify valid print file read simple xml file
     Given def someXmlFile = read('../my-xml.xml')
-    Then match someXmlFile == '<miguel><gil>value</gil></miguel>'
-    Then match someXmlFile.miguel.gil == 'value'
+    Then match someXmlFile == '<name><surname>value</surname></name>'
+    Then match someXmlFile.name.surname == 'value'
 
   Scenario: Verify valid print file read 2 files only difference is whitespace
     Given def someXmlFile = read('../my-xml.xml')

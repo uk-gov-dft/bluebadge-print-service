@@ -40,3 +40,5 @@ out
 !settings.gradle
 VERSION-computed
 **/dev-env*
+acceptance-tests/bin
+acceptance-tests/build

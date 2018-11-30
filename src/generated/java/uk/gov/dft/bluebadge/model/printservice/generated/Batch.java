@@ -15,6 +15,9 @@ public class Batch {
   @JsonProperty("filename")
   private String filename = null;
 
+  @JsonProperty("batchType")
+  private String batchType = null;
+
   @JsonProperty("localAuthorities")
   @Valid
   private List<LocalAuthority> localAuthorities = null;
@@ -36,6 +39,25 @@ public class Batch {
 
   public void setFilename(String filename) {
     this.filename = filename;
+  }
+
+  public Batch batchType(String batchType) {
+    this.batchType = batchType;
+    return this;
+  }
+
+  /**
+   * Get batchType
+   *
+   * @return batchType
+   */
+  @ApiModelProperty(example = "FASTTRACK, STANDARD or LA", value = "")
+  public String getBatchType() {
+    return batchType;
+  }
+
+  public void setBatchType(String batchType) {
+    this.batchType = batchType;
   }
 
   public Batch localAuthorities(List<LocalAuthority> localAuthorities) {
@@ -76,12 +98,13 @@ public class Batch {
     }
     Batch batch = (Batch) o;
     return Objects.equals(this.filename, batch.filename)
+        && Objects.equals(this.batchType, batch.batchType)
         && Objects.equals(this.localAuthorities, batch.localAuthorities);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(filename, localAuthorities);
+    return Objects.hash(filename, batchType, localAuthorities);
   }
 
   @Override
@@ -90,6 +113,7 @@ public class Batch {
     sb.append("class Batch {\n");
 
     sb.append("    filename: ").append(toIndentedString(filename)).append("\n");
+    sb.append("    batchType: ").append(toIndentedString(batchType)).append("\n");
     sb.append("    localAuthorities: ").append(toIndentedString(localAuthorities)).append("\n");
     sb.append("}");
     return sb.toString();
