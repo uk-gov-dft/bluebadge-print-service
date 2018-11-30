@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.gov.dft.bluebadge.model.printservice.generated.Batches;
+import uk.gov.dft.bluebadge.model.printservice.generated.Batch;
 
 @Service
 @Slf4j
@@ -21,7 +21,7 @@ public class PrintService {
     this.s3 = s3;
   }
 
-  public void print(Batches batch) throws IOException, InterruptedException {
+  public void print(Batch batch) throws IOException, InterruptedException {
     File jsonFile = convertAndSave(batch);
 
     try {
@@ -36,18 +36,18 @@ public class PrintService {
     }
   }
 
-  private File convertAndSave(Batches src) throws IOException {
+  private File convertAndSave(Batch batch) throws IOException {
     ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-
     String filename =
         System.getProperty("java.io.tmpdir")
             + "printbatch_"
+            + batch.getBatchType()
+            + "_"
             + LocalDateTime.now().format(DateTimeFormatter.ofPattern("YYYYMMddHHmmss"))
             + ".json";
     log.debug("Convert and save batches payload to temporary json file {}", filename);
     File jsonFile = new File(filename);
-    mapper.writeValue(jsonFile, src);
-
+    mapper.writeValue(jsonFile, batch);
     return jsonFile;
   }
 }
