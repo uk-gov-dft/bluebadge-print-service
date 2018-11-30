@@ -17,7 +17,6 @@ public class S3Utils {
       while (result.isTruncated()) {
         result = s3.listNextBatchOfObjects(result);
       }
-      System.out.println("files = " + result.getObjectSummaries().size());
       return result.getObjectSummaries().size();
     } else {
       throw new Exception("Bucket `" + bucketName + "` doesn't exist");

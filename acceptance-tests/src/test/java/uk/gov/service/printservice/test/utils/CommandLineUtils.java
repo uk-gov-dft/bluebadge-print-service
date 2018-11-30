@@ -1,4 +1,4 @@
-package uk.gov.service.bluebadge.test.utils;
+package uk.gov.service.printservice.test.utils;
 
 import java.io.IOException;
 import java.util.Map;
