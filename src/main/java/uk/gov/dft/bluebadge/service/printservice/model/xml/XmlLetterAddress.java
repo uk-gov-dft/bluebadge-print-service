@@ -1,14 +1,13 @@
-package uk.gov.dft.bluebadge.service.printservice.model;
+package uk.gov.dft.bluebadge.service.printservice.model.xml;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.Objects;
-
 import org.springframework.validation.annotation.Validated;
 
-/** LetterAddress */
+/** XmlLetterAddress */
 @Validated
-public class LetterAddress {
+public class XmlLetterAddress {
   @JsonProperty("nameLine")
   private String nameLine = null;
 
@@ -27,7 +26,7 @@ public class LetterAddress {
   @JsonProperty("postcode")
   private String postcode = null;
 
-  public LetterAddress nameLine(String nameLine) {
+  public XmlLetterAddress nameLine(String nameLine) {
     this.nameLine = nameLine;
     return this;
   }
@@ -49,7 +48,7 @@ public class LetterAddress {
     this.nameLine = nameLine;
   }
 
-  public LetterAddress addressLine1(String addressLine1) {
+  public XmlLetterAddress addressLine1(String addressLine1) {
     this.addressLine1 = addressLine1;
     return this;
   }
@@ -71,7 +70,7 @@ public class LetterAddress {
     this.addressLine1 = addressLine1;
   }
 
-  public LetterAddress addressLine2(String addressLine2) {
+  public XmlLetterAddress addressLine2(String addressLine2) {
     this.addressLine2 = addressLine2;
     return this;
   }
@@ -93,7 +92,7 @@ public class LetterAddress {
     this.addressLine2 = addressLine2;
   }
 
-  public LetterAddress town(String town) {
+  public XmlLetterAddress town(String town) {
     this.town = town;
     return this;
   }
@@ -112,7 +111,7 @@ public class LetterAddress {
     this.town = town;
   }
 
-  public LetterAddress country(String country) {
+  public XmlLetterAddress country(String country) {
     this.country = country;
     return this;
   }
@@ -131,7 +130,7 @@ public class LetterAddress {
     this.country = country;
   }
 
-  public LetterAddress postcode(String postcode) {
+  public XmlLetterAddress postcode(String postcode) {
     this.postcode = postcode;
     return this;
   }
@@ -161,13 +160,13 @@ public class LetterAddress {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    LetterAddress letterAddress = (LetterAddress) o;
-    return Objects.equals(this.nameLine, letterAddress.nameLine)
-        && Objects.equals(this.addressLine1, letterAddress.addressLine1)
-        && Objects.equals(this.addressLine2, letterAddress.addressLine2)
-        && Objects.equals(this.town, letterAddress.town)
-        && Objects.equals(this.country, letterAddress.country)
-        && Objects.equals(this.postcode, letterAddress.postcode);
+    XmlLetterAddress xmlLetterAddress = (XmlLetterAddress) o;
+    return Objects.equals(this.nameLine, xmlLetterAddress.nameLine)
+        && Objects.equals(this.addressLine1, xmlLetterAddress.addressLine1)
+        && Objects.equals(this.addressLine2, xmlLetterAddress.addressLine2)
+        && Objects.equals(this.town, xmlLetterAddress.town)
+        && Objects.equals(this.country, xmlLetterAddress.country)
+        && Objects.equals(this.postcode, xmlLetterAddress.postcode);
   }
 
   @Override
@@ -178,7 +177,7 @@ public class LetterAddress {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class LetterAddress {\n");
+    sb.append("class XmlLetterAddress {\n");
 
     sb.append("    nameLine: ").append(toIndentedString(nameLine)).append("\n");
     sb.append("    addressLine1: ").append(toIndentedString(addressLine1)).append("\n");

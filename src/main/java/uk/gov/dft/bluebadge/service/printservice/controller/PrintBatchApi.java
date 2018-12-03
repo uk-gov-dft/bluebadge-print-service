@@ -41,11 +41,11 @@ public interface PrintBatchApi {
   }
 
   @ApiOperation(
-    value = "Creates a batch of badges to be send for printing",
+    value = "Creates a Batch of badges to be send for printing",
     nickname = "printBatchPost",
     notes = "",
     tags = {
-      "print batch",
+      "print Batch",
     }
   )
   @ApiResponses(

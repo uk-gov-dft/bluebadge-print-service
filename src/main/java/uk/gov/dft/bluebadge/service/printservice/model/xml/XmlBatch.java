@@ -1,4 +1,4 @@
-package uk.gov.dft.bluebadge.service.printservice.model;
+package uk.gov.dft.bluebadge.service.printservice.model.xml;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
@@ -8,20 +8,20 @@ import java.util.Objects;
 import javax.validation.Valid;
 import org.springframework.validation.annotation.Validated;
 
-/** Batch */
+/** XmlBatch */
 @Validated
-public class Batch {
+public class XmlBatch {
   @JsonProperty("filename")
   private String filename = null;
 
   @JsonProperty("batchType")
   private String batchType = null;
 
-  @JsonProperty("Badges")
+  @JsonProperty("localAuthorities")
   @Valid
-  private List<Badge> badges = null;
+  private List<XmlLocalAuthority> localAuthorities = null;
 
-  public Batch filename(String filename) {
+  public XmlBatch filename(String filename) {
     this.filename = filename;
     return this;
   }
@@ -40,7 +40,7 @@ public class Batch {
     this.filename = filename;
   }
 
-  public Batch batchType(String batchType) {
+  public XmlBatch batchType(String batchType) {
     this.batchType = batchType;
     return this;
   }
@@ -59,32 +59,32 @@ public class Batch {
     this.batchType = batchType;
   }
 
-  public Batch badges(List<Badge> badges) {
-    this.badges = badges;
+  public XmlBatch localAuthorities(List<XmlLocalAuthority> localAuthorities) {
+    this.localAuthorities = localAuthorities;
     return this;
   }
 
-  public Batch addBadgesItem(Badge badgesItem) {
-    if (this.badges == null) {
-      this.badges = new ArrayList<>();
+  public XmlBatch addLocalAuthoritiesItem(XmlLocalAuthority localAuthoritiesItem) {
+    if (this.localAuthorities == null) {
+      this.localAuthorities = new ArrayList<>();
     }
-    this.badges.add(badgesItem);
+    this.localAuthorities.add(localAuthoritiesItem);
     return this;
   }
 
   /**
-   * Get badges
+   * Get localAuthorities
    *
-   * @return badges
+   * @return localAuthorities
    */
   @ApiModelProperty(value = "")
   @Valid
-  public List<Badge> getBadges() {
-    return badges;
+  public List<XmlLocalAuthority> getLocalAuthorities() {
+    return localAuthorities;
   }
 
-  public void setBadges(List<Badge> badges) {
-    this.badges = badges;
+  public void setLocalAuthorities(List<XmlLocalAuthority> localAuthorities) {
+    this.localAuthorities = localAuthorities;
   }
 
   @Override
@@ -95,25 +95,25 @@ public class Batch {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    Batch batch = (Batch) o;
-    return Objects.equals(this.filename, batch.filename)
-        && Objects.equals(this.batchType, batch.batchType)
-        && Objects.equals(this.badges, batch.badges);
+    XmlBatch xmlBatch = (XmlBatch) o;
+    return Objects.equals(this.filename, xmlBatch.filename)
+        && Objects.equals(this.batchType, xmlBatch.batchType)
+        && Objects.equals(this.localAuthorities, xmlBatch.localAuthorities);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(filename, batchType, badges);
+    return Objects.hash(filename, batchType, localAuthorities);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class Batch {\n");
+    sb.append("class XmlBatch {\n");
 
     sb.append("    filename: ").append(toIndentedString(filename)).append("\n");
     sb.append("    batchType: ").append(toIndentedString(batchType)).append("\n");
-    sb.append("    badges: ").append(toIndentedString(badges)).append("\n");
+    sb.append("    localAuthorities: ").append(toIndentedString(localAuthorities)).append("\n");
     sb.append("}");
     return sb.toString();
   }

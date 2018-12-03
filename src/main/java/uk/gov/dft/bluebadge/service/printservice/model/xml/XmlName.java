@@ -1,21 +1,20 @@
-package uk.gov.dft.bluebadge.service.printservice.model;
+package uk.gov.dft.bluebadge.service.printservice.model.xml;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.Objects;
-
 import org.springframework.validation.annotation.Validated;
 
-/** Name */
+/** XmlName */
 @Validated
-public class Name {
+public class XmlName {
   @JsonProperty("forename")
   private String forename = null;
 
   @JsonProperty("surname")
   private String surname = null;
 
-  public Name forename(String forename) {
+  public XmlName forename(String forename) {
     this.forename = forename;
     return this;
   }
@@ -34,7 +33,7 @@ public class Name {
     this.forename = forename;
   }
 
-  public Name surname(String surname) {
+  public XmlName surname(String surname) {
     this.surname = surname;
     return this;
   }
@@ -65,9 +64,9 @@ public class Name {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    Name name = (Name) o;
-    return Objects.equals(this.forename, name.forename)
-        && Objects.equals(this.surname, name.surname);
+    XmlName xmlName = (XmlName) o;
+    return Objects.equals(this.forename, xmlName.forename)
+        && Objects.equals(this.surname, xmlName.surname);
   }
 
   @Override
@@ -78,7 +77,7 @@ public class Name {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class Name {\n");
+    sb.append("class XmlName {\n");
 
     sb.append("    forename: ").append(toIndentedString(forename)).append("\n");
     sb.append("    surname: ").append(toIndentedString(surname)).append("\n");

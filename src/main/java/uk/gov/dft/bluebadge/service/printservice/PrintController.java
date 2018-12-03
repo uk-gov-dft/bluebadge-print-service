@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.dft.bluebadge.common.api.model.Error;
 import uk.gov.dft.bluebadge.common.controller.AbstractController;
 import uk.gov.dft.bluebadge.common.service.exception.InternalServerException;
-import uk.gov.dft.bluebadge.service.printservice.model.Batch;
 import uk.gov.dft.bluebadge.service.printservice.controller.PrintBatchApi;
+import uk.gov.dft.bluebadge.service.printservice.model.Batch;
 
 @RestController
 @Slf4j
@@ -36,5 +36,4 @@ public class PrintController extends AbstractController implements PrintBatchApi
     }
     return ResponseEntity.ok().build();
   }
-
 }

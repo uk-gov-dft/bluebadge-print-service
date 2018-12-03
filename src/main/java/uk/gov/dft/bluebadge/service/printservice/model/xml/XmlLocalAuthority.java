@@ -1,4 +1,4 @@
-package uk.gov.dft.bluebadge.service.printservice.model;
+package uk.gov.dft.bluebadge.service.printservice.model.xml;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
@@ -6,12 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import javax.validation.Valid;
-
 import org.springframework.validation.annotation.Validated;
 
-/** LocalAuthority */
+/** XmlLocalAuthority */
 @Validated
-public class LocalAuthority {
+public class XmlLocalAuthority {
   @JsonProperty("laCode")
   private String laCode = null;
 
@@ -35,9 +34,9 @@ public class LocalAuthority {
 
   @JsonProperty("badges")
   @Valid
-  private List<BadgeDetails> badges = null;
+  private List<XmlBadgeDetails> badges = null;
 
-  public LocalAuthority laCode(String laCode) {
+  public XmlLocalAuthority laCode(String laCode) {
     this.laCode = laCode;
     return this;
   }
@@ -56,7 +55,7 @@ public class LocalAuthority {
     this.laCode = laCode;
   }
 
-  public LocalAuthority laName(String laName) {
+  public XmlLocalAuthority laName(String laName) {
     this.laName = laName;
     return this;
   }
@@ -75,7 +74,7 @@ public class LocalAuthority {
     this.laName = laName;
   }
 
-  public LocalAuthority issuingCountry(String issuingCountry) {
+  public XmlLocalAuthority issuingCountry(String issuingCountry) {
     this.issuingCountry = issuingCountry;
     return this;
   }
@@ -98,7 +97,7 @@ public class LocalAuthority {
     this.issuingCountry = issuingCountry;
   }
 
-  public LocalAuthority languageCode(String languageCode) {
+  public XmlLocalAuthority languageCode(String languageCode) {
     this.languageCode = languageCode;
     return this;
   }
@@ -121,7 +120,7 @@ public class LocalAuthority {
     this.languageCode = languageCode;
   }
 
-  public LocalAuthority clockType(String clockType) {
+  public XmlLocalAuthority clockType(String clockType) {
     this.clockType = clockType;
     return this;
   }
@@ -144,7 +143,7 @@ public class LocalAuthority {
     this.clockType = clockType;
   }
 
-  public LocalAuthority phoneNumber(String phoneNumber) {
+  public XmlLocalAuthority phoneNumber(String phoneNumber) {
     this.phoneNumber = phoneNumber;
     return this;
   }
@@ -163,7 +162,7 @@ public class LocalAuthority {
     this.phoneNumber = phoneNumber;
   }
 
-  public LocalAuthority emailAddress(String emailAddress) {
+  public XmlLocalAuthority emailAddress(String emailAddress) {
     this.emailAddress = emailAddress;
     return this;
   }
@@ -182,12 +181,12 @@ public class LocalAuthority {
     this.emailAddress = emailAddress;
   }
 
-  public LocalAuthority badges(List<BadgeDetails> badges) {
+  public XmlLocalAuthority badges(List<XmlBadgeDetails> badges) {
     this.badges = badges;
     return this;
   }
 
-  public LocalAuthority addBadgesItem(BadgeDetails badgesItem) {
+  public XmlLocalAuthority addBadgesItem(XmlBadgeDetails badgesItem) {
     if (this.badges == null) {
       this.badges = new ArrayList<>();
     }
@@ -202,11 +201,11 @@ public class LocalAuthority {
    */
   @ApiModelProperty(value = "")
   @Valid
-  public List<BadgeDetails> getBadges() {
+  public List<XmlBadgeDetails> getBadges() {
     return badges;
   }
 
-  public void setBadges(List<BadgeDetails> badges) {
+  public void setBadges(List<XmlBadgeDetails> badges) {
     this.badges = badges;
   }
 
@@ -218,15 +217,15 @@ public class LocalAuthority {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    LocalAuthority localAuthority = (LocalAuthority) o;
-    return Objects.equals(this.laCode, localAuthority.laCode)
-        && Objects.equals(this.laName, localAuthority.laName)
-        && Objects.equals(this.issuingCountry, localAuthority.issuingCountry)
-        && Objects.equals(this.languageCode, localAuthority.languageCode)
-        && Objects.equals(this.clockType, localAuthority.clockType)
-        && Objects.equals(this.phoneNumber, localAuthority.phoneNumber)
-        && Objects.equals(this.emailAddress, localAuthority.emailAddress)
-        && Objects.equals(this.badges, localAuthority.badges);
+    XmlLocalAuthority xmlLocalAuthority = (XmlLocalAuthority) o;
+    return Objects.equals(this.laCode, xmlLocalAuthority.laCode)
+        && Objects.equals(this.laName, xmlLocalAuthority.laName)
+        && Objects.equals(this.issuingCountry, xmlLocalAuthority.issuingCountry)
+        && Objects.equals(this.languageCode, xmlLocalAuthority.languageCode)
+        && Objects.equals(this.clockType, xmlLocalAuthority.clockType)
+        && Objects.equals(this.phoneNumber, xmlLocalAuthority.phoneNumber)
+        && Objects.equals(this.emailAddress, xmlLocalAuthority.emailAddress)
+        && Objects.equals(this.badges, xmlLocalAuthority.badges);
   }
 
   @Override
@@ -238,7 +237,7 @@ public class LocalAuthority {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class LocalAuthority {\n");
+    sb.append("class XmlLocalAuthority {\n");
 
     sb.append("    laCode: ").append(toIndentedString(laCode)).append("\n");
     sb.append("    laName: ").append(toIndentedString(laName)).append("\n");

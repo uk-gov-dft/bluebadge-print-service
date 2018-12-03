@@ -1,12 +1,12 @@
-package uk.gov.dft.bluebadge.service.printservice.model;
+package uk.gov.dft.bluebadge.service.printservice.model.xml;
 
 import java.util.ArrayList;
 import java.util.Objects;
 import org.springframework.validation.annotation.Validated;
 
-/** Batches */
+/** XmlBatches */
 @Validated
-public class Batches extends ArrayList<Batch> {
+public class XmlBatches extends ArrayList<XmlBatch> {
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -27,7 +27,7 @@ public class Batches extends ArrayList<Batch> {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class Batches {\n");
+    sb.append("class XmlBatches {\n");
     sb.append("    ").append(toIndentedString(super.toString())).append("\n");
     sb.append("}");
     return sb.toString();

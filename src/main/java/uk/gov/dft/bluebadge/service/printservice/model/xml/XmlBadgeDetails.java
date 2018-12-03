@@ -1,15 +1,14 @@
-package uk.gov.dft.bluebadge.service.printservice.model;
+package uk.gov.dft.bluebadge.service.printservice.model.xml;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.Objects;
 import javax.validation.Valid;
-
 import org.springframework.validation.annotation.Validated;
 
-/** BadgeDetails */
+/** XmlBadgeDetails */
 @Validated
-public class BadgeDetails {
+public class XmlBadgeDetails {
   @JsonProperty("badgeIdentifier")
   private String badgeIdentifier = null;
 
@@ -37,13 +36,13 @@ public class BadgeDetails {
   @JsonProperty("barCodeData")
   private String barCodeData = null;
 
-  @JsonProperty("name")
-  private Name name = null;
+  @JsonProperty("xmlName")
+  private XmlName xmlName = null;
 
-  @JsonProperty("letterAddress")
-  private LetterAddress letterAddress = null;
+  @JsonProperty("xmlLetterAddress")
+  private XmlLetterAddress xmlLetterAddress = null;
 
-  public BadgeDetails badgeIdentifier(String badgeIdentifier) {
+  public XmlBadgeDetails badgeIdentifier(String badgeIdentifier) {
     this.badgeIdentifier = badgeIdentifier;
     return this;
   }
@@ -62,7 +61,7 @@ public class BadgeDetails {
     this.badgeIdentifier = badgeIdentifier;
   }
 
-  public BadgeDetails printedBadgeReference(String printedBadgeReference) {
+  public XmlBadgeDetails printedBadgeReference(String printedBadgeReference) {
     this.printedBadgeReference = printedBadgeReference;
     return this;
   }
@@ -85,7 +84,7 @@ public class BadgeDetails {
     this.printedBadgeReference = printedBadgeReference;
   }
 
-  public BadgeDetails startDate(String startDate) {
+  public XmlBadgeDetails startDate(String startDate) {
     this.startDate = startDate;
     return this;
   }
@@ -104,7 +103,7 @@ public class BadgeDetails {
     this.startDate = startDate;
   }
 
-  public BadgeDetails expiryDate(String expiryDate) {
+  public XmlBadgeDetails expiryDate(String expiryDate) {
     this.expiryDate = expiryDate;
     return this;
   }
@@ -123,7 +122,7 @@ public class BadgeDetails {
     this.expiryDate = expiryDate;
   }
 
-  public BadgeDetails dispatchMethodCode(String dispatchMethodCode) {
+  public XmlBadgeDetails dispatchMethodCode(String dispatchMethodCode) {
     this.dispatchMethodCode = dispatchMethodCode;
     return this;
   }
@@ -142,7 +141,7 @@ public class BadgeDetails {
     this.dispatchMethodCode = dispatchMethodCode;
   }
 
-  public BadgeDetails fastTrackCode(String fastTrackCode) {
+  public XmlBadgeDetails fastTrackCode(String fastTrackCode) {
     this.fastTrackCode = fastTrackCode;
     return this;
   }
@@ -161,7 +160,7 @@ public class BadgeDetails {
     this.fastTrackCode = fastTrackCode;
   }
 
-  public BadgeDetails postageCode(String postageCode) {
+  public XmlBadgeDetails postageCode(String postageCode) {
     this.postageCode = postageCode;
     return this;
   }
@@ -184,7 +183,7 @@ public class BadgeDetails {
     this.postageCode = postageCode;
   }
 
-  public BadgeDetails photo(String photo) {
+  public XmlBadgeDetails photo(String photo) {
     this.photo = photo;
     return this;
   }
@@ -207,7 +206,7 @@ public class BadgeDetails {
     this.photo = photo;
   }
 
-  public BadgeDetails barCodeData(String barCodeData) {
+  public XmlBadgeDetails barCodeData(String barCodeData) {
     this.barCodeData = barCodeData;
     return this;
   }
@@ -230,44 +229,44 @@ public class BadgeDetails {
     this.barCodeData = barCodeData;
   }
 
-  public BadgeDetails name(Name name) {
-    this.name = name;
+  public XmlBadgeDetails name(XmlName xmlName) {
+    this.xmlName = xmlName;
     return this;
   }
 
   /**
-   * Get name
+   * Get xmlName
    *
-   * @return name
+   * @return xmlName
    */
   @ApiModelProperty(value = "")
   @Valid
-  public Name getName() {
-    return name;
+  public XmlName getXmlName() {
+    return xmlName;
   }
 
-  public void setName(Name name) {
-    this.name = name;
+  public void setXmlName(XmlName xmlName) {
+    this.xmlName = xmlName;
   }
 
-  public BadgeDetails letterAddress(LetterAddress letterAddress) {
-    this.letterAddress = letterAddress;
+  public XmlBadgeDetails letterAddress(XmlLetterAddress xmlLetterAddress) {
+    this.xmlLetterAddress = xmlLetterAddress;
     return this;
   }
 
   /**
-   * Get letterAddress
+   * Get xmlLetterAddress
    *
-   * @return letterAddress
+   * @return xmlLetterAddress
    */
   @ApiModelProperty(value = "")
   @Valid
-  public LetterAddress getLetterAddress() {
-    return letterAddress;
+  public XmlLetterAddress getXmlLetterAddress() {
+    return xmlLetterAddress;
   }
 
-  public void setLetterAddress(LetterAddress letterAddress) {
-    this.letterAddress = letterAddress;
+  public void setXmlLetterAddress(XmlLetterAddress xmlLetterAddress) {
+    this.xmlLetterAddress = xmlLetterAddress;
   }
 
   @Override
@@ -278,18 +277,18 @@ public class BadgeDetails {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    BadgeDetails badgeDetails = (BadgeDetails) o;
-    return Objects.equals(this.badgeIdentifier, badgeDetails.badgeIdentifier)
-        && Objects.equals(this.printedBadgeReference, badgeDetails.printedBadgeReference)
-        && Objects.equals(this.startDate, badgeDetails.startDate)
-        && Objects.equals(this.expiryDate, badgeDetails.expiryDate)
-        && Objects.equals(this.dispatchMethodCode, badgeDetails.dispatchMethodCode)
-        && Objects.equals(this.fastTrackCode, badgeDetails.fastTrackCode)
-        && Objects.equals(this.postageCode, badgeDetails.postageCode)
-        && Objects.equals(this.photo, badgeDetails.photo)
-        && Objects.equals(this.barCodeData, badgeDetails.barCodeData)
-        && Objects.equals(this.name, badgeDetails.name)
-        && Objects.equals(this.letterAddress, badgeDetails.letterAddress);
+    XmlBadgeDetails xmlBadgeDetails = (XmlBadgeDetails) o;
+    return Objects.equals(this.badgeIdentifier, xmlBadgeDetails.badgeIdentifier)
+        && Objects.equals(this.printedBadgeReference, xmlBadgeDetails.printedBadgeReference)
+        && Objects.equals(this.startDate, xmlBadgeDetails.startDate)
+        && Objects.equals(this.expiryDate, xmlBadgeDetails.expiryDate)
+        && Objects.equals(this.dispatchMethodCode, xmlBadgeDetails.dispatchMethodCode)
+        && Objects.equals(this.fastTrackCode, xmlBadgeDetails.fastTrackCode)
+        && Objects.equals(this.postageCode, xmlBadgeDetails.postageCode)
+        && Objects.equals(this.photo, xmlBadgeDetails.photo)
+        && Objects.equals(this.barCodeData, xmlBadgeDetails.barCodeData)
+        && Objects.equals(this.xmlName, xmlBadgeDetails.xmlName)
+        && Objects.equals(this.xmlLetterAddress, xmlBadgeDetails.xmlLetterAddress);
   }
 
   @Override
@@ -304,14 +303,14 @@ public class BadgeDetails {
         postageCode,
         photo,
         barCodeData,
-        name,
-        letterAddress);
+        xmlName,
+        xmlLetterAddress);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class BadgeDetails {\n");
+    sb.append("class XmlBadgeDetails {\n");
 
     sb.append("    badgeIdentifier: ").append(toIndentedString(badgeIdentifier)).append("\n");
     sb.append("    printedBadgeReference: ")
@@ -324,8 +323,8 @@ public class BadgeDetails {
     sb.append("    postageCode: ").append(toIndentedString(postageCode)).append("\n");
     sb.append("    photo: ").append(toIndentedString(photo)).append("\n");
     sb.append("    barCodeData: ").append(toIndentedString(barCodeData)).append("\n");
-    sb.append("    name: ").append(toIndentedString(name)).append("\n");
-    sb.append("    letterAddress: ").append(toIndentedString(letterAddress)).append("\n");
+    sb.append("    xmlName: ").append(toIndentedString(xmlName)).append("\n");
+    sb.append("    xmlLetterAddress: ").append(toIndentedString(xmlLetterAddress)).append("\n");
     sb.append("}");
     return sb.toString();
   }
