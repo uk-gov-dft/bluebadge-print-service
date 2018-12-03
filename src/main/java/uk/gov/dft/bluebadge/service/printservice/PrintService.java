@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uk.gov.dft.bluebadge.model.printservice.generated.Batch;
+import uk.gov.dft.bluebadge.service.printservice.model.Batch;
 
 @Service
 @Slf4j

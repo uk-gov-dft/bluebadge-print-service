@@ -1,8 +1,8 @@
-package uk.gov.dft.bluebadge.model.printservice.generated;
+package uk.gov.dft.bluebadge.service.printservice.model;
 
 import java.util.ArrayList;
 import java.util.Objects;
-import javax.validation.constraints.*;
+
 import org.springframework.validation.annotation.Validated;
 
 /** Batches */

@@ -1,10 +1,10 @@
-package uk.gov.dft.bluebadge.model.printservice.generated;
+package uk.gov.dft.bluebadge.service.printservice.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.Objects;
 import javax.validation.Valid;
-import javax.validation.constraints.*;
+
 import org.springframework.validation.annotation.Validated;
 
 /** BadgeDetails */
