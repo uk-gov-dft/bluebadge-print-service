@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
-import uk.gov.dft.bluebadge.model.printservice.generated.Batch;
+import uk.gov.dft.bluebadge.service.printservice.model.Batch;
 import uk.gov.dft.bluebadge.service.printservice.utils.ModelToXmlConverter;
 
 @Service
@@ -40,7 +40,7 @@ public class SFTPService {
 
 			Batch batch = objectMapper.readValue(json, Batch.class);
 			
-			String xmlFileName = xmlConverter.toXml(batch);
+//			String xmlFileName = xmlConverter.toXml(batch);
 		}
 
 		// for each file in files

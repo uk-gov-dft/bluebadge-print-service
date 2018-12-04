@@ -1,4 +1,4 @@
-package uk.gov.dft.bluebadge.service.referencedata;
+package uk.gov.dft.bluebadge.service.printservice.referencedata;
 
 import java.util.HashMap;
 import java.util.HashSet;

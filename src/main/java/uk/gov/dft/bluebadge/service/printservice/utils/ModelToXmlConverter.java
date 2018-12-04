@@ -1,5 +1,7 @@
 package uk.gov.dft.bluebadge.service.printservice.utils;
 
+import static java.util.stream.Collectors.groupingBy;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -8,6 +10,8 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.xml.stream.XMLOutputFactory;
@@ -16,23 +20,27 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.springframework.stereotype.Component;
 
-import uk.gov.dft.bluebadge.model.printservice.generated.BadgeDetails;
-import uk.gov.dft.bluebadge.model.printservice.generated.Batch;
-import uk.gov.dft.bluebadge.model.printservice.generated.LetterAddress;
-import uk.gov.dft.bluebadge.model.printservice.generated.LocalAuthority;
-import uk.gov.dft.bluebadge.model.printservice.generated.Name;
 import uk.gov.dft.bluebadge.service.printservice.StorageService;
+import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.LocalAuthorityRefData;
+import uk.gov.dft.bluebadge.service.printservice.model.Badge;
+import uk.gov.dft.bluebadge.service.printservice.model.Batch;
+import uk.gov.dft.bluebadge.service.printservice.referencedata.ReferenceDataService;
+
 
 @Component
 public class ModelToXmlConverter {
 	
 	private final StorageService s3;
+	private final ReferenceDataService referenceData;
 
-	public ModelToXmlConverter(StorageService s3) {
+	public ModelToXmlConverter(StorageService s3, ReferenceDataService referenceData) {
 		this.s3 = s3;
+		this.referenceData = referenceData;
 	}
 	
 	public String toXml(Batch batch) throws XMLStreamException, IOException {
+		
+		
 		XMLOutputFactory factory = XMLOutputFactory.newInstance();
 
 		String xmlFileName = getXmlFileName(batch.getBatchType().equals("FASTTRACK"));
@@ -51,8 +59,10 @@ public class ModelToXmlConverter {
 		writer.writeCharacters("no");
 		writer.writeEndElement();
 
+		Map<String, List<Badge>> ordered = groupByLA(batch); 
+
 		writer.writeStartElement("LocalAuthorities");
-		for (LocalAuthority la : batch.getLocalAuthorities()) {
+		for (String la : ordered.keySet()) {
 			writer.writeStartElement("LocalAuthority");
 			writeLocalAuthority(writer, la);				
 			writer.writeStartElement("Badges");				
@@ -180,29 +190,34 @@ public class ModelToXmlConverter {
 		writer.writeEndElement();
 	}
 
-	private void writeLocalAuthority(XMLStreamWriter writer, LocalAuthority la) throws XMLStreamException {
+	private void writeLocalAuthority(XMLStreamWriter writer, String laCode) throws XMLStreamException {
+		LocalAuthorityRefData la = referenceData.retrieveLocalAuthority(laCode);
+		
 		writer.writeStartElement("LACode");
-		writer.writeCharacters(la.getLaCode());
+		writer.writeCharacters(la.getShortCode());
 		writer.writeEndElement();
 
 		writer.writeStartElement("LAName");
-		writer.writeCharacters(la.getLaName());
+		writer.writeCharacters(la.getDescription());
 		writer.writeEndElement();
 
 		writer.writeStartElement("IssuingCountry");
-		writer.writeCharacters(la.getIssuingCountry());
+		String nation = la.getLocalAuthorityMetaData().getNation().getCode();
+		writer.writeCharacters(nation);
 		writer.writeEndElement();
 
 		writer.writeStartElement("LanguageCode");
-		writer.writeCharacters(la.getLanguageCode());
+		String language = nation.equalsIgnoreCase("W") ? "EW" : "E"; 
+		writer.writeCharacters(language);
 		writer.writeEndElement();
 
 		writer.writeStartElement("ClockType");
-		writer.writeCharacters(la.getClockType());
+		String clock = nation.equalsIgnoreCase("W") ? "WALLET" : "STANDARD"; 
+		writer.writeCharacters(clock);
 		writer.writeEndElement();
 		
 		writer.writeStartElement("PhoneNumber");
-		writer.writeCharacters(la.getPhoneNumber());
+		writer.writeCharacters(la.getLocalAuthorityMetaData().);
 		writer.writeEndElement();
 
 		writer.writeStartElement("EmailAddress");
@@ -212,5 +227,11 @@ public class ModelToXmlConverter {
 
 	private String toBase64(File file) throws IOException {
 		return Base64.getEncoder().encodeToString(Files.readAllBytes(file.toPath()));
+	}
+	
+	private Map<String, List<Badge>> groupByLA(Batch batch) {
+		
+		return batch.getBadges().stream()
+													 .collect(groupingBy(b -> b.getLocalAuthorityShortCode()));		
 	}
 }

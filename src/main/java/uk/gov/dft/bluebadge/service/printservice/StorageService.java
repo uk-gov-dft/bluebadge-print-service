@@ -1,5 +1,8 @@
 package uk.gov.dft.bluebadge.service.printservice;
 
+import static uk.gov.dft.bluebadge.service.printservice.utils.S3Utils.getBucket;
+import static uk.gov.dft.bluebadge.service.printservice.utils.S3Utils.getKey;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -17,7 +20,6 @@ import org.springframework.stereotype.Service;
 
 import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3URI;
 import com.amazonaws.services.s3.internal.Mimetypes;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -27,9 +29,6 @@ import com.amazonaws.services.s3.transfer.model.UploadResult;
 
 import lombok.extern.slf4j.Slf4j;
 import uk.gov.dft.bluebadge.service.printservice.config.S3Config;
-
-import static uk.gov.dft.bluebadge.service.printservice.utils.S3Utils.getBucket;
-import static uk.gov.dft.bluebadge.service.printservice.utils.S3Utils.getKey;
 
 @Service
 @Slf4j

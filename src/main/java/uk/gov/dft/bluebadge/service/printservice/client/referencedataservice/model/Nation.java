@@ -4,12 +4,22 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import org.apache.commons.lang3.StringUtils;
 
 public enum Nation {
-  ENG,
-  WLS,
-  SCO,
-  NIR;
+  ENG("E"),
+  WLS("W"),
+  SCO("S"),
+  NIR("N");
 
-  @SuppressWarnings("unused")
+	private String code;
+	
+	Nation(String code) {
+		this.code = code;
+	}
+	
+  public String getCode() {
+		return code;
+	}
+
+	@SuppressWarnings("unused")
   @JsonCreator
   public static Nation forValue(String value) {
     // Expect a valid nation if a value given

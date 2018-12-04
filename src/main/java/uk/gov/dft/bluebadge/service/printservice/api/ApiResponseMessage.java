@@ -1,4 +1,4 @@
-package uk.gov.dft.bluebadge.service.printservice.controller;
+package uk.gov.dft.bluebadge.service.printservice.api;
 
 import javax.xml.bind.annotation.XmlTransient;
 

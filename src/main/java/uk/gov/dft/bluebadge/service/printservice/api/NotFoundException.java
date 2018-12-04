@@ -1,4 +1,4 @@
-package uk.gov.dft.bluebadge.service.printservice.controller;
+package uk.gov.dft.bluebadge.service.printservice.api;
 
 public class NotFoundException extends ApiException {
   private int code;
