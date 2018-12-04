@@ -40,7 +40,7 @@ public class PrintService {
     ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
     String filename =
         System.getProperty("java.io.tmpdir")
-        			+ System.getProperty("file.separator")
+            + System.getProperty("file.separator")
             + "printbatch_"
             + batch.getBatchType()
             + "_"
