@@ -1,7 +1,30 @@
+blue-badge:
+  env: ${bb_env:dev}
+  auth-server:
+    url: http://localhost:8380/bb_auth
+    client-id: bb_user_management_id
+     ***REMOVED***
+  reference-data-service:
+    service-host:
+      host: localhost
+      port: 8580
+      scheme: http
+      connectiontimeout: 6000
+      requesttimeout: 6000
+      contextpath: /uk-gov-dft/reference-data-service/1.0.0
+
+spring:
+  jackson:
+    date-format: uk.gov.dft.bluebadge.common.api.RFC3339DateFormat
+    serialization:
+      write-dates-as-timestamps: false
+
 logging:
   level:
     root: ${APP_LOGGING_LEVEL:INFO}
+    sample.mybatis.mapper: WARN
     uk.gov.dft.bluebadge.service: ${APP_LOGGING_LEVEL:DEBUG}
+
 management:
   server:
     port: 8881
@@ -11,21 +34,12 @@ management:
     web:
       exposure:
         include: '*'
-blue-badge:
-  env: ${bb_env:dev}
-  auth-server:
-    url: http://localhost:8380/bb_auth
-    client-id: bb_user_management_id
-     ***REMOVED***
-spring:
-  jackson:
-    date-format: uk.gov.dft.bluebadge.common.api.RFC3339DateFormat
-    serialization:
-      write-dates-as-timestamps: false
+
 server:
   port: 8880
   servlet:
     context-path: /uk-gov-dft/print-service/1.0.0
+
 springfox.documentation.swagger.v2.path: /api-docs
 
 amazon:
