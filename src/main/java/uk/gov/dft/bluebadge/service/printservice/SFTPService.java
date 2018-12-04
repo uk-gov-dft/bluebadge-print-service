@@ -2,15 +2,18 @@ package uk.gov.dft.bluebadge.service.printservice;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.stream.Stream;
+
+import javax.xml.stream.XMLStreamException;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.extern.slf4j.Slf4j;
+import uk.gov.dft.bluebadge.model.printservice.generated.Batch;
+import uk.gov.dft.bluebadge.service.printservice.utils.ModelToXmlConverter;
 
 @Service
 @Slf4j
@@ -18,17 +21,26 @@ public class SFTPService {
 
 	private final StorageService s3;
 
-	public SFTPService(StorageService s3) {
+	private final ModelToXmlConverter xmlConverter;
+	
+	public SFTPService(StorageService s3, ModelToXmlConverter xmlConverter) {
 		this.s3 = s3;
+		this.xmlConverter = xmlConverter;
 	}
 
 	@Async("sftpTaskExecutor")
-	public void send() throws IOException {
+	public void send() throws IOException, XMLStreamException {
 		log.debug("Starting sending xml file to sftp");
 
-		File dir = s3.download();
+		ObjectMapper objectMapper = new ObjectMapper();
+
+		File dir = s3.downloadBucket();
 		for (File file : dir.listFiles()) {
 			String json = readFile(file);
+
+			Batch batch = objectMapper.readValue(json, Batch.class);
+			
+			String xmlFileName = xmlConverter.toXml(batch);
 		}
 
 		// for each file in files
@@ -38,13 +50,10 @@ public class SFTPService {
 
 	}
 
+
 	private String readFile(File file) throws IOException {
-		try {
-			return new String(Files.readAllBytes(Paths.get(file.getPath())));
-		} catch (IOException e) {
-			log.error("Can't read file {}", file.getPath());
-			throw e;
-		}
+		return new String(Files.readAllBytes(file.toPath()));
 	}
+
 
 }

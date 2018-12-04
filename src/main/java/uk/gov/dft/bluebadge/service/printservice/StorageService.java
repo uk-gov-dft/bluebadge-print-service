@@ -26,8 +26,10 @@ import com.amazonaws.services.s3.transfer.Upload;
 import com.amazonaws.services.s3.transfer.model.UploadResult;
 
 import lombok.extern.slf4j.Slf4j;
-import uk.gov.dft.bluebadge.common.service.exception.BadRequestException;
 import uk.gov.dft.bluebadge.service.printservice.config.S3Config;
+
+import static uk.gov.dft.bluebadge.service.printservice.utils.S3Utils.getBucket;
+import static uk.gov.dft.bluebadge.service.printservice.utils.S3Utils.getKey;
 
 @Service
 @Slf4j
@@ -74,81 +76,21 @@ public class StorageService {
 		return tempDir;
 	}
 
-	public File downloadFile(String picUrl) {
-		File tempDir = Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_pics").toFile();
-		tempDir.mkdirs();
-
-		transferManager.download(getBucket(picUrl), getKey(picUrl), tempDir);
-		return tempDir;
+	public Optional<File> downloadFile(String picUrl) throws IOException {
+		
+		Optional<String> bucket = getBucket(picUrl);
+		Optional<String> key = getKey(picUrl);
+		if (bucket.isPresent() && key.isPresent()) {
+			File tempFile = Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_pics", key.get()).toFile();
+			if (tempFile.createNewFile()) {
+				transferManager.download(bucket.get(), key.get(), tempFile);
+				return Optional.of(tempFile);
+			}
+		}
+		
+		return Optional.empty();
 	}
 	
-	private Optional<String> getBucket(String url) {
-		AmazonS3URI amazonS3URI = null;
-    try {
-      amazonS3URI = new AmazonS3URI(url, false);
-    } catch (Exception e) {
-      log.info("Failed to extract S3 URI. Link:{}", url);
-      return Optional.empty();
-    }
-    if (null == amazonS3URI.getBucket()) {
-      log.info("Failed to extract S3 object bucket from url: {}", amazonS3URI.toString());
-    }
- 		
-    return Optional.of(amazonS3URI.getBucket());
-	}
-	
-	private Optional<String> getKey(String url) {
-		AmazonS3URI amazonS3URI = null;
-    try {
-      amazonS3URI = new AmazonS3URI(url, false);
-    } catch (Exception e) {
-      log.info("Failed to extract S3 URI. Link:{}", url);
-      return Optional.empty();
-    }
-    if (null == amazonS3URI.getKey()) {
-      log.info("Failed to extract S3 object key from url: {}", amazonS3URI.toString());
-    }
- 		
-    return Optional.of(amazonS3URI.getKey());
-	}
-
-	
-	
-	private void checkURL(String url) {
-    AmazonS3URI amazonS3URI;
-    try {
-      amazonS3URI = new AmazonS3URI(url, false);
-    } catch (Exception e) {
-      log.info("Failed to extract S3 URI. Link:{}", url, e);
-      Error error =
-          new Error()
-              .message("Failed to extract S3 bucket and key from url: " + url)
-              .reason(ARTIFACT_LINK_ERR_FIELD);
-      throw new BadRequestException(error);
-    }
-    if (null == amazonS3URI.getBucket()) {
-      Error error =
-          new Error()
-              .message("Failed to extract S3 object bucket from url: " + url)
-              .reason(ARTIFACT_LINK_ERR_FIELD);
-      throw new BadRequestException(error);
-    }
-    if (null == amazonS3URI.getKey()) {
-      Error error =
-          new Error()
-              .message("Failed to extract S3 object key from url: " + url)
-              .reason(ARTIFACT_LINK_ERR_FIELD);
-      throw new BadRequestException(error);
-    }
-    if (!amazonS3.doesObjectExist(amazonS3URI.getBucket(), amazonS3URI.getKey())) {
-      String message =
-          String.format(S3_NOT_FOUND_ERR_MSG, amazonS3URI.getBucket(), amazonS3URI.getKey(), url);
-      log.info(message);
-      Error error = new Error().message(message).reason(ARTIFACT_LINK_ERR_FIELD);
-      throw new BadRequestException(error);
-    }
-  }
-
 	private ObjectMetadata setMetaData(File file) {
 		ObjectMetadata meta = new ObjectMetadata();
 		meta.setContentLength(file.length());
