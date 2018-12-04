@@ -1,6 +1,7 @@
 blue-badge:
   auth-server:
     url: http://authorisation-service:8380/bb_auth
+  env: ${bb_env:ci}
 
 amazon:
-  bb_printer_bucket: uk-gov-dft-${bb_env:ci}-printer
+  bb_printer_bucket: uk-gov-dft-${blue-badge.env}-printer
