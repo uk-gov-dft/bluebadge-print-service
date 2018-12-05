@@ -1,12 +1,12 @@
 package uk.gov.dft.bluebadge.service.printservice;
 
 import java.util.Arrays;
-import uk.gov.dft.bluebadge.model.printservice.generated.BadgeDetails;
-import uk.gov.dft.bluebadge.model.printservice.generated.Batch;
-import uk.gov.dft.bluebadge.model.printservice.generated.Batches;
-import uk.gov.dft.bluebadge.model.printservice.generated.LetterAddress;
-import uk.gov.dft.bluebadge.model.printservice.generated.LocalAuthority;
-import uk.gov.dft.bluebadge.model.printservice.generated.Name;
+import uk.gov.dft.bluebadge.service.printservice.model.xml.BadgeDetails;
+import uk.gov.dft.bluebadge.service.printservice.model.xml.Batch;
+import uk.gov.dft.bluebadge.service.printservice.model.xml.Batches;
+import uk.gov.dft.bluebadge.service.printservice.model.xml.LetterAddress;
+import uk.gov.dft.bluebadge.service.printservice.model.xml.LocalAuthority;
+import uk.gov.dft.bluebadge.service.printservice.model.xml.Name;
 
 public class TestDataFixtures {
 

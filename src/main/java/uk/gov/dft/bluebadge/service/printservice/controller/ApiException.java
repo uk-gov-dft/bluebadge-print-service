@@ -1,4 +1,4 @@
-package uk.gov.dft.bluebadge.service.printservice.generated.controller;
+package uk.gov.dft.bluebadge.service.printservice.controller;
 
 public class ApiException extends Exception {
   private int code;

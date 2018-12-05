@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @Setter
 public class S3Config {
-  @Value("${amazon.bb_printer_bucket}")
+  @Value("${amazon.bb-printer-bucket}")
   @NotNull
   private String s3Bucket;
 

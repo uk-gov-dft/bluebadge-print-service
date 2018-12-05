@@ -1,4 +1,4 @@
-package uk.gov.dft.bluebadge.service.printservice.generated.config.swagger;
+package uk.gov.dft.bluebadge.service.printservice.swagger;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

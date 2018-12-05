@@ -29,7 +29,7 @@ outputVersions() {
   echo "AZ_VERSION=$AZ_VERSION"
   echo "MG_VERSION=$MG_VERSION"
   echo "RD_VERSION=$RD_VERSION"
-  echo "PP_VERSION=$PP_VERSION"
+  echo "PR_VERSION=$PR_VERSION"
 }
 
 set -a
@@ -40,15 +40,15 @@ if [[ ! -e ~/.ssh/github_token ]]; then
 fi
 
 # Cleanup existing containers
-tearDown
+#tearDown
 
 # Get the dev-env stuff
 echo "Retrieving dev-env (develop) scripts."
-curl -sL -H "Authorization: token $(cat ~/.ssh/github_token)" https://github.com/uk-gov-dft/dev-env/archive/develop.tar.gz | tar xz
-if [ $? -ne 0 ]; then
-   echo "Cannot download dev-env!"
-   exit 1
-fi
+#curl -sL -H "Authorization: token $(cat ~/.ssh/github_token)" https://github.com/uk-gov-dft/dev-env/archive/develop.tar.gz | tar xz
+#if [ $? -ne 0 ]; then
+#   echo "Cannot download dev-env!"
+#   exit 1
+#fi
 
 # 'VERSION-computed' needed for environment variables
 gradle :outputComputedVersion
@@ -64,7 +64,7 @@ cd dev-env-develop
 bash load-modules.sh
 docker-compose build
 docker-compose up -d --no-color
-./wait_for_it.sh localhost:5432 localhost:8681:/manage/actuator/health localhost:8381:/manage/actuator/health localhost:8281:/manage/actuator/health localhost:8081:/manage/actuator/health localhost:8481:/manage/actuator/health localhost:8181:/manage/actuator/health localhost:8581:/manage/actuator/health
+./wait_for_it.sh localhost:5432 localhost:8681:/manage/actuator/health localhost:8381:/manage/actuator/health localhost:8281:/manage/actuator/health localhost:8081:/manage/actuator/health localhost:8481:/manage/actuator/health localhost:8181:/manage/actuator/health localhost:8581:/manage/actuator/health localhost:8881:/manage/actuator/health
 psql -h localhost -U developer -d bb_dev -f ./scripts/db/setup-users.sql
 
 # Run the acceptance tests
@@ -73,7 +73,7 @@ gradle acceptanceTests
 testExitCode=$?
 
 # Tear down
-tearDown
+#tearDown
 
 echo "Exiting with code:$testExitCode"
 
