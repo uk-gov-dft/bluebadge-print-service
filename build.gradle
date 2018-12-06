@@ -6,10 +6,11 @@ buildscript {
     }
 
     repositories {
+        mavenLocal()
         mavenCentral()
         jcenter()
         maven {
-            url 'https://artifactory.does.not.exist/artifactory/gradle-release'
+            url 'https://artifactory.does.not.exist/artifactory/gradle-dev-local'
         }
     }
 
@@ -17,101 +18,27 @@ buildscript {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.7.3"
         classpath 'org.owasp:dependency-check-gradle:3.3.1'
-
     }
 }
 
 plugins {
     id 'com.github.sherter.google-java-format' version '0.6'
     id "org.sonarqube" version "2.6.2"
+    id "com.moowork.node" version "1.2.0"
+    id "com.moowork.gulp" version "1.2.0"
+    id "com.jfrog.artifactory" version "4.5.4"
     id "com.gorylenko.gradle-git-properties" version "1.5.1"
-}
+    }
 
 apply plugin: 'java'
-apply plugin: 'maven'
-apply plugin: 'maven-publish'
-apply plugin: 'com.jfrog.artifactory'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
 apply plugin: 'jacoco'
 apply plugin: 'org.owasp.dependencycheck'
 
-group = 'uk.gov.dft.bluebadge'
-version = getTheVersion()
-sourceCompatibility = 1.8
-
-configurations.all {
-    resolutionStrategy {
-        // don't cache changing modules at all
-        cacheChangingModulesFor 0, 'seconds'
-    }
-    exclude group: 'commons-logging', module: 'commons-logging'
-}
-
-repositories {
-    mavenCentral()
-    jcenter()
-    maven {
-        url 'https://artifactory.does.not.exist/artifactory/gradle-dev-local'
-    }
-    maven {
-        url "https://dl.bintray.com/gov-uk-notify/maven"
-    }
-}
-
-sourceSets {
-    main {
-        java {
-            srcDir 'src/main/java'
-            srcDir 'src/generated/java'
-        }
-    }
-    test {
-        java {
-            srcDir 'src/test/java'
-        }
-    }
-}
-
-dependencies {
-    compile('uk.gov.dft.bluebadge:bluebadge-common:0.6.8-SNAPSHOT')
-    compile('com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.5')
-    //compile('org.springframework.boot:spring-boot-starter-web')
-    compile('org.springframework.boot:spring-boot-starter-security')
-    compile('org.springframework.boot:spring-boot-starter-actuator')
-    compile('org.springframework.boot:spring-boot-starter-aop')
-    compile('org.springframework.cloud:spring-cloud-starter-sleuth:2.0.1.RELEASE')
-    compile('org.apache.commons:commons-lang3:3.7')
-
-    compile('io.springfox:springfox-swagger-ui:2.8.0')
-    compile('io.springfox:springfox-swagger2:2.8.0')
-
-    compileOnly('org.projectlombok:lombok:1.16.22')
-
-    testCompile('org.springframework.boot:spring-boot-starter-test')
-
-    runtime('org.springframework.boot:spring-boot-devtools')
-    runtime('ch.qos.logback.contrib:logback-json-classic:0.1.5')
-    runtime('ch.qos.logback.contrib:logback-jackson:0.1.5')
-    runtime('com.fasterxml.jackson.core:jackson-databind:2.9.3')
-    testCompileOnly ('org.projectlombok:lombok:1.16.22')
-}
-
-jacoco {
-    toolVersion = "0.8.1"
-}
-
-archivesBaseName = "print-service"
-compileJava.dependsOn 'googleJavaFormat'
-
-publishing {
-    publications {
-        project_service(MavenPublication) {
-            from components.java
-            artifactId "${archivesBaseName}"
-        }
-    }
-}
+//apply plugin: 'findbugs'
 
 def getTheVersion() {
     def workingDir = new File("${project.projectDir}")
@@ -134,22 +61,31 @@ def getTheVersion() {
     return "${version.text.trim()}${versionSuffix}"
 }
 
-allprojects {
-    apply plugin: 'java'
-    apply plugin: 'maven'
-    apply plugin: 'maven-publish'
-    apply plugin: 'com.jfrog.artifactory'
-    apply plugin: 'jacoco'
+task outputComputedVersion {
+    def computedVersion = new File('VERSION-computed')
+    computedVersion.delete()
+    computedVersion.write(getTheVersion())
+    println(getTheVersion())
+}
 
-    group = 'uk.gov.dft.bluebadge'
-    version = getTheVersion()
-    sourceCompatibility = 1.8
 
-    repositories {
-        mavenCentral()
-        jcenter()
-        maven {
-            url 'https://artifactory.does.not.exist/artifactory/gradle-release-dev'
+group = 'uk.gov.dft.bluebadge'
+version = getTheVersion()
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        url 'https://artifactory.does.not.exist/artifactory/gradle-dev-local'
+    }
+}
+
+publishing {
+    publications {
+        project_service(MavenPublication) {
+            from components.java
+            artifactId "print-service"
         }
     }
 }
@@ -180,6 +116,45 @@ artifactory {
     }
 
 }
+
+configurations.all {
+    resolutionStrategy {
+        // don't cache changing modules at all
+        cacheChangingModulesFor 0, 'seconds'
+    }
+    exclude group: 'commons-logging', module: 'commons-logging'
+    version = getTheVersion()
+}
+
+dependencies {
+    compile('uk.gov.dft.bluebadge:bluebadge-common:0.6.8-SNAPSHOT')
+    compile('com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.5')
+    compile('org.springframework.boot:spring-boot-starter-web')
+    compile('org.springframework.boot:spring-boot-starter-security')
+    compile('org.springframework.boot:spring-boot-starter-actuator')
+    compile('org.springframework.boot:spring-boot-starter-aop')
+    compile('org.springframework.cloud:spring-cloud-starter-sleuth:2.0.1.RELEASE')
+    compile('org.apache.commons:commons-lang3:3.7')
+
+    compile('io.springfox:springfox-swagger-ui:2.8.0')
+    compile('io.springfox:springfox-swagger2:2.8.0')
+
+    compile('com.amazonaws:aws-java-sdk-s3:1.11.385')
+    compileOnly('org.projectlombok:lombok:1.16.22')
+
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+
+    runtime('org.springframework.boot:spring-boot-devtools')
+    runtime('ch.qos.logback.contrib:logback-json-classic:0.1.5')
+    runtime('ch.qos.logback.contrib:logback-jackson:0.1.5')
+    runtime('com.fasterxml.jackson.core:jackson-databind:2.9.3')
+    testCompileOnly ('org.projectlombok:lombok:1.16.22')
+    testCompile('org.junit.jupiter:junit-jupiter-api:5.3.2')
+    testCompile('org.junit.jupiter:junit-jupiter-params:5.3.2')
+    testCompile('org.junit.platform:junit-platform-runner:1.3.2')
+    testRuntime('org.junit.jupiter:junit-jupiter-engine:5.3.2')
+}
+
 
 task generateSwagger() {
 
@@ -213,38 +188,45 @@ task unzipGenerated(type: Copy) {
 
 task generateModel(dependsOn: 'unzipGenerated', type: Sync) {
     group = "GenerateAPI"
-    from "${buildDir}/unpacked/spring-server/generated/src/main/java/uk/gov/dft/bluebadge/model/referencedata/generated"
+    from "${buildDir}/unpacked/spring-server/generated/src/main/java/uk/gov/dft/bluebadge/model/printservice/generated"
     include "**/*.java"
     exclude '**/CommonResponse.java'
     exclude '**/ErrorErrors.java'
     exclude '**/Error.java'
-    into "src/generated/java/uk/gov/dft/bluebadge/model/referencedata/generated"
+    into "src/generated/java/uk/gov/dft/bluebadge/model/printservice/generated"
 }
 
 task generateService(dependsOn: 'unzipGenerated', type: Sync) {
     group = "GenerateAPI"
-    from "${buildDir}/unpacked/spring-server/generated/src/main/java/uk/gov/dft/bluebadge/service/referencedata/generated"
+    from "${buildDir}/unpacked/spring-server/generated/src/main/java/uk/gov/dft/bluebadge/service/printservice/generated"
     exclude '**/Swagger2SpringBoot.java'
     exclude '**/RFC3339DateFormat.java'
     exclude '**/*ApiController.java'
-    into "src/generated/java/uk/gov/dft/bluebadge/service/referencedata/generated"
+    into "src/generated/java/uk/gov/dft/bluebadge/service/printservice/generated"
 }
 
-task createDatabaseSchemaZip(type: Zip) {
-    def targetFilename = getTheVersion() + "_schema.zip"
-    from 'database-schema/'
-    include '*'
-    include '*/*'
-    archiveName targetFilename
-    destinationDir(file("build/database-schema"))
+jacoco {
+    toolVersion = "0.8.1"
 }
 
-task outputComputedVersion {
-    def computedVersion = new File('VERSION-computed')
-    computedVersion.delete()
-    computedVersion.write(getTheVersion())
-    println(getTheVersion())
+test {
+    jacoco {
+        excludes += ['.*uk.gov.dft.bluebadge.webapp.la.controller.request.*', '.*uk.gov.dft.bluebadge.webapp.la.controller.viewmodel.*', '.*uk.gov.dft.bluebadge.webapp.la.client.usermanagement.model.*','.*uk.gov.dft.bluebadge.webapp.la.exception.*']
+    }
+}
+
+test {
+    useJUnitPlatform()
+    useJUnit()
+    testLogging {
+        events "skipped", "failed"
+    }
+}
+
+bootRun {
+    sourceResources sourceSets.main
 }
 
 build.finalizedBy(outputComputedVersion)
 
+compileJava.dependsOn 'googleJavaFormat'

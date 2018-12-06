@@ -11,7 +11,9 @@ management:
     web:
       exposure:
         include: '*'
+
 blue-badge:
+  env: ${bb_env:dev}
   auth-server:
     url: http://localhost:8380/bb_auth
     client-id: bb_user_management_id
@@ -26,3 +28,8 @@ server:
   servlet:
     context-path: /uk-gov-dft/print-service/1.0.0
 springfox.documentation.swagger.v2.path: /api-docs
+
+amazon:
+  bb-printer-bucket: uk-gov-dft-${blue-badge.env}-printer
+  signed-url-duration-ms: 60000
+   
