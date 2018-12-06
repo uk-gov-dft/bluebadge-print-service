@@ -1,5 +1,6 @@
 package uk.gov.dft.bluebadge.service.printservice.controller;
 
+@SuppressWarnings("squid:S1068")
 public class ApiException extends Exception {
   private int code;
 
