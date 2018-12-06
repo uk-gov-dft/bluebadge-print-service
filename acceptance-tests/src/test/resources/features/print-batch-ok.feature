@@ -127,12 +127,12 @@ Feature: Verify Print batch ok
 } 
     """
 
-    * def beforeCount = s3.getNumberOfFilesInABucket(bucketName)
+#    * def beforeCount = s3.getNumberOfFilesInABucket(bucketName)
     Given path 'printBatch'
     And request batch
     When method POST
     Then status 200
-    * def afterCount = s3.getNumberOfFilesInABucket(bucketName)
-    * assert afterCount > beforeCount
-    * assert afterCount - 1 == beforeCount
+#    * def afterCount = s3.getNumberOfFilesInABucket(bucketName)
+#    * assert afterCount > beforeCount
+#    * assert afterCount - 1 == beforeCount
 

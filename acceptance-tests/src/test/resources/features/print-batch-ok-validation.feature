@@ -9,7 +9,7 @@ Feature: Verify Print batch ok validation
     * def CommandLineUtils = Java.type('uk.gov.service.bluebadge.test.utils.CommandLineUtils')
     * def cmdLineUtils = new CommandLineUtils(cmdLineUtilsConfig)
 
-  Scenario: Verify valid print batch
+  Scenario: Verify valid print batch comparing xml
     * def batch =
     """
       {
