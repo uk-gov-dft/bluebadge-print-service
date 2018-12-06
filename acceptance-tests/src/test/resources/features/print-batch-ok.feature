@@ -8,7 +8,8 @@ Feature: Verify Print batch ok
     * def S3Utils = Java.type('uk.gov.service.printservice.test.utils.S3Utils')
     * def System = Java.type('java.lang.System')
     * def s3 = new S3Utils()
-    * def bucketName = 'uk-gov-dft-' + System.getenv('bb_env') +'-printer'
+    * def env = System.getenv('bb_env')
+    * def bucketName = 'uk-gov-dft-' + (env == '' ? 'ci' : env) +'-printer'
 
   Scenario: Verify valid print batch
     * def batch =
