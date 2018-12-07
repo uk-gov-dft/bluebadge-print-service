@@ -14,7 +14,7 @@ Feature: Verify Print batch ok validation
     }
     """
 
-  Scenario: Verify valid print batch
+  Scenario: Verify valid print batch comparing xml
     * def batch =
     """
       {

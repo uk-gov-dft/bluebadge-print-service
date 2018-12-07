@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import uk.gov.dft.bluebadge.common.api.model.CommonResponse;
-import uk.gov.dft.bluebadge.model.printservice.generated.Batch;
+import uk.gov.dft.bluebadge.service.printservice.model.xml.Batch;
 
 @Api(value = "PrintBatch", description = "the PrintBatch API")
 public interface PrintBatchApi {

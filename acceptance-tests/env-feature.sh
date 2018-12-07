@@ -1,1 +1,1 @@
-export PP_VERSION=$(cat VERSION-computed)
+export PR_VERSION=$(cat VERSION-computed)

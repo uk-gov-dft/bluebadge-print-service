@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.dft.bluebadge.common.api.model.Error;
 import uk.gov.dft.bluebadge.common.controller.AbstractController;
 import uk.gov.dft.bluebadge.common.service.exception.InternalServerException;
-import uk.gov.dft.bluebadge.model.printservice.generated.Batch;
 import uk.gov.dft.bluebadge.service.printservice.generated.controller.PrintBatchApi;
+import uk.gov.dft.bluebadge.service.printservice.model.xml.Batch;
 
 @RestController
 @Slf4j

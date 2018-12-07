@@ -41,18 +41,22 @@ public class StorageService {
       throw new IllegalArgumentException("Upload failed. Batch file is empty");
     }
 
-    log.info("Uploading document to S3. {}, size:{}", file.getName(), file.length());
+    log.info(
+        "Uploading document to S3 bucket{}. {}, size:{}",
+        s3Config.getS3Bucket(),
+        file.getName(),
+        file.length());
 
     String keyName = UUID.randomUUID().toString() + "-" + file.getCanonicalPath();
     keyName = URLEncoder.encode(keyName, ENCODING_CHAR_SET);
 
-    Upload upload =
-        transferManager.upload(
-            s3Config.getS3Bucket(), keyName, new FileInputStream(file), setMetaData(file));
-    UploadResult uploadResult = upload.waitForUploadResult();
-    //		URL url = amazonS3.getUrl(uploadResult.getBucketName(), uploadResult.getKey());
-
-    return generateSignedS3Url(uploadResult.getKey());
+    try (FileInputStream fis = new FileInputStream(file)) {
+      Upload upload =
+          transferManager.upload(s3Config.getS3Bucket(), keyName, fis, setMetaData(file));
+      UploadResult uploadResult = upload.waitForUploadResult();
+      //		URL url = amazonS3.getUrl(uploadResult.getBucketName(), uploadResult.getKey());
+      return generateSignedS3Url(uploadResult.getKey());
+    }
   }
 
   private ObjectMetadata setMetaData(File file) {

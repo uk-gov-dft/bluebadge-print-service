@@ -1,4 +1,4 @@
-package uk.gov.dft.bluebadge.model.printservice.generated;
+package uk.gov.dft.bluebadge.service.printservice.model.xml;
 
 import java.util.ArrayList;
 import java.util.Objects;

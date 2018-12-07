@@ -1,4 +1,4 @@
-package uk.gov.dft.bluebadge.model.printservice.generated;
+package uk.gov.dft.bluebadge.service.printservice.model.xml;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
