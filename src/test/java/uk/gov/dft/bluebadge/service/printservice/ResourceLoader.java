@@ -1,6 +1,5 @@
 package uk.gov.dft.bluebadge.service.printservice;
 
-import static java.io.File.separator;
 import static java.nio.file.Files.readAllLines;
 
 import java.io.IOException;
@@ -12,10 +11,10 @@ import java.util.stream.Collectors;
 public class ResourceLoader {
 
   public static String loadTestResource(String filename) throws IOException {
-    String testDir = "src" + separator + "test" + separator + "resources" + separator;
+    Path testPath = Paths.get("src", "test", "resources", filename);
     String testPayload =
         FileSystems.getDefault()
-            .getPath(testDir + filename)
+            .getPath(testPath.toString())
             .normalize()
             .toAbsolutePath()
             .toString();

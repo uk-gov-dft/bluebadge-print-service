@@ -22,7 +22,6 @@ public class PrintController extends AbstractController implements PrintBatchApi
     this.service = service;
   }
 
-  // Original printBatch
   @Override
   // todo: add permissions something like @PreAuthorize("hasAuthority('PERM_PRINT')")
   public ResponseEntity<Void> printBatch(@ApiParam() @Valid @RequestBody Batch batch) {

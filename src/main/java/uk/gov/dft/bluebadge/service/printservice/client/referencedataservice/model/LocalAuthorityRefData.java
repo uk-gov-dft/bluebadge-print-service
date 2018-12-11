@@ -19,5 +19,16 @@ public class LocalAuthorityRefData extends ReferenceData {
     private String issuingAuthorityName;
     private Nation nation;
     private String contactUrl;
+    private String nameLine2;
+    private String addressLine1;
+    private String addressLine2;
+    private String addressLine3;
+    private String addressLine4;
+    private String town;
+    private String county;
+    private String country;
+    private String postcode;
+    private String contactNumber;
+    private String emailAddress;
   }
 }

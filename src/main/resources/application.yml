@@ -46,3 +46,8 @@ amazon:
   bb_printer_bucket: uk-gov-dft-${blue-badge.env}-printer
   signed-url-duration-ms: 60000
    
+ftp:
+  host: localhost:2222
+  user: foo
+   ***REMOVED***
+  dropbox: /host/upload  

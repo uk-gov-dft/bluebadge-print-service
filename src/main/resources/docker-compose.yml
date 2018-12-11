@@ -1,0 +1,5 @@
+sftp:
+    image: atmoz/sftp
+    ports:
+        - "2222:22"
+    command: foo: ***REMOVED***

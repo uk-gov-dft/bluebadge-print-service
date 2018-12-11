@@ -7,10 +7,10 @@ import java.util.Base64;
 
 public class FileUtils {
 
-	public static String toBase64(File file) throws IOException {
-	
-		String encodedString = Base64.getEncoder().encodeToString(Files.readAllBytes(file.toPath()));
-		
-		return encodedString;
-	}
+  public static String toBase64(File file) throws IOException {
+
+    String encodedString = Base64.getEncoder().encodeToString(Files.readAllBytes(file.toPath()));
+
+    return encodedString;
+  }
 }

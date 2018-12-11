@@ -2,6 +2,10 @@ package uk.gov.dft.bluebadge.service.printservice;
 
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.stream.Stream;
+import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.LocalAuthorityRefData;
+import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.LocalAuthorityRefData.LocalAuthorityMetaData;
+import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.Nation;
 import uk.gov.dft.bluebadge.service.printservice.model.Badge;
 import uk.gov.dft.bluebadge.service.printservice.model.Batch;
 import uk.gov.dft.bluebadge.service.printservice.model.Batches;
@@ -20,23 +24,72 @@ public class TestDataFixtures {
     return xmlBatches;
   }
 
-  public static Batch batchPayload() {
+  public static Batch standardBatchPayload() {
     return batch1();
+  }
+
+  public static Batch fasttrackBatchPayload() {
+    return batch2();
+  }
+
+  public static Stream<Batch> payloads() {
+    return Stream.of(standardBatchPayload(), fasttrackBatchPayload());
+  }
+
+  public static LocalAuthorityRefData welshLocalAuthority() {
+    LocalAuthorityRefData la = new LocalAuthorityRefData();
+
+    la.setShortCode("ANGL");
+    la.setDescription("LA description");
+    la.setLocalAuthorityMetaData(laMetaData("ANGL", Nation.WLS));
+
+    return la;
+  }
+
+  public static LocalAuthorityRefData englishLocalAuthority() {
+    LocalAuthorityRefData la = new LocalAuthorityRefData();
+
+    la.setShortCode("LBKC");
+    la.setDescription("LA description");
+    la.setLocalAuthorityMetaData(laMetaData("LBKC", Nation.ENG));
+
+    return la;
+  }
+
+  private static LocalAuthorityMetaData laMetaData(String shortCode, Nation nation) {
+    LocalAuthorityMetaData meta = new LocalAuthorityMetaData();
+    meta.setIssuingAuthorityShortCode(shortCode);
+    meta.setIssuingAuthorityName("LA name");
+    meta.setNation(nation);
+    meta.setContactUrl("http://contact_url");
+    meta.setNameLine2("name line 2");
+    meta.setAddressLine1("address 1");
+    meta.setAddressLine2("address 2");
+    meta.setAddressLine3("address 3");
+    meta.setAddressLine4("address 4");
+    meta.setTown("town");
+    meta.setCounty("county");
+    meta.setCountry("United Kingdom");
+    meta.setPostcode("SW1A 1AA");
+    meta.setContactNumber("02070140800");
+    meta.setEmailAddress("email@mail.com");
+
+    return meta;
   }
 
   private static Batch batch1() {
     Batch batch = new Batch();
     batch.setFilename("filename1");
-    batch.batchType("STANDARD");
-    batch.setBadges(Arrays.asList(badge1(), badge2()));
+    batch.setBatchType("STANDARD");
+    batch.setBadges(Arrays.asList(badge1(), badge2(), badge3()));
     return batch;
   }
 
   private static Batch batch2() {
     Batch batch = new Batch();
     batch.setFilename("filename2");
-    batch.batchType("FASTTRACK");
-    batch.setBadges(Arrays.asList(badge1(), badge2()));
+    batch.setBatchType("FASTTRACK");
+    batch.setBadges(Arrays.asList(badge2(), badge3(), badge4()));
 
     return batch;
   }
@@ -44,7 +97,7 @@ public class TestDataFixtures {
   private static Badge badge1() {
     Badge details = new Badge();
     details.setBadgeNumber("AA12BB");
-    details.setLocalAuthorityShortCode("ABERD");
+    details.setLocalAuthorityShortCode("ANGL");
     details.setStartDate(LocalDate.of(2019, 01, 02));
     details.setExpiryDate(LocalDate.of(2021, 1, 1));
     details.setImageLink("http://url_to_s3_bucket_photo1");
@@ -62,7 +115,7 @@ public class TestDataFixtures {
 
     Badge details = new Badge();
     details.setBadgeNumber("AA34BB");
-    details.setLocalAuthorityShortCode("ABERD");
+    details.setLocalAuthorityShortCode("ANGL");
     details.setStartDate(LocalDate.of(2019, 01, 02));
     details.setExpiryDate(LocalDate.of(2021, 1, 1));
     details.setImageLink("http://url_to_s3_bucket_photo2");
@@ -72,7 +125,7 @@ public class TestDataFixtures {
                 "Jane Second", "Council", "government road", "London", "EC1 2Z", "jane@email.com"),
             person2()));
     details.setDeliverToCode("HOME");
-    details.setDeliveryOptionCode("STAND");
+    details.setDeliveryOptionCode("FAST");
 
     return details;
   }
@@ -81,21 +134,16 @@ public class TestDataFixtures {
 
     Badge details = new Badge();
     details.setBadgeNumber("CC12DD");
-    details.setLocalAuthorityShortCode("ABERD");
+    details.setLocalAuthorityShortCode("LBKC");
     details.setStartDate(LocalDate.of(2019, 01, 02));
     details.setExpiryDate(LocalDate.of(2021, 1, 1));
     details.setImageLink("http://url_to_s3_bucket_photo3");
     details.setParty(
-        personParty(
+        organisationParty(
             createContact(
-                "Michael Third",
-                "flat 5",
-                "century building",
-                "Leeds",
-                "LS1 3XX",
-                "mike@email.com"),
-            person3()));
-    details.setDeliverToCode("HOME");
+                "XmlName Last", "88", "pleasant walk", "Manchester", "M4 3AS", "xml@email.com"),
+            organisation()));
+    details.setDeliverToCode("COUNCIL");
     details.setDeliveryOptionCode("STAND");
 
     return details;
@@ -105,14 +153,19 @@ public class TestDataFixtures {
 
     Badge details = new Badge();
     details.setBadgeNumber("CC34DD");
-    details.setLocalAuthorityShortCode("ABERD");
+    details.setLocalAuthorityShortCode("LBKC");
     details.setStartDate(LocalDate.of(2019, 01, 02));
     details.setExpiryDate(LocalDate.of(2021, 1, 1));
     details.setImageLink("http://url_to_s3_bucket_photo4");
     details.setParty(
         personParty(
             createContact(
-                "XmlName Last", "88", "pleasant walk", "Manchester", "M4 3AS", "xml@email.com"),
+                "Michael Third",
+                "flat 5",
+                "century building",
+                "Leeds",
+                "LS1 3XX",
+                "mike@email.com"),
             person3()));
     details.setDeliverToCode("HOME");
     details.setDeliveryOptionCode("STAND");
@@ -137,9 +190,16 @@ public class TestDataFixtures {
     return party;
   }
 
+  private static Organisation organisation() {
+    Organisation o = new Organisation();
+    o.setBadgeHolderName("Organisation for disabled people");
+
+    return o;
+  }
+
   private static Person person1() {
     Person p = new Person();
-    p.setBadgeHolderName("John First");
+    p.setBadgeHolderName("Michelangelo Lodovico Buonarroti Simoni");
     p.setDob(LocalDate.of(1977, 3, 4));
     p.setGenderCode("MALE");
     return p;

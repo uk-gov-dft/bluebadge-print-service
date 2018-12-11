@@ -9,10 +9,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 @Configuration
 @EnableAsync
 public class ThreadConfig {
-    @Bean(name = "sftpTaskExecutor")
-    public TaskExecutor specificTaskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.initialize();
-        return executor;
-    }
+  @Bean(name = "batchExecutor")
+  public TaskExecutor specificTaskExecutor() {
+    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+    executor.initialize();
+    return executor;
+  }
 }
