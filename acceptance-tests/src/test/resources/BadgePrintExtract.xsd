@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="windows-1252"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://northgate-is.com/BadgePrintExtract" xmlns:b="http://northgate-is.com/BadgePrintExtract">
   <xs:simpleType name="Varchar10">
         <xs:restriction base="xs:string">
