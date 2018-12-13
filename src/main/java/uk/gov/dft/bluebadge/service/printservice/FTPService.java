@@ -25,8 +25,9 @@ public class FTPService {
     Session session = null;
     ChannelSftp sftpChannel = null;
     try {
+      jsch.setKnownHosts(ftpConfig.getKnownhosts());
       session = jsch.getSession(ftpConfig.getUser(), ftpConfig.getHost(), ftpConfig.getPort());
-      session.setConfig("StrictHostKeyChecking", "no");
+      //      session.setConfig("StrictHostKeyChecking", "no");
       session.setPassword(ftpConfig.getPassword());
       session.connect();
 

@@ -18,13 +18,19 @@ public class SFTPUtils {
   private String dropbox =
       System.getenv("sftp_folder") == null ? "/upload" : System.getenv("sftp_folder");
 
+  private String knownhosts =
+      System.getenv("sftp_knownhosts") == null
+          ? "~/.ssh/sftp_known_hosts"
+          : System.getenv("sftp_knownhosts");
+
   public void clean() throws Exception {
     JSch jsch = new JSch();
     Session session = null;
     ChannelSftp sftpChannel = null;
     try {
+      jsch.setKnownHosts(knownhosts);
       session = jsch.getSession(user, host, port);
-      session.setConfig("StrictHostKeyChecking", "no");
+      //      session.setConfig("StrictHostKeyChecking", "no");
       session.setPassword(password);
       session.connect();
 
@@ -55,8 +61,9 @@ public class SFTPUtils {
     Session session = null;
     ChannelSftp sftpChannel = null;
     try {
+      jsch.setKnownHosts(knownhosts);
       session = jsch.getSession(user, host, port);
-      session.setConfig("StrictHostKeyChecking", "no");
+      //      session.setConfig("StrictHostKeyChecking", "no");
       session.setPassword(password);
       session.connect();
 

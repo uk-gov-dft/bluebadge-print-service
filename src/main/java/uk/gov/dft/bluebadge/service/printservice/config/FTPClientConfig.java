@@ -24,4 +24,7 @@ public class FTPClientConfig {
 
   @Value("${ftp.dropbox}")
   private String dropbox;
+
+  @Value("${ftp.knownhosts}")
+  private String knownhosts;
 }

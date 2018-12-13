@@ -105,7 +105,6 @@ Feature: Verify Print batch ok
 	* eval s3.setupBucket(bucketName)
 	* eval ftp.clean()
 	* def fileCountBefore = ftp.getFileCount()
-	* print fileCountBefore
 	* def beforeCount = s3.getNumberOfFilesInABucket(bucketName)
 	* print beforeCount
     Given path 'printBatch'
@@ -113,8 +112,6 @@ Feature: Verify Print batch ok
     When method POST
     Then status 200
 	* def fileCountAfter = ftp.getFileCount()
-	* print fileCountAfter
 	* def afterCount = s3.getNumberOfFilesInABucket(bucketName)
-	* print afterCount
 	* assert afterCount == beforeCount
 	* assert fileCountBefore + 1 == fileCountAfter
