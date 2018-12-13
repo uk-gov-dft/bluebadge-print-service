@@ -64,7 +64,7 @@
             "type": "string",
             "example": "FASTTRACK, STANDARD or LA"
           },
-          "Badges": {
+          "badges": {
             "type": "array",
             "items": {
               "$ref": "#/definitions/Badge"
