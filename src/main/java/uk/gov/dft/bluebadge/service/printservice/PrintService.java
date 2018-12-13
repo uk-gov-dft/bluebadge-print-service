@@ -12,9 +12,11 @@ import java.util.List;
 import java.util.Optional;
 import javax.xml.stream.XMLStreamException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
+import uk.gov.dft.bluebadge.service.printservice.config.S3Config;
 import uk.gov.dft.bluebadge.service.printservice.model.Batch;
 import uk.gov.dft.bluebadge.service.printservice.utils.ModelToXmlConverter;
 
@@ -29,7 +31,10 @@ public class PrintService {
   private final FTPService ftp;
   private final ModelToXmlConverter xmlConverter;
 
-  public PrintService(StorageService s3, FTPService ftp, ModelToXmlConverter xmlConverter) {
+  @Autowired
+  private S3Config s3Config;
+
+  PrintService(StorageService s3, FTPService ftp, ModelToXmlConverter xmlConverter) {
     this.s3 = s3;
     this.ftp = ftp;
     this.xmlConverter = xmlConverter;
@@ -40,8 +45,8 @@ public class PrintService {
     boolean uploaded = false;
     try {
       uploaded = uploadToS3(batch);
-    } catch (IOException | InterruptedException e) {
-      log.error("Can't upload file to s3: {}", e.getMessage());
+    } catch (InterruptedException | IOException e) {
+      log.error("Can't upload file to s3", e);
     }
 
     if (uploaded) {
@@ -61,7 +66,7 @@ public class PrintService {
             + LocalDateTime.now().format(DateTimeFormatter.ofPattern("YYYYMMddHHmmss"))
             + ".json";
 
-    boolean uploaded = s3.upload(json, filename);
+    boolean uploaded = s3.uploadToPrinterBucket(json, filename);
     log.debug("Json payload {} has been uploaded: {}", json, uploaded);
 
     return uploaded;
@@ -70,13 +75,13 @@ public class PrintService {
   private boolean processBatches() {
     boolean success = true;
     try {
-      List<String> files = s3.listFiles();
+      List<String> files = s3.listPrinterBucketFiles();
       for (String file : files) {
-        log.debug("Downloading file: {} from s3 bucket: {}", file, s3.getBucketName());
+        log.debug("Downloading file: {} from s3 printer bucket", file);
         success &= processBatch(file);
       }
     } catch (Exception e) {
-      log.error("Error while processing badges", e.getMessage());
+      log.error("Error while processing badges", e);
     }
 
     return success;
@@ -84,23 +89,23 @@ public class PrintService {
 
   @Async("batchExecutor")
   private boolean processBatch(String key) {
-    String bucket = s3.getBucketName();
+
     Optional<String> json;
     try {
-      json = s3.downloadFile(bucket, key);
+      json = s3.downloadPrinterFileAsString(key);
     } catch (Exception e) {
-      log.error("Can't download file: {} from s3 bucket: {}", key, bucket);
-      log.error("Error while downloading: {}", e.getMessage());
+      log.error("Can't download file: {} from s3 bucket: {}", key, s3Config.getS3PrinterBucket());
+      log.error("Error while downloading: {}", e);
       return false;
     }
 
-    String xmlFileName = null;
+    String xmlFileName;
     if (json.isPresent()) {
       try {
         xmlFileName = prepareXml(json.get());
       } catch (IOException | XMLStreamException e) {
         log.error("Can't process json string: {} into valid xml", json.get());
-        log.error("Error while converting into xml: {}", e.getMessage());
+        log.error("Error while converting into xml: {}", e);
         return false;
       }
     } else {
@@ -117,7 +122,7 @@ public class PrintService {
     }
 
     if (transferred) {
-      s3.deleteFile(key);
+      s3.deletePrinterBucketFile(key);
     }
     cleanTempResources();
 

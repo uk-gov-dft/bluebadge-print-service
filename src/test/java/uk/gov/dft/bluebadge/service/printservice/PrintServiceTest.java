@@ -63,11 +63,10 @@ public class PrintServiceTest {
 
     service.print(standardBatchPayload());
 
-    verify(s3, times(1)).upload(any(), any());
-    verify(s3, times(1)).listFiles();
-    verify(s3, times(2)).getBucketName();
-    verify(s3, times(1)).downloadFile(any(), any());
-    verify(s3, times(1)).deleteFile(any());
+    verify(s3, times(1)).uploadToPrinterBucket(any(), any());
+    verify(s3, times(1)).listPrinterBucketFiles();
+    verify(s3, times(1)).downloadPrinterFileAsString(any());
+    verify(s3, times(1)).deletePrinterBucketFile(any());
 
     verify(ftp, times(1)).send(any());
 
@@ -79,15 +78,14 @@ public class PrintServiceTest {
   @SneakyThrows
   public void printFailureToUploadToS3() {
     setup();
-    when(s3.upload(any(), any())).thenReturn(false);
+    when(s3.uploadToPrinterBucket(any(), any())).thenReturn(false);
 
     service.print(standardBatchPayload());
 
-    verify(s3, times(1)).upload(any(), any());
-    verify(s3, never()).listFiles();
-    verify(s3, never()).getBucketName();
-    verify(s3, never()).downloadFile(any(), any());
-    verify(s3, never()).deleteFile(any());
+    verify(s3, times(1)).uploadToPrinterBucket(any(), any());
+    verify(s3, never()).listPrinterBucketFiles();
+    verify(s3, never()).downloadPrinterFileAsString(any());
+    verify(s3, never()).deletePrinterBucketFile(any());
 
     verify(ftp, never()).send(any());
 
@@ -99,15 +97,14 @@ public class PrintServiceTest {
   @SneakyThrows
   public void printFailureToDownloadFromS3() {
     setup();
-    when(s3.downloadFile(any(), any())).thenReturn(Optional.empty());
+    when(s3.downloadPrinterFileAsString(any())).thenReturn(Optional.empty());
 
     service.print(standardBatchPayload());
 
-    verify(s3, times(1)).upload(any(), any());
-    verify(s3, times(1)).listFiles();
-    verify(s3, times(2)).getBucketName();
-    verify(s3, times(1)).downloadFile(any(), any());
-    verify(s3, never()).deleteFile(any());
+    verify(s3, times(1)).uploadToPrinterBucket(any(), any());
+    verify(s3, times(1)).listPrinterBucketFiles();
+    verify(s3, times(1)).downloadPrinterFileAsString(any());
+    verify(s3, never()).deletePrinterBucketFile(any());
 
     verify(ftp, never()).send(any());
 
@@ -123,11 +120,10 @@ public class PrintServiceTest {
 
     service.print(standardBatchPayload());
 
-    verify(s3, times(1)).upload(any(), any());
-    verify(s3, times(1)).listFiles();
-    verify(s3, times(2)).getBucketName();
-    verify(s3, times(1)).downloadFile(any(), any());
-    verify(s3, never()).deleteFile(any());
+    verify(s3, times(1)).uploadToPrinterBucket(any(), any());
+    verify(s3, times(1)).listPrinterBucketFiles();
+    verify(s3, times(1)).downloadPrinterFileAsString(any());
+    verify(s3, never()).deletePrinterBucketFile(any());
 
     verify(ftp, times(1)).send(any());
 
@@ -143,11 +139,10 @@ public class PrintServiceTest {
 
     service.print(standardBatchPayload());
 
-    verify(s3, times(1)).upload(any(), any());
-    verify(s3, times(1)).listFiles();
-    verify(s3, times(2)).getBucketName();
-    verify(s3, times(1)).downloadFile(any(), any());
-    verify(s3, never()).deleteFile(any());
+    verify(s3, times(1)).uploadToPrinterBucket(any(), any());
+    verify(s3, times(1)).listPrinterBucketFiles();
+    verify(s3, times(1)).downloadPrinterFileAsString(any());
+    verify(s3, never()).deletePrinterBucketFile(any());
 
     verify(ftp, never()).send(any());
 
@@ -157,15 +152,13 @@ public class PrintServiceTest {
   private void setup()
       throws MalformedURLException, IOException, InterruptedException, Exception,
           XMLStreamException {
-    when(s3.upload(any(), any())).thenReturn(true);
+    when(s3.uploadToPrinterBucket(any(), any())).thenReturn(true);
 
     when(ftp.send(any())).thenReturn(true);
 
     List<String> files = Arrays.asList("printbatch_1.json");
-    when(s3.listFiles()).thenReturn(files);
-
-    when(s3.getBucketName()).thenReturn("bucket");
-    when(s3.downloadFile(any(), any())).thenReturn(Optional.of(testJson));
+    when(s3.listPrinterBucketFiles()).thenReturn(files);
+    when(s3.downloadPrinterFileAsString(any())).thenReturn(Optional.of(testJson));
 
     String xml =
         Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_xml", "BADGEEXTRACT_1.xml")
@@ -173,6 +166,6 @@ public class PrintServiceTest {
     when(xmlConverter.toXml(any(), any())).thenReturn(xml);
 
     when(ftp.send(any())).thenReturn(true);
-    doNothing().when(s3).deleteFile(any());
+    doNothing().when(s3).deletePrinterBucketFile(any());
   }
 }

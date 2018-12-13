@@ -9,7 +9,7 @@ import java.util.Vector;
 public class SFTPUtils {
 
   private String host =
-      System.getenv("sftp_host") == null ? "127.0.0.1" : System.getenv("sftp_host");
+      System.getenv("sftp_host") == null ? "localhost" : System.getenv("sftp_host");
   private int port =
       System.getenv("sftp_port") == null ? 2222 : Integer.parseInt(System.getenv("sftp_port"));
   private String user = System.getenv("sftp_user") == null ? "foo" : System.getenv("sftp_user");
@@ -47,8 +47,6 @@ public class SFTPUtils {
           sftpChannel.rm(dropbox + "/" + item.getFilename()); // Remove file.
         }
       }
-    } catch (Exception e) {
-      System.err.println(e.getMessage());
     } finally {
       sftpChannel.exit();
       session.disconnect();
@@ -72,8 +70,6 @@ public class SFTPUtils {
       sftpChannel = (ChannelSftp) channel;
       sftpChannel.cd(dropbox);
       count = sftpChannel.ls(dropbox).size();
-    } catch (Exception e) {
-      System.err.println(e.getMessage());
     } finally {
       sftpChannel.exit();
       session.disconnect();

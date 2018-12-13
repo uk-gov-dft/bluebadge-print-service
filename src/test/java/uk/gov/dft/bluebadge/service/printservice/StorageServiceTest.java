@@ -60,7 +60,7 @@ public class StorageServiceTest {
     initMocks(this);
 
     S3Config s3Config = new S3Config();
-    s3Config.setS3Bucket("test_bucket");
+    s3Config.setS3PrinterBucket("test_bucket");
     s3Config.setSignedUrlDurationMs(URL_DURATION_MS);
 
     service = new StorageService(s3Config, s3);
@@ -75,7 +75,7 @@ public class StorageServiceTest {
     when(s3.doesObjectExist(any(String.class), any(String.class))).thenReturn(true);
 
     String fileName = "test.json";
-    boolean uploaded = service.upload(testJson, fileName);
+    boolean uploaded = service.uploadToPrinterBucket(testJson, fileName);
 
     assertTrue(uploaded);
     verify(s3, times(1)).putObject(eq("test_bucket"), endsWith("test.json"), eq(testJson));
@@ -90,7 +90,7 @@ public class StorageServiceTest {
     when(s3.doesObjectExist(any(String.class), any(String.class))).thenReturn(true);
     when(s3.getObjectAsString(any(String.class), any(String.class))).thenReturn(testJson);
 
-    Optional<String> actual = service.downloadFile("test_bucker", "test.json");
+    Optional<String> actual = service.downloadPrinterFileAsString("test.json");
 
     assertNotNull(actual.get());
   }
@@ -101,7 +101,7 @@ public class StorageServiceTest {
   public void deleteFile() {
     doNothing().when(s3).deleteObject(any(), eq("test.json"));
 
-    service.deleteFile("test.json");
+    service.deletePrinterBucketFile("test.json");
 
     verify(s3, times(1)).deleteObject(any(), eq("test.json"));
   }
@@ -113,7 +113,7 @@ public class StorageServiceTest {
     ObjectListing result = mock(ObjectListing.class);
     when(s3.listObjects(any(String.class))).thenReturn(result);
 
-    service.listFiles();
+    service.listPrinterBucketFiles();
 
     verify(s3, times(1)).listObjects(any(String.class));
   }

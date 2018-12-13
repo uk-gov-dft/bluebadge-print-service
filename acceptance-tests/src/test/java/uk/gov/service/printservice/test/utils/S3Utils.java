@@ -2,17 +2,17 @@ package uk.gov.service.printservice.test.utils;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
+import java.net.URISyntaxException;
 
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class S3Utils {
   private final AmazonS3 s3;
 
@@ -52,57 +52,35 @@ public class S3Utils {
     }
   }
 
-  public boolean uploadFile(String bucketName, String dir, File file) throws Exception {
+  public boolean uploadObject(String bucketName, String dir, File file) throws Exception {
     if (s3.doesBucketExistV2(bucketName)) {
       PutObjectRequest request = new PutObjectRequest(bucketName, dir + "/" + file.getName(), file);
       s3.putObject(request);
-      boolean uploaded = s3.doesObjectExist(bucketName, dir + "/" + file.getName());
-      return uploaded;
+      return s3.doesObjectExist(bucketName, dir + "/" + file.getName());
     } else {
       throw new Exception("Bucket `" + bucketName + "` doesn't exist");
     }
   }
 
-  public void cleanBucket(String bucketName) throws Exception {
-    if (s3.doesBucketExistV2(bucketName)) {
-      // delete pictures
-      ListObjectsRequest listObjectsRequest =
-          new ListObjectsRequest().withBucketName(bucketName).withPrefix("pictures/");
+  public void removeObject(String bucket, String key){
+    s3.deleteObject(bucket, key);
+  }
 
-      ObjectListing objectListing = s3.listObjects(listObjectsRequest);
-
-      while (true) {
-        for (S3ObjectSummary objectSummary : objectListing.getObjectSummaries()) {
-          s3.deleteObject(bucketName, objectSummary.getKey());
-        }
-        if (objectListing.isTruncated()) {
-          objectListing = s3.listNextBatchOfObjects(objectListing);
-        } else {
-          break;
-        }
-      }
-      s3.deleteObject(bucketName, "pictures/");
-
-    } else {
-      throw new Exception("Bucket `" + bucketName + "` doesn't exist");
+  public void cleanBucket(String bucketName) {
+    for(S3ObjectSummary objectSummary : s3.listObjects(bucketName).getObjectSummaries()){
+      s3.deleteObject(bucketName, objectSummary.getKey());
     }
   }
 
-  public void setupBucket(String bucketName) throws Exception {
-    if (s3.doesBucketExistV2(bucketName)) {
-      createFolder(bucketName, "pictures");
-
-      for (int i = 1; i < 4; i++) {
-        Path picPath =
-            FileSystems.getDefault()
-                .getPath("src", "test", "resources", "pictures", "smile" + i + ".jpg")
-                .normalize()
-                .toAbsolutePath();
-
-        uploadFile(bucketName, "pictures", picPath.toFile());
-      }
-    } else {
-      throw new Exception("Bucket `" + bucketName + "` doesn't exist");
+  public String putObject(String bucket, String fileName, String s3key) throws URISyntaxException {
+    File f = new File(this.getClass().getResource(fileName).toURI());
+    if (!s3.doesObjectExist(bucket, s3key)) {
+      s3.putObject(bucket, s3key, f);
     }
+    return s3key;
+  }
+
+  public String putObject(String bucket, String fileName) throws URISyntaxException {
+    return putObject(bucket, fileName, fileName);
   }
 }

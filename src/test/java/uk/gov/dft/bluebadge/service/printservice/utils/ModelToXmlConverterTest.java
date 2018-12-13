@@ -40,7 +40,7 @@ import uk.gov.dft.bluebadge.service.printservice.referencedata.ReferenceDataServ
 
 @RunWith(JUnitPlatform.class)
 @Slf4j
-public class ModelToXmlConverterTest {
+class ModelToXmlConverterTest {
 
   private StorageService s3 = mock(StorageService.class);
   private final ReferenceDataService referenceData = mock(ReferenceDataService.class);
@@ -69,10 +69,10 @@ public class ModelToXmlConverterTest {
   @DisplayName("Should convert model and save standard xml file in temp folder")
   @SneakyThrows
   @Test
-  public void convertStandardBatchAndSave() {
+  void convertStandardBatchAndSave() {
     Path xmlDir = Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_xml");
     File picture = new File(s3PictureFilePath);
-    when(s3.downloadFile(any())).thenReturn(Optional.of(Files.readAllBytes(picture.toPath())));
+    when(s3.downloadBadgeFile(any())).thenReturn(Optional.of(Files.readAllBytes(picture.toPath())));
     when(referenceData.retrieveLocalAuthority("ANGL")).thenReturn(welshLocalAuthority());
     when(referenceData.retrieveLocalAuthority("GLOCC")).thenReturn(englishLocalAuthority());
 
@@ -85,10 +85,10 @@ public class ModelToXmlConverterTest {
   @DisplayName("Should convert model and save FastTrack xml file in temp folder")
   @SneakyThrows
   @Test
-  public void convertFastTrackBatchAndSave() {
+  void convertFastTrackBatchAndSave() {
     Path xmlDir = Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_xml");
     File picture = new File(s3PictureFilePath);
-    when(s3.downloadFile(any())).thenReturn(Optional.of(Files.readAllBytes(picture.toPath())));
+    when(s3.downloadBadgeFile(any())).thenReturn(Optional.of(Files.readAllBytes(picture.toPath())));
     when(referenceData.retrieveLocalAuthority("ANGL")).thenReturn(welshLocalAuthority());
     when(referenceData.retrieveLocalAuthority("GLOCC")).thenReturn(englishLocalAuthority());
 
@@ -101,7 +101,7 @@ public class ModelToXmlConverterTest {
   @DisplayName("Should return IssuingCountry = `W` for LACode=ANGL")
   @SneakyThrows
   @Test
-  public void testIssuingCountryWales() {
+  void testIssuingCountryWales() {
     String xmlPath = saveXmlFile();
 
     DocumentBuilder builder = getDocumentBuilder();
@@ -121,7 +121,7 @@ public class ModelToXmlConverterTest {
   @DisplayName("Should return LanguageCode = `EW` for LACode=ANGL")
   @SneakyThrows
   @Test
-  public void testLanguageCodeWales() {
+  void testLanguageCodeWales() {
     String xmlPath = saveXmlFile();
 
     DocumentBuilder builder = getDocumentBuilder();
@@ -141,7 +141,7 @@ public class ModelToXmlConverterTest {
   @DisplayName("Should return ClockType = `WALLET` for LACode=ANGL")
   @SneakyThrows
   @Test
-  public void testClockTypeWales() {
+  void testClockTypeWales() {
     String xmlPath = saveXmlFile();
 
     DocumentBuilder builder = getDocumentBuilder();
@@ -161,7 +161,7 @@ public class ModelToXmlConverterTest {
   @DisplayName("Should return IssuingCountry = `E` for LACode=GLOCC")
   @SneakyThrows
   @Test
-  public void testIssuingCountryEngland() {
+  void testIssuingCountryEngland() {
     String xmlPath = saveXmlFile();
 
     DocumentBuilder builder = getDocumentBuilder();
@@ -181,7 +181,7 @@ public class ModelToXmlConverterTest {
   @DisplayName("Should return LanguageCode = `E` for LACode=GLOCC")
   @SneakyThrows
   @Test
-  public void testLanguageCodeEngland() {
+  void testLanguageCodeEngland() {
     String xmlPath = saveXmlFile();
 
     DocumentBuilder builder = getDocumentBuilder();
@@ -201,7 +201,7 @@ public class ModelToXmlConverterTest {
   @DisplayName("Should return ClockType = `STANDARD` for LACode=GLOCC")
   @SneakyThrows
   @Test
-  public void testClockTypeEngland() {
+  void testClockTypeEngland() {
     String xmlPath = saveXmlFile();
 
     DocumentBuilder builder = getDocumentBuilder();
@@ -222,7 +222,7 @@ public class ModelToXmlConverterTest {
       "Should return PrintedBadgeReference = `AA12BB 9 0377X0121` for BadgeIdentifier=AA12BB")
   @SneakyThrows
   @Test
-  public void testBadgeIdentifierForPerson() {
+  void testBadgeIdentifierForPerson() {
     String xmlPath = saveXmlFile();
 
     DocumentBuilder builder = getDocumentBuilder();
@@ -242,7 +242,7 @@ public class ModelToXmlConverterTest {
   @DisplayName("Should return PrintedBadgeReference = `CC12DD 9 O0121` for BadgeIdentifier=CC12DD")
   @SneakyThrows
   @Test
-  public void testBadgeIdentifierForOrganisation() {
+  void testBadgeIdentifierForOrganisation() {
     String xmlPath = saveXmlFile();
 
     DocumentBuilder builder = getDocumentBuilder();
@@ -262,9 +262,9 @@ public class ModelToXmlConverterTest {
   @DisplayName("Should return organisation stock photo for BadgeIdentifier=CC12DD")
   @SneakyThrows
   @Test
-  public void testStockPhotoForOrganisation() {
+  void testStockPhotoForOrganisation() {
     Path xmlDir = Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_xml");
-    when(s3.downloadFile(any())).thenReturn(Optional.empty());
+    when(s3.downloadBadgeFile(any())).thenReturn(Optional.empty());
     when(referenceData.retrieveLocalAuthority("ANGL")).thenReturn(welshLocalAuthority());
     when(referenceData.retrieveLocalAuthority("GLOCC")).thenReturn(englishLocalAuthority());
 
@@ -292,7 +292,7 @@ public class ModelToXmlConverterTest {
   @DisplayName("Should return DispatchMethodCode = `M` for BadgeIdentifier=AA12BB")
   @SneakyThrows
   @Test
-  public void testDispatchMethodCodeToHome() {
+  void testDispatchMethodCodeToHome() {
     String xmlPath = saveXmlFile();
 
     DocumentBuilder builder = getDocumentBuilder();
@@ -312,7 +312,7 @@ public class ModelToXmlConverterTest {
   @DisplayName("Should return DispatchMethodCode = `C` for BadgeIdentifier=CC12DD")
   @SneakyThrows
   @Test
-  public void testDispatchMethodCodeToCouncil() {
+  void testDispatchMethodCodeToCouncil() {
     String xmlPath = saveXmlFile();
 
     DocumentBuilder builder = getDocumentBuilder();
@@ -332,7 +332,7 @@ public class ModelToXmlConverterTest {
   @DisplayName("Should return FastTrackCode = `N` for BadgeIdentifier=AA12BB")
   @SneakyThrows
   @Test
-  public void testFastTrackCodeNo() {
+  void testFastTrackCodeNo() {
     String xmlPath = saveXmlFile();
 
     DocumentBuilder builder = getDocumentBuilder();
@@ -352,7 +352,7 @@ public class ModelToXmlConverterTest {
   @DisplayName("Should return FastTrackCode = `Y` for BadgeIdentifier=AA34BB")
   @SneakyThrows
   @Test
-  public void testFastTrackCodeYes() {
+  void testFastTrackCodeYes() {
     String xmlPath = saveXmlFile();
 
     DocumentBuilder builder = getDocumentBuilder();
@@ -372,7 +372,7 @@ public class ModelToXmlConverterTest {
   @DisplayName("Should return PostageCode = `SC` for BadgeIdentifier=AA12BB")
   @SneakyThrows
   @Test
-  public void testPostageCodeSC() {
+  void testPostageCodeSC() {
     String xmlPath = saveXmlFile();
 
     DocumentBuilder builder = getDocumentBuilder();
@@ -392,7 +392,7 @@ public class ModelToXmlConverterTest {
   @DisplayName("Should return PostageCode = `SD1` for BadgeIdentifier=AA34BB")
   @SneakyThrows
   @Test
-  public void testPostageCodeSD1() {
+  void testPostageCodeSD1() {
     String xmlPath = saveXmlFile();
 
     DocumentBuilder builder = getDocumentBuilder();
@@ -412,7 +412,7 @@ public class ModelToXmlConverterTest {
   @DisplayName("Should return BarCodeData = `77X0121` for BadgeIdentifier=AA12BB")
   @SneakyThrows
   @Test
-  public void testBarCodeDataForPerson() {
+  void testBarCodeDataForPerson() {
     String xmlPath = saveXmlFile();
 
     DocumentBuilder builder = getDocumentBuilder();
@@ -432,7 +432,7 @@ public class ModelToXmlConverterTest {
   @DisplayName("Should return BarCodeData = `O0121` for BadgeIdentifier=CC12DD")
   @SneakyThrows
   @Test
-  public void testBarCodeDataForOrganisation() {
+  void testBarCodeDataForOrganisation() {
     String xmlPath = saveXmlFile();
 
     DocumentBuilder builder = getDocumentBuilder();
@@ -453,7 +453,7 @@ public class ModelToXmlConverterTest {
       "Should return populate only Forename=`Jane Second` and leave Surname blank for BadgeIdentifier=AA34BB")
   @SneakyThrows
   @Test
-  public void testShortName() {
+  void testShortName() {
     String xmlPath = saveXmlFile();
 
     DocumentBuilder builder = getDocumentBuilder();
@@ -479,7 +479,7 @@ public class ModelToXmlConverterTest {
       "Should return populate Forename=`Michelangelo` and Surname=`Lodovico Buonarroti Simoni` for BadgeIdentifier=AA12BB")
   @SneakyThrows
   @Test
-  public void testLongName() {
+  void testLongName() {
     String xmlPath = saveXmlFile();
 
     DocumentBuilder builder = getDocumentBuilder();
@@ -504,7 +504,7 @@ public class ModelToXmlConverterTest {
   @DisplayName("Should deliver to council address for BadgeIdentifier=CC12DD")
   @SneakyThrows
   @Test
-  public void testDeliveryToCouncilAddress() {
+  void testDeliveryToCouncilAddress() {
     String xmlPath = saveXmlFile();
 
     DocumentBuilder builder = getDocumentBuilder();
@@ -531,8 +531,7 @@ public class ModelToXmlConverterTest {
   private DocumentBuilder getDocumentBuilder() throws ParserConfigurationException {
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     factory.setNamespaceAware(true); // never forget this!
-    DocumentBuilder builder = factory.newDocumentBuilder();
-    return builder;
+    return factory.newDocumentBuilder();
   }
 
   private String saveXmlFile() throws IOException, XMLStreamException {
@@ -541,7 +540,7 @@ public class ModelToXmlConverterTest {
             .toString();
     Path xmlDir = Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_xml");
     File picture = new File(s3PictureFilePath);
-    when(s3.downloadFile(any())).thenReturn(Optional.of(Files.readAllBytes(picture.toPath())));
+    when(s3.downloadBadgeFile(any())).thenReturn(Optional.of(Files.readAllBytes(picture.toPath())));
     when(referenceData.retrieveLocalAuthority("ANGL")).thenReturn(welshLocalAuthority());
     when(referenceData.retrieveLocalAuthority("GLOCC")).thenReturn(englishLocalAuthority());
 

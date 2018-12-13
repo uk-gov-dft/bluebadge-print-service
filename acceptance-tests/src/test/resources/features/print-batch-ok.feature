@@ -8,9 +8,11 @@ Feature: Verify Print batch ok
     * def S3Utils = Java.type('uk.gov.service.printservice.test.utils.S3Utils')
     * def SFTPUtils = Java.type('uk.gov.service.printservice.test.utils.SFTPUtils')
     * def System = Java.type('java.lang.System')
+    * def env = System.getenv('bb_env')
     * def s3 = new S3Utils()
     * def ftp = new SFTPUtils()
-    * def bucketName = 'uk-gov-dft-' + System.getenv('bb_env') +'-printer'
+    * def printerBucketName = 'uk-gov-dft-' + (env == null ? 'ci' : env) +'-printer'
+    * def badgeBucketName = 'uk-gov-dft-' + (env == null ? 'ci' : env) +'-badge'
 
   Scenario: Verify valid print batch
     * def batch =
@@ -97,21 +99,24 @@ Feature: Verify Print batch ok
 		  } ]
 		}
     """
-	* set batch.Badges[0].imageLink = "https://s3.eu-west-2.amazonaws.com/" + bucketName + "/pictures/smile1.jpg"
-	* set batch.Badges[1].imageLink = "https://s3.eu-west-2.amazonaws.com/" + bucketName + "/pictures/smile2.jpg"
-	* set batch.Badges[2].imageLink = "https://s3.eu-west-2.amazonaws.com/" + bucketName + "/pictures/smile3.jpg"
+	* set batch.Badges[0].imageLink = "/pictures/smile1.jpg"
+	* set batch.Badges[1].imageLink = "/pictures/smile2.jpg"
+	* set batch.Badges[2].imageLink = "/pictures/smile3.jpg"
 
-	* eval s3.cleanBucket(bucketName)
-	* eval s3.setupBucket(bucketName)
+	* eval s3.putObject(badgeBucketName, '/pictures/smile1.jpg')
+    * eval s3.putObject(badgeBucketName, '/pictures/smile2.jpg')
+    * eval s3.putObject(badgeBucketName, '/pictures/smile3.jpg')
 	* eval ftp.clean()
-	* def fileCountBefore = ftp.getFileCount()
-	* def beforeCount = s3.getNumberOfFilesInABucket(bucketName)
-	* print beforeCount
+	* def ftpFileCountBefore = ftp.getFileCount()
+    * eval s3.cleanBucket(printerBucketName)
+	* def s3FileCountBefore = s3.getNumberOfFilesInABucket(printerBucketName)
     Given path 'printBatch'
     And request batch
     When method POST
     Then status 200
-	* def fileCountAfter = ftp.getFileCount()
-	* def afterCount = s3.getNumberOfFilesInABucket(bucketName)
-	* assert afterCount == beforeCount
-	* assert fileCountBefore + 1 == fileCountAfter
+	* def ftpFileCountAfter = ftp.getFileCount()
+	* def s3FileCountAfter = s3.getNumberOfFilesInABucket(printerBucketName)
+    * print 'ftpbefore:' + ftpFileCountBefore + ',ftpAfterCount:' + ftpFileCountAfter
+    * print 's3before:' + s3FileCountBefore + ',s3AfterCount:' + s3FileCountAfter
+	* assert s3FileCountBefore == s3FileCountAfter
+	* assert ftpFileCountBefore + 1 == ftpFileCountAfter

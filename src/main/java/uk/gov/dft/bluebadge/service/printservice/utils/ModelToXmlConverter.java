@@ -35,7 +35,7 @@ public class ModelToXmlConverter {
   private final StorageService s3;
   private final ReferenceDataService referenceData;
 
-  public ModelToXmlConverter(StorageService s3, ReferenceDataService referenceData) {
+  ModelToXmlConverter(StorageService s3, ReferenceDataService referenceData) {
     this.s3 = s3;
     this.referenceData = referenceData;
   }
@@ -69,7 +69,7 @@ public class ModelToXmlConverter {
       writeLocalAuthority(writer, la);
       writer.writeStartElement("Badges");
       for (Badge badge : ordered.get(la)) {
-        writeBadgeDetails(writer, badge, la, xmlDir);
+        writeBadgeDetails(writer, badge, la);
       }
       writer.writeEndElement();
       writer.writeEndElement();
@@ -100,7 +100,7 @@ public class ModelToXmlConverter {
     return xmlFile;
   }
 
-  private void writeBadgeDetails(XMLStreamWriter writer, Badge badge, String laCode, Path xmlDir)
+  private void writeBadgeDetails(XMLStreamWriter writer, Badge badge, String laCode)
       throws XMLStreamException, IOException {
     writer.writeStartElement("BadgeDetails");
 
@@ -134,7 +134,7 @@ public class ModelToXmlConverter {
     writer.writeEndElement();
 
     writer.writeStartElement("photo");
-    Optional<byte[]> imageFile = s3.downloadFile(badge.getImageLink());
+    Optional<byte[]> imageFile = s3.downloadBadgeFile(badge.getImageLink());
     if (imageFile.isPresent()) {
       String image = toBase64(imageFile.get());
       writer.writeCharacters(image);
@@ -299,13 +299,13 @@ public class ModelToXmlConverter {
     writer.writeEndElement();
   }
 
-  private String toBase64(byte[] src) throws IOException {
+  private String toBase64(byte[] src) {
     return Base64.getEncoder().encodeToString(src);
   }
 
   private Map<String, List<Badge>> groupByLA(Batch batch) {
 
-    return batch.getBadges().stream().collect(groupingBy(b -> b.getLocalAuthorityShortCode()));
+    return batch.getBadges().stream().collect(groupingBy(Badge::getLocalAuthorityShortCode));
   }
 
   private String mapGender(String code) {
@@ -340,8 +340,7 @@ public class ModelToXmlConverter {
     String gender = isPerson ? mapGender(badge.getParty().getPerson().getGenderCode()) : "O";
     String expiry = badge.getExpiryDate().format(DateTimeFormatter.ofPattern("MMyy"));
 
-    String reference = badge.getBadgeNumber() + " 9 " + dob + gender + expiry;
-    return reference;
+    return badge.getBadgeNumber() + " 9 " + dob + gender + expiry;
   }
 
   private String getBarCode(Badge badge, String reference) {
