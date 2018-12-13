@@ -1,6 +1,5 @@
 package uk.gov.dft.bluebadge.service.printservice;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -12,17 +11,13 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.testJson;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.transfer.Download;
-import com.amazonaws.services.s3.transfer.MultipleFileDownload;
-import com.amazonaws.services.s3.transfer.TransferManager;
-import com.amazonaws.services.s3.transfer.Upload;
-import com.amazonaws.services.s3.transfer.model.UploadResult;
-import java.io.File;
-import java.net.URL;
-import java.nio.file.Path;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.PutObjectResult;
 import java.nio.file.Paths;
+import java.util.Optional;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
@@ -42,9 +37,6 @@ public class StorageServiceTest {
 
   private StorageService service;
   @Mock private AmazonS3 s3;
-  @Mock private TransferManager transferManager;
-  private URL s3ObjectURL;
-  private URL s3SignedUrl;
 
   private String originalTmpDir = System.getProperty("java.io.tmpdir");
 
@@ -71,69 +63,36 @@ public class StorageServiceTest {
     s3Config.setS3Bucket("test_bucket");
     s3Config.setSignedUrlDurationMs(URL_DURATION_MS);
 
-    service = new StorageService(s3Config, s3, transferManager);
+    service = new StorageService(s3Config, s3);
   }
 
   @Test
   @DisplayName("Should upload json file to s3")
   @SneakyThrows
   public void upload() {
-    s3ObjectURL = new URL("http://test");
-    s3SignedUrl = new URL("http://testSigned");
+    PutObjectResult result = mock(PutObjectResult.class);
+    when(s3.putObject(any(String.class), any(String.class), any(String.class))).thenReturn(result);
+    when(s3.doesObjectExist(any(String.class), any(String.class))).thenReturn(true);
 
-    Upload upload = mock(Upload.class);
-    when(transferManager.upload(any(), any(), any(), any())).thenReturn(upload);
+    String fileName = "test.json";
+    boolean uploaded = service.upload(testJson, fileName);
 
-    UploadResult uploadResult = mock(UploadResult.class);
-    when(upload.waitForUploadResult()).thenReturn(uploadResult);
-    when(uploadResult.getBucketName()).thenReturn("resultBucket");
-    when(uploadResult.getKey()).thenReturn("resultKey");
-
-    when(s3.getUrl("resultBucket", "resultKey")).thenReturn(s3ObjectURL);
-    when(s3.generatePresignedUrl(any())).thenReturn(s3SignedUrl);
-
-    File file = new File("src/test/resources/printbatch_20181127122345.json");
-    URL s3Json = service.upload(file);
-
-    assertNotNull(s3Json);
-    assertEquals(s3SignedUrl, s3Json);
-    verify(transferManager, times(1))
-        .upload(eq("test_bucket"), endsWith("printbatch_20181127122345.json"), any(), any());
+    assertTrue(uploaded);
+    verify(s3, times(1)).putObject(eq("test_bucket"), endsWith("test.json"), eq(testJson));
+    verify(s3, times(1)).doesObjectExist(eq("test_bucket"), endsWith("test.json"));
   }
 
   @Test
-  @DisplayName("Should download all files from the bucket")
-  public void download() {
-
-    MultipleFileDownload download = mock(MultipleFileDownload.class);
-    File tmpDir =
-        Paths.get(
-                System.getProperty("java.io.tmpdir"), "printbatch_src", "printbatch_20181129123055")
-            .toFile();
-
-    when(transferManager.downloadDirectory(any(), eq(null), eq(tmpDir), eq(true)))
-        .thenReturn(download);
-
-    File dir = service.downloadBucket();
-
-    assertNotNull(dir);
-    assertTrue(dir.exists());
-  }
-
-  @Test
-  @DisplayName("Should download a file form a bucket")
+  @DisplayName("Should download a json string form a bucket")
   @SneakyThrows
-  public void downloadFile() {
+  public void downloadJson() {
 
-    Path tmpDir = Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_src");
-    File testJson = tmpDir.resolve("test.json").toFile();
-    Download download = mock(Download.class);
-    when(transferManager.download(any(), eq("test.json"), eq(testJson))).thenReturn(download);
+    when(s3.doesObjectExist(any(String.class), any(String.class))).thenReturn(true);
+    when(s3.getObjectAsString(any(String.class), any(String.class))).thenReturn(testJson);
 
-    service.downloadFile("", "test.json", tmpDir);
+    Optional<String> actual = service.downloadFile("test_bucker", "test.json");
 
-    assertNotNull(testJson);
-    assertTrue(testJson.exists());
+    assertNotNull(actual.get());
   }
 
   @Test
@@ -151,7 +110,8 @@ public class StorageServiceTest {
   @DisplayName("Should verify list all objects has been invoked")
   @SneakyThrows
   public void listFiles() {
-    doNothing().when(s3).listObjects(any(String.class));
+    ObjectListing result = mock(ObjectListing.class);
+    when(s3.listObjects(any(String.class))).thenReturn(result);
 
     service.listFiles();
 

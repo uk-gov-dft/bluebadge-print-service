@@ -16,6 +16,8 @@ import uk.gov.dft.bluebadge.service.printservice.model.Person;
 
 public class TestDataFixtures {
 
+  public static String testJson = "{\"filename\" : \"filename1\", \"batchType\" : \"STANDARD\"}";
+
   public static Batches batchesPayload() {
     Batches xmlBatches = new Batches();
     xmlBatches.add(batch1());
@@ -49,9 +51,9 @@ public class TestDataFixtures {
   public static LocalAuthorityRefData englishLocalAuthority() {
     LocalAuthorityRefData la = new LocalAuthorityRefData();
 
-    la.setShortCode("LBKC");
+    la.setShortCode("GLOCC");
     la.setDescription("LA description");
-    la.setLocalAuthorityMetaData(laMetaData("LBKC", Nation.ENG));
+    la.setLocalAuthorityMetaData(laMetaData("GLOCC", Nation.ENG));
 
     return la;
   }
@@ -134,10 +136,10 @@ public class TestDataFixtures {
 
     Badge details = new Badge();
     details.setBadgeNumber("CC12DD");
-    details.setLocalAuthorityShortCode("LBKC");
+    details.setLocalAuthorityShortCode("GLOCC");
     details.setStartDate(LocalDate.of(2019, 01, 02));
     details.setExpiryDate(LocalDate.of(2021, 1, 1));
-    details.setImageLink("http://url_to_s3_bucket_photo3");
+    details.setImageLink(null);
     details.setParty(
         organisationParty(
             createContact(
@@ -153,7 +155,7 @@ public class TestDataFixtures {
 
     Badge details = new Badge();
     details.setBadgeNumber("CC34DD");
-    details.setLocalAuthorityShortCode("LBKC");
+    details.setLocalAuthorityShortCode("GLOCC");
     details.setStartDate(LocalDate.of(2019, 01, 02));
     details.setExpiryDate(LocalDate.of(2021, 1, 1));
     details.setImageLink("http://url_to_s3_bucket_photo4");

@@ -47,7 +47,9 @@ amazon:
   signed-url-duration-ms: 60000
    
 ftp:
-  host: localhost:2222
+  host: 127.0.0.1
+  port: 2222
   user: foo
    ***REMOVED***
-  dropbox: /host/upload  
+  dropbox: /upload
+  knownhosts: ~/.ssh/sftp_known_hosts

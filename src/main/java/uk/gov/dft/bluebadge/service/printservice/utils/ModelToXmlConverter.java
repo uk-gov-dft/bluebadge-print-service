@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
@@ -133,11 +134,21 @@ public class ModelToXmlConverter {
     writer.writeEndElement();
 
     writer.writeStartElement("photo");
-    Path picturesDir = xmlDir.resolve("pictures");
-    Optional<File> imageFile = s3.downloadFile(badge.getImageLink(), picturesDir);
+    Optional<byte[]> imageFile = s3.downloadFile(badge.getImageLink());
     if (imageFile.isPresent()) {
       String image = toBase64(imageFile.get());
       writer.writeCharacters(image);
+    } else {
+      boolean isOrganisation = badge.getParty().getTypeCode().equals("ORG");
+      if (isOrganisation) {
+        LocalAuthorityRefData la = referenceData.retrieveLocalAuthority(laCode);
+        String nation = la.getLocalAuthorityMetaData().getNation().getCode();
+        Path orgE = Paths.get("src", "main", "resources", "pictures", "org_E.jpg");
+        Path orgW = Paths.get("src", "main", "resources", "pictures", "org_W.jpg");
+        File orgImageFile = nation.equalsIgnoreCase("W") ? orgW.toFile() : orgE.toFile();
+        String image = toBase64(Files.readAllBytes(orgImageFile.toPath()));
+        writer.writeCharacters(image);
+      }
     }
     writer.writeEndElement();
 
@@ -288,8 +299,8 @@ public class ModelToXmlConverter {
     writer.writeEndElement();
   }
 
-  private String toBase64(File file) throws IOException {
-    return Base64.getEncoder().encodeToString(Files.readAllBytes(file.toPath()));
+  private String toBase64(byte[] src) throws IOException {
+    return Base64.getEncoder().encodeToString(src);
   }
 
   private Map<String, List<Badge>> groupByLA(Batch batch) {

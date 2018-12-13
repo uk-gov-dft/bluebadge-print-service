@@ -9,11 +9,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.standardBatchPayload;
+import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.testJson;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
@@ -21,7 +20,6 @@ import java.util.Optional;
 import javax.xml.stream.XMLStreamException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.net.ftp.FTPClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -58,43 +56,39 @@ public class PrintServiceTest {
   }
 
   @Test
-  @DisplayName("Should convert received payload into json file and send to save on s3")
+  @DisplayName("Should convert received payload into json content and send to save on s3")
   @SneakyThrows
   public void printSuccess() {
     setup();
 
     service.print(standardBatchPayload());
 
-    verify(s3, times(1)).upload(any());
+    verify(s3, times(1)).upload(any(), any());
     verify(s3, times(1)).listFiles();
-    verify(s3, times(1)).getBucketName();
-    verify(s3, times(1)).downloadFile(any(), any(), any());
+    verify(s3, times(2)).getBucketName();
+    verify(s3, times(1)).downloadFile(any(), any());
     verify(s3, times(1)).deleteFile(any());
 
-    verify(ftp, times(1)).connect();
-    verify(ftp, times(1)).disconnect();
     verify(ftp, times(1)).send(any());
 
     verify(xmlConverter, times(1)).toXml(any(), any());
   }
 
   @Test
-  @DisplayName("Should fail if file can't be uploaded on s3")
+  @DisplayName("Should fail if json content can't be uploaded on s3")
   @SneakyThrows
   public void printFailureToUploadToS3() {
     setup();
-    when(s3.upload(any())).thenReturn(null);
+    when(s3.upload(any(), any())).thenReturn(false);
 
     service.print(standardBatchPayload());
 
-    verify(s3, times(1)).upload(any());
+    verify(s3, times(1)).upload(any(), any());
     verify(s3, never()).listFiles();
     verify(s3, never()).getBucketName();
-    verify(s3, never()).downloadFile(any(), any(), any());
+    verify(s3, never()).downloadFile(any(), any());
     verify(s3, never()).deleteFile(any());
 
-    verify(ftp, never()).connect();
-    verify(ftp, never()).disconnect();
     verify(ftp, never()).send(any());
 
     verify(xmlConverter, never()).toXml(any(), any());
@@ -105,18 +99,16 @@ public class PrintServiceTest {
   @SneakyThrows
   public void printFailureToDownloadFromS3() {
     setup();
-    when(s3.downloadFile(any(), any(), any())).thenReturn(Optional.empty());
+    when(s3.downloadFile(any(), any())).thenReturn(Optional.empty());
 
     service.print(standardBatchPayload());
 
-    verify(s3, times(1)).upload(any());
+    verify(s3, times(1)).upload(any(), any());
     verify(s3, times(1)).listFiles();
-    verify(s3, times(1)).getBucketName();
-    verify(s3, times(1)).downloadFile(any(), any(), any());
+    verify(s3, times(2)).getBucketName();
+    verify(s3, times(1)).downloadFile(any(), any());
     verify(s3, never()).deleteFile(any());
 
-    verify(ftp, times(1)).connect();
-    verify(ftp, times(1)).disconnect();
     verify(ftp, never()).send(any());
 
     verify(xmlConverter, never()).toXml(any(), any());
@@ -131,14 +123,12 @@ public class PrintServiceTest {
 
     service.print(standardBatchPayload());
 
-    verify(s3, times(1)).upload(any());
+    verify(s3, times(1)).upload(any(), any());
     verify(s3, times(1)).listFiles();
-    verify(s3, times(1)).getBucketName();
-    verify(s3, times(1)).downloadFile(any(), any(), any());
+    verify(s3, times(2)).getBucketName();
+    verify(s3, times(1)).downloadFile(any(), any());
     verify(s3, never()).deleteFile(any());
 
-    verify(ftp, times(1)).connect();
-    verify(ftp, times(1)).disconnect();
     verify(ftp, times(1)).send(any());
 
     verify(xmlConverter, times(1)).toXml(any(), any());
@@ -153,14 +143,12 @@ public class PrintServiceTest {
 
     service.print(standardBatchPayload());
 
-    verify(s3, times(1)).upload(any());
+    verify(s3, times(1)).upload(any(), any());
     verify(s3, times(1)).listFiles();
-    verify(s3, times(1)).getBucketName();
-    verify(s3, times(1)).downloadFile(any(), any(), any());
+    verify(s3, times(2)).getBucketName();
+    verify(s3, times(1)).downloadFile(any(), any());
     verify(s3, never()).deleteFile(any());
 
-    verify(ftp, times(1)).connect();
-    verify(ftp, times(1)).disconnect();
     verify(ftp, never()).send(any());
 
     verify(xmlConverter, times(1)).toXml(any(), any());
@@ -169,21 +157,15 @@ public class PrintServiceTest {
   private void setup()
       throws MalformedURLException, IOException, InterruptedException, Exception,
           XMLStreamException {
-    URL s3Url = new URL("http://path_to_printbatch.json");
-    when(s3.upload(any())).thenReturn(s3Url);
+    when(s3.upload(any(), any())).thenReturn(true);
 
-    FTPClient client = mock(FTPClient.class);
-    when(ftp.connect()).thenReturn(client);
-    doNothing().when(ftp).disconnect();
+    when(ftp.send(any())).thenReturn(true);
 
     List<String> files = Arrays.asList("printbatch_1.json");
     when(s3.listFiles()).thenReturn(files);
 
     when(s3.getBucketName()).thenReturn("bucket");
-    File batch =
-        Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_json", "printbatch_1.json")
-            .toFile();
-    when(s3.downloadFile(any(), any(), any())).thenReturn(Optional.of(batch));
+    when(s3.downloadFile(any(), any())).thenReturn(Optional.of(testJson));
 
     String xml =
         Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_xml", "BADGEEXTRACT_1.xml")

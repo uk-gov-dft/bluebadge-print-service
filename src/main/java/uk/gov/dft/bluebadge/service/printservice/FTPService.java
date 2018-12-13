@@ -1,11 +1,12 @@
 package uk.gov.dft.bluebadge.service.printservice;
 
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPReply;
 import org.springframework.stereotype.Service;
 import uk.gov.dft.bluebadge.service.printservice.config.FTPClientConfig;
 
@@ -19,35 +20,30 @@ public class FTPService {
     this.ftpConfig = ftpConfig;
   }
 
-  public FTPClient connect() throws Exception {
-    FTPClient ftp = ftpConfig.ftpClient();
-    ftp.connect(ftpConfig.getHost());
+  public boolean send(String filename) {
+    JSch jsch = new JSch();
+    Session session = null;
+    ChannelSftp sftpChannel = null;
+    try {
+      session = jsch.getSession(ftpConfig.getUser(), ftpConfig.getHost(), ftpConfig.getPort());
+      session.setConfig("StrictHostKeyChecking", "no");
+      session.setPassword(ftpConfig.getPassword());
+      session.connect();
 
-    int reply = ftp.getReplyCode();
-    if (!FTPReply.isPositiveCompletion(reply)) {
-      ftp.disconnect();
-      log.error("Exception in connecting to FTP Server");
-      throw new Exception("Exception in connecting to FTP Server");
+      Channel channel = session.openChannel("sftp");
+      channel.connect();
+      sftpChannel = (ChannelSftp) channel;
+      sftpChannel.cd(ftpConfig.getDropbox());
+      File file = new File(filename);
+      sftpChannel.put(new FileInputStream(file), file.getName(), ChannelSftp.OVERWRITE);
+    } catch (Exception e) {
+      log.error("Error happend while sending file to sftp: {}", e.getMessage());
+      return false;
+    } finally {
+      sftpChannel.exit();
+      session.disconnect();
     }
-    ftp.login(ftpConfig.getUser(), ftpConfig.getPassword());
-    ftp.enterLocalPassiveMode();
 
-    return ftp;
-  }
-
-  public void disconnect() throws Exception {
-    FTPClient ftp = ftpConfig.ftpClient();
-    if (ftp.isConnected()) {
-      ftp.logout();
-      ftp.disconnect();
-    }
-  }
-
-  public boolean send(String file) throws Exception {
-    log.debug("Starting sending xml file to ftp");
-    FTPClient ftp = ftpConfig.ftpClient();
-    try (InputStream input = new FileInputStream(new File(file))) {
-      return ftp.storeFile(ftpConfig.getDropbox(), input);
-    }
+    return true;
   }
 }

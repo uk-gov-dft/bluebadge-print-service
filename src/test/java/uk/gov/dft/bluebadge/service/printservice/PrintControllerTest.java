@@ -8,7 +8,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.io.IOException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
@@ -66,7 +65,7 @@ public class PrintControllerTest {
         MockMvcRequestBuilders.post("/printBatch")
             .content(body)
             .contentType(MediaType.APPLICATION_JSON);
-    doThrow(new IOException("Some underlying problems")).when(service).print(any());
+    doThrow(new RuntimeException("Some underlying problems")).when(service).print(any());
     mvc.perform(builder).andExpect(status().is5xxServerError());
     verify(service, times(1)).print(any());
   }

@@ -1,80 +1,77 @@
 package uk.gov.service.printservice.test.utils;
 
-import java.io.PrintWriter;
-import org.apache.commons.net.PrintCommandListener;
-import org.apache.commons.net.ftp.FTP;
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPFile;
-import org.apache.commons.net.ftp.FTPReply;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
+import java.util.Vector;
 
 public class SFTPUtils {
 
-  private String host = "localhost:2222";
-
-  private String user = "foo";
-
-  private String  ***REMOVED***;
-
-  private String dropbox = "/host/upload";
-
-  private FTPClient ftpClient;
-
-  public SFTPUtils() throws Exception {
-    ftpClient = ftpClient();
-  }
-
-  public FTPClient ftpClient() throws Exception {
-    FTPClient ftp = new FTPClient();
-    ftp.addProtocolCommandListener(new PrintCommandListener(new PrintWriter(System.out)));
-    ftp.setFileType(FTP.BINARY_FILE_TYPE);
-
-    return ftp;
-  }
+  private String host =
+      System.getenv("sftp_host") == null ? "127.0.0.1" : System.getenv("sftp_host");
+  private int port =
+      System.getenv("sftp_port") == null ? 2222 : Integer.parseInt(System.getenv("sftp_port"));
+  private String user = System.getenv("sftp_user") == null ? "foo" : System.getenv("sftp_user");
+  private String password =
+      System.getenv("sftp_pass") == null ? "pass" : System.getenv("sftp_pass");
+  private String dropbox =
+      System.getenv("sftp_folder") == null ? "/upload" : System.getenv("sftp_folder");
 
   public void clean() throws Exception {
-    connect();
-    cleanDirectory(dropbox);
-    disconnect();
+    JSch jsch = new JSch();
+    Session session = null;
+    ChannelSftp sftpChannel = null;
+    try {
+      session = jsch.getSession(user, host, port);
+      session.setConfig("StrictHostKeyChecking", "no");
+      session.setPassword(password);
+      session.connect();
+
+      Channel channel = session.openChannel("sftp");
+      channel.connect();
+      sftpChannel = (ChannelSftp) channel;
+
+      sftpChannel.cd(dropbox);
+
+      Vector<ChannelSftp.LsEntry> fileAndFolderList = sftpChannel.ls(dropbox);
+      for (ChannelSftp.LsEntry item : fileAndFolderList) {
+        System.out.println("file: " + item.getFilename());
+        if (!item.getAttrs().isDir()) {
+          sftpChannel.rm(dropbox + "/" + item.getFilename()); // Remove file.
+        }
+      }
+    } catch (Exception e) {
+      System.err.println(e.getMessage());
+    } finally {
+      sftpChannel.exit();
+      session.disconnect();
+    }
   }
 
   public int getFileCount() throws Exception {
-    connect();
-    int count = ftpClient.listFiles(dropbox).length;
-    disconnect();
+    int count = -1;
+    JSch jsch = new JSch();
+    Session session = null;
+    ChannelSftp sftpChannel = null;
+    try {
+      session = jsch.getSession(user, host, port);
+      session.setConfig("StrictHostKeyChecking", "no");
+      session.setPassword(password);
+      session.connect();
+
+      Channel channel = session.openChannel("sftp");
+      channel.connect();
+      sftpChannel = (ChannelSftp) channel;
+      sftpChannel.cd(dropbox);
+      count = sftpChannel.ls(dropbox).size();
+    } catch (Exception e) {
+      System.err.println(e.getMessage());
+    } finally {
+      sftpChannel.exit();
+      session.disconnect();
+    }
 
     return count;
-  }
-
-  private void cleanDirectory(String path) throws Exception {
-    FTPFile[] files = ftpClient.listFiles(path);
-    if (files.length > 0) {
-      for (FTPFile ftpFile : files) {
-        if (ftpFile.isDirectory()) {
-          cleanDirectory(path + "/" + ftpFile.getName());
-        } else {
-          String deleteFilePath = path + "/" + ftpFile.getName();
-          ftpClient.deleteFile(deleteFilePath);
-        }
-      }
-    }
-  }
-
-  public void connect() throws Exception {
-    ftpClient.connect(host);
-
-    int reply = ftpClient.getReplyCode();
-    if (!FTPReply.isPositiveCompletion(reply)) {
-      ftpClient.disconnect();
-      throw new Exception("Exception in connecting to FTP Server");
-    }
-    ftpClient.login(user, password);
-    ftpClient.enterLocalPassiveMode();
-  }
-
-  public void disconnect() throws Exception {
-    if (ftpClient.isConnected()) {
-      ftpClient.logout();
-      ftpClient.disconnect();
-    }
   }
 }

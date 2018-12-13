@@ -3,10 +3,7 @@ package uk.gov.dft.bluebadge.service.printservice;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -25,10 +22,6 @@ import uk.gov.dft.bluebadge.service.printservice.utils.ModelToXmlConverter;
 @Slf4j
 public class PrintService {
 
-  private static final Path SRC_DIR =
-      Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_src");
-  private static final Path JSON_DIR =
-      Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_json");
   private static final Path XML_DIR =
       Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_xml");
 
@@ -43,17 +36,10 @@ public class PrintService {
   }
 
   public void print(Batch batch) {
-    File jsonFile = null;
-    try {
-      jsonFile = convertAndSave(batch);
-    } catch (IOException e) {
-      log.error("Can't process and save payload");
-      log.error("Error while processing payload: {}", e.getMessage());
-    }
 
     boolean uploaded = false;
     try {
-      uploaded = uploadJsonToS3(jsonFile);
+      uploaded = uploadToS3(batch);
     } catch (IOException | InterruptedException e) {
       log.error("Can't upload file to s3: {}", e.getMessage());
     }
@@ -63,55 +49,34 @@ public class PrintService {
     }
   }
 
-  private boolean uploadJsonToS3(File jsonFile) throws IOException, InterruptedException {
-    URL s3URL = null;
-    try {
-      s3URL = s3.upload(jsonFile);
-      log.debug("Json file {} has been uploaded, URL: {}", jsonFile.getName(), s3URL);
-    } finally {
-      boolean deleted = jsonFile.delete();
-      log.debug(
-          "Json file {} {} been deleted from temporary folder",
-          jsonFile.getName(),
-          deleted ? "has" : "hasn't");
-    }
-
-    return s3URL != null;
-  }
-
-  private File convertAndSave(Batch batch) throws IOException {
+  private boolean uploadToS3(Batch batch) throws IOException, InterruptedException {
     ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-    Path path =
-        SRC_DIR.resolve(
-            batch.getBatchType()
-                + "_"
-                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("YYYYMMddHHmmss"))
-                + ".json");
+    mapper.registerModule(new JavaTimeModule());
 
-    log.debug("Convert and save batches payload to temporary json file {}", path.toString());
-    Files.createDirectories(path.getParent());
-    File jsonFile = Files.createFile(path).toFile();
+    String json = mapper.writeValueAsString(batch);
 
-    mapper.writeValue(jsonFile, batch);
-    return jsonFile;
+    String filename =
+        batch.getBatchType()
+            + "_"
+            + LocalDateTime.now().format(DateTimeFormatter.ofPattern("YYYYMMddHHmmss"))
+            + ".json";
+
+    boolean uploaded = s3.upload(json, filename);
+    log.debug("Json payload {} has been uploaded: {}", json, uploaded);
+
+    return uploaded;
   }
 
   private boolean processBatches() {
     boolean success = true;
     try {
-      ftp.connect();
       List<String> files = s3.listFiles();
       for (String file : files) {
+        log.debug("Downloading file: {} from s3 bucket: {}", file, s3.getBucketName());
         success &= processBatch(file);
       }
     } catch (Exception e) {
       log.error("Error while processing badges", e.getMessage());
-    } finally {
-      try {
-        ftp.disconnect();
-      } catch (Exception e) {
-        log.error("Error while disconnecting from ftp: {}", e.getMessage());
-      }
     }
 
     return success;
@@ -120,26 +85,26 @@ public class PrintService {
   @Async("batchExecutor")
   private boolean processBatch(String key) {
     String bucket = s3.getBucketName();
-    Optional<File> file;
+    Optional<String> json;
     try {
-      file = s3.downloadFile(bucket, key, JSON_DIR);
-    } catch (IOException e) {
+      json = s3.downloadFile(bucket, key);
+    } catch (Exception e) {
       log.error("Can't download file: {} from s3 bucket: {}", key, bucket);
       log.error("Error while downloading: {}", e.getMessage());
       return false;
     }
 
     String xmlFileName = null;
-    if (file.isPresent()) {
+    if (json.isPresent()) {
       try {
-        xmlFileName = prepareXml(file.get());
+        xmlFileName = prepareXml(json.get());
       } catch (IOException | XMLStreamException e) {
-        log.error("Can't process file: {} into valid xml", file.get().getAbsolutePath());
+        log.error("Can't process json string: {} into valid xml", json.get());
         log.error("Error while converting into xml: {}", e.getMessage());
         return false;
       }
     } else {
-      log.error("Can't download file: {} from s3", file.get().getAbsolutePath());
+      log.error("Can't download file: {} from s3", key);
       return false;
     }
 
@@ -159,27 +124,20 @@ public class PrintService {
     return transferred;
   }
 
-  private String prepareXml(File file) throws IOException, XMLStreamException {
-    log.debug("Starting sending xml file to sftp");
+  private String prepareXml(String json) throws IOException, XMLStreamException {
+    log.debug("Prepare xml file");
 
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.registerModule(new JavaTimeModule());
 
-    String json = readFile(file);
     Batch batch = objectMapper.readValue(json, Batch.class);
 
     return xmlConverter.toXml(batch, XML_DIR);
   }
 
-  private String readFile(File file) throws IOException {
-    return new String(Files.readAllBytes(file.toPath()));
-  }
-
   private void cleanTempResources() {
     try {
       FileSystemUtils.deleteRecursively(XML_DIR);
-      FileSystemUtils.deleteRecursively(JSON_DIR);
-      FileSystemUtils.deleteRecursively(SRC_DIR);
     } catch (IOException e) {
       log.error("Error while deleting local temporary resources: {}", e.getMessage());
     }

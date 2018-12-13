@@ -6,6 +6,7 @@ Feature: Verify Print batch ok
     * def result = callonce read('./oauth2.feature')
     * header Authorization = 'Bearer ' + result.accessToken
     * def S3Utils = Java.type('uk.gov.service.printservice.test.utils.S3Utils')
+    * def SFTPUtils = Java.type('uk.gov.service.printservice.test.utils.SFTPUtils')
     * def System = Java.type('java.lang.System')
     * def s3 = new S3Utils()
     * def ftp = new SFTPUtils()
@@ -36,13 +37,13 @@ Feature: Verify Print batch ok
 		        "badgeHolderName" : "John First",
 		        "dob" : "1977-03-04",
 		        "genderCode" : "MALE"
+		       } 
 		    },
 		    "startDate" : "2019-01-02", 
 		    "expiryDate" : "2021-01-01",
 		    "deliverToCode" : "HOME",
 		    "deliveryOptionCode" : "STAND",
-		    "imageLink" : "https://s3.eu-west-2.amazonaws.com/uk-gov-dft-dev-printer/pictures/smile.jpg"
-		  	}
+		  	
 		  }, {
 		    "localAuthorityShortCode" : "ANGL",
 		    "badgeNumber" : "AA34BB",
@@ -68,9 +69,8 @@ Feature: Verify Print batch ok
 		    "expiryDate" : "2021-01-01",
 		    "deliverToCode" : "HOME",
 		    "deliveryOptionCode" : "STAND",
-		    "imageLink" : "https://s3.eu-west-2.amazonaws.com/uk-gov-dft-dev-printer/pictures/smile.jpg"
 		  }, {
-		    "localAuthorityShortCode" : "LBKC",
+		    "localAuthorityShortCode" : "GLOCC",
 		    "badgeNumber" : "CC12DD",
 		    "party" : {
 		      "typeCode" : "PERSON",
@@ -94,21 +94,27 @@ Feature: Verify Print batch ok
 		    "expiryDate" : "2021-01-01",
 		    "deliverToCode" : "HOME",
 		    "deliveryOptionCode" : "STAND",
-		    "imageLink" : "https://s3.eu-west-2.amazonaws.com/uk-gov-dft-dev-printer/pictures/smile.jpg"
 		  } ]
 		}
     """
+	* set batch.Badges[0].imageLink = "https://s3.eu-west-2.amazonaws.com/" + bucketName + "/pictures/smile1.jpg"
+	* set batch.Badges[1].imageLink = "https://s3.eu-west-2.amazonaws.com/" + bucketName + "/pictures/smile2.jpg"
+	* set batch.Badges[2].imageLink = "https://s3.eu-west-2.amazonaws.com/" + bucketName + "/pictures/smile3.jpg"
 
-	* s3.cleanBucket(bucketName)
-	* s3.setupBucket(bucketName)
-	* ftp.clean()
+	* eval s3.cleanBucket(bucketName)
+	* eval s3.setupBucket(bucketName)
+	* eval ftp.clean()
 	* def fileCountBefore = ftp.getFileCount()
-    * def beforeCount = s3.getNumberOfFilesInABucket(bucketName)
+	* print fileCountBefore
+	* def beforeCount = s3.getNumberOfFilesInABucket(bucketName)
+	* print beforeCount
     Given path 'printBatch'
     And request batch
     When method POST
     Then status 200
 	* def fileCountAfter = ftp.getFileCount()
-    * def afterCount = s3.getNumberOfFilesInABucket(bucketName)
-    * assert afterCount == beforeCount
-    * assert fileCountBefore + 1 == fileCountAfter
+	* print fileCountAfter
+	* def afterCount = s3.getNumberOfFilesInABucket(bucketName)
+	* print afterCount
+	* assert afterCount == beforeCount
+	* assert fileCountBefore + 1 == fileCountAfter
