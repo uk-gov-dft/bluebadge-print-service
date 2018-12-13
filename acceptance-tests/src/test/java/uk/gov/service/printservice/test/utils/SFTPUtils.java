@@ -48,6 +48,7 @@ public class SFTPUtils {
         }
       }
     } finally {
+
       sftpChannel.exit();
       session.disconnect();
     }

@@ -1,7 +1,7 @@
 {
   "filename" : "filename1",
   "batchType" : "STANDARD",
-  "Badges" : [ {
+  "badges" : [ {
     "localAuthorityShortCode" : "ANGL",
     "badgeNumber" : "AA12BB",
     "party" : {
@@ -21,7 +21,7 @@
         "dob" : "1977-03-04",
         "genderCode" : "MALE"
     },
-    "startDate" : "2019-01-02", 
+    "startDate" : "2019-01-02",
     "expiryDate" : "2021-01-01",
     "deliverToCode" : "HOME",
     "deliveryOptionCode" : "STAND",
