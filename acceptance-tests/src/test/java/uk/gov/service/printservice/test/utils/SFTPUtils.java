@@ -50,6 +50,7 @@ public class SFTPUtils {
     } catch (Exception e) {
       System.err.println(e.getMessage());
     } finally {
+
       sftpChannel.exit();
       session.disconnect();
     }
