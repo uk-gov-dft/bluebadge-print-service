@@ -25,7 +25,7 @@ public class Batch {
   @NotEmpty
   private String batchType = null;
 
-  @JsonProperty("Badges")
+  @JsonProperty("badges")
   @ApiModelProperty(value = "")
   private List<Badge> badges = null;
 

@@ -18,7 +18,7 @@ Feature: Verify Print batch ok
 		{
 		  "filename" : "filename1",
 		  "batchType" : "STANDARD",
-		  "Badges" : [ {
+		  "badges" : [ {
 		    "localAuthorityShortCode" : "ANGL",
 		    "badgeNumber" : "AA12BB",
 		    "party" : {
@@ -37,13 +37,13 @@ Feature: Verify Print batch ok
 		        "badgeHolderName" : "John First",
 		        "dob" : "1977-03-04",
 		        "genderCode" : "MALE"
-		       } 
+		       }
 		    },
-		    "startDate" : "2019-01-02", 
+		    "startDate" : "2019-01-02",
 		    "expiryDate" : "2021-01-01",
 		    "deliverToCode" : "HOME",
 		    "deliveryOptionCode" : "STAND",
-		  	
+
 		  }, {
 		    "localAuthorityShortCode" : "ANGL",
 		    "badgeNumber" : "AA34BB",
@@ -97,9 +97,9 @@ Feature: Verify Print batch ok
 		  } ]
 		}
     """
-	* set batch.Badges[0].imageLink = "https://s3.eu-west-2.amazonaws.com/" + bucketName + "/pictures/smile1.jpg"
-	* set batch.Badges[1].imageLink = "https://s3.eu-west-2.amazonaws.com/" + bucketName + "/pictures/smile2.jpg"
-	* set batch.Badges[2].imageLink = "https://s3.eu-west-2.amazonaws.com/" + bucketName + "/pictures/smile3.jpg"
+	* set batch.badges[0].imageLink = "https://s3.eu-west-2.amazonaws.com/" + bucketName + "/pictures/smile1.jpg"
+	* set batch.badges[1].imageLink = "https://s3.eu-west-2.amazonaws.com/" + bucketName + "/pictures/smile2.jpg"
+	* set batch.badges[2].imageLink = "https://s3.eu-west-2.amazonaws.com/" + bucketName + "/pictures/smile3.jpg"
 
 	* eval s3.cleanBucket(bucketName)
 	* eval s3.setupBucket(bucketName)
