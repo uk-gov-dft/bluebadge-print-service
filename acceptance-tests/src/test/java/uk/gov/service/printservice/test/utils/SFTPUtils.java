@@ -3,7 +3,12 @@ package uk.gov.service.printservice.test.utils;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpException;
+
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.Vector;
 
 public class SFTPUtils {
@@ -23,11 +28,13 @@ public class SFTPUtils {
           ? "~/.ssh/sftp_known_hosts"
           : System.getenv("sftp_knownhosts");
 
-  public void clean() throws Exception {
+  class SftpChannelManager implements AutoCloseable {
+
     JSch jsch = new JSch();
-    Session session = null;
-    ChannelSftp sftpChannel = null;
-    try {
+    Session session;
+    ChannelSftp channel;
+
+    SftpChannelManager() throws JSchException {
       jsch.setKnownHosts(knownhosts);
       session = jsch.getSession(user, host, port);
       //      session.setConfig("StrictHostKeyChecking", "no");
@@ -36,46 +43,53 @@ public class SFTPUtils {
 
       Channel channel = session.openChannel("sftp");
       channel.connect();
-      sftpChannel = (ChannelSftp) channel;
+      this.channel = (ChannelSftp) channel;
+    }
 
-      sftpChannel.cd(dropbox);
-
-      Vector<ChannelSftp.LsEntry> fileAndFolderList = sftpChannel.ls(dropbox);
-      for (ChannelSftp.LsEntry item : fileAndFolderList) {
-        System.out.println("file: " + item.getFilename());
-        if (!item.getAttrs().isDir()) {
-          sftpChannel.rm(dropbox + "/" + item.getFilename()); // Remove file.
-        }
+    @Override
+    public void close() {
+      try {
+        channel.exit();
+        session.disconnect();
+      } catch (Exception e) {
+        // No-op
       }
-    } finally {
-
-      sftpChannel.exit();
-      session.disconnect();
     }
   }
 
-  public int getFileCount() throws Exception {
-    int count = -1;
-    JSch jsch = new JSch();
-    Session session = null;
-    ChannelSftp sftpChannel = null;
-    try {
-      jsch.setKnownHosts(knownhosts);
-      session = jsch.getSession(user, host, port);
-      //      session.setConfig("StrictHostKeyChecking", "no");
-      session.setPassword(password);
-      session.connect();
+  @SuppressWarnings("unused")
+  public void clean() throws Exception {
+    try (SftpChannelManager channelManager = new SftpChannelManager()) {
+      //noinspection unchecked
+      for (ChannelSftp.LsEntry item : (Vector<ChannelSftp.LsEntry>)channelManager.channel.ls(dropbox)) {
+        System.out.println("file: " + item.getFilename());
+        if (!item.getAttrs().isDir()) {
+          channelManager.channel.rm(dropbox + "/" + item.getFilename()); // Remove file.
+        }
+      }
+    }
+  }
 
-      Channel channel = session.openChannel("sftp");
-      channel.connect();
-      sftpChannel = (ChannelSftp) channel;
-      sftpChannel.cd(dropbox);
-      count = sftpChannel.ls(dropbox).size();
-    } finally {
-      sftpChannel.exit();
-      session.disconnect();
+  @SuppressWarnings("unused")
+  public int getFileCount() throws JSchException, SftpException {
+    int count;
+
+    try (SftpChannelManager channelManager = new SftpChannelManager()){
+      channelManager.channel.cd(dropbox);
+      count = channelManager.channel.ls(dropbox).size();
     }
 
     return count;
+  }
+
+  public boolean putFile(String resourcePath) {
+    try (SftpChannelManager channelManager = new SftpChannelManager()){
+      channelManager.channel.cd(dropbox);
+      File f = new File(this.getClass().getResource(resourcePath).toURI());
+      channelManager.channel.put(new FileInputStream(f), f.getName(), ChannelSftp.OVERWRITE);
+      return true;
+    }catch (Exception e){
+      return false;
+    }
   }
 }

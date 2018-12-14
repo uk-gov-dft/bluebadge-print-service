@@ -82,4 +82,8 @@ public class S3Utils {
   public String putObject(String bucket, String fileName) throws URISyntaxException {
     return putObject(bucket, fileName, fileName);
   }
+
+  public boolean objectExists(String bucket, String objectKey){
+    return s3.doesObjectExist(bucket, objectKey);
+  }
 }
