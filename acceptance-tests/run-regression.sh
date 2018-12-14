@@ -29,7 +29,7 @@ outputVersions() {
   echo "AZ_VERSION=$AZ_VERSION"
   echo "MG_VERSION=$MG_VERSION"
   echo "RD_VERSION=$RD_VERSION"
-  echo "PP_VERSION=$PP_VERSION"
+  echo "PR_VERSION=$PR_VERSION"
 }
 
 set -a

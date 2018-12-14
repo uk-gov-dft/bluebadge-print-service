@@ -31,8 +31,7 @@ public class PrintService {
   private final FTPService ftp;
   private final ModelToXmlConverter xmlConverter;
 
-  @Autowired
-  private S3Config s3Config;
+  @Autowired private S3Config s3Config;
 
   PrintService(StorageService s3, FTPService ftp, ModelToXmlConverter xmlConverter) {
     this.s3 = s3;

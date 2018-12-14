@@ -4,10 +4,6 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.util.IOUtils;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import uk.gov.dft.bluebadge.service.printservice.config.S3Config;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
@@ -15,6 +11,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import uk.gov.dft.bluebadge.service.printservice.config.S3Config;
 
 @Service
 @Slf4j
@@ -29,7 +28,8 @@ public class StorageService {
     this.s3Config = s3Config;
   }
 
-  public boolean uploadToPrinterBucket(String src, String fileName) throws IOException, InterruptedException {
+  public boolean uploadToPrinterBucket(String src, String fileName)
+      throws IOException, InterruptedException {
 
     log.info("Uploading document to S3. Payload: {}", src);
 
@@ -64,7 +64,7 @@ public class StorageService {
 
   public Optional<byte[]> downloadBadgeFile(String key) throws IOException {
 
-    try(InputStream is = amazonS3.getObject(s3Config.getS3BadgeBucket(), key).getObjectContent()) {
+    try (InputStream is = amazonS3.getObject(s3Config.getS3BadgeBucket(), key).getObjectContent()) {
       return Optional.of(IOUtils.toByteArray(is));
     }
   }

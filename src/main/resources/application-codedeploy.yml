@@ -1,6 +1,6 @@
 management:
   server:
-    port: ${bb_health:-8081}
+    port: ${bb_health:8081}
     servlet:
       context-path: /manage
   endpoints:

@@ -6,7 +6,6 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
@@ -62,12 +61,12 @@ public class S3Utils {
     }
   }
 
-  public void removeObject(String bucket, String key){
+  public void removeObject(String bucket, String key) {
     s3.deleteObject(bucket, key);
   }
 
   public void cleanBucket(String bucketName) {
-    for(S3ObjectSummary objectSummary : s3.listObjects(bucketName).getObjectSummaries()){
+    for (S3ObjectSummary objectSummary : s3.listObjects(bucketName).getObjectSummaries()) {
       s3.deleteObject(bucketName, objectSummary.getKey());
     }
   }

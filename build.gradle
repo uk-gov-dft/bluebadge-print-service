@@ -6,10 +6,11 @@ buildscript {
     }
 
     repositories {
+        mavenLocal()
         mavenCentral()
         jcenter()
         maven {
-            url 'https://artifactory.does.not.exist/artifactory/gradle-release'
+            url 'https://artifactory.does.not.exist/artifactory/gradle-dev-local'
         }
     }
 
@@ -17,36 +18,60 @@ buildscript {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.7.3"
         classpath 'org.owasp:dependency-check-gradle:3.3.1'
-
     }
 }
 
 plugins {
     id 'com.github.sherter.google-java-format' version '0.6'
     id "org.sonarqube" version "2.6.2"
+    id "com.moowork.node" version "1.2.0"
+    id "com.moowork.gulp" version "1.2.0"
+    id "com.jfrog.artifactory" version "4.5.4"
     id "com.gorylenko.gradle-git-properties" version "1.5.1"
-}
+    }
 
 apply plugin: 'java'
-apply plugin: 'maven'
-apply plugin: 'maven-publish'
-apply plugin: 'com.jfrog.artifactory'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
 apply plugin: 'jacoco'
 apply plugin: 'org.owasp.dependencycheck'
+
+//apply plugin: 'findbugs'
+
+def getTheVersion() {
+    def workingDir = new File("${project.projectDir}")
+    def version = 'git describe --abbrev=0'.execute(null, workingDir)
+    version.waitFor()
+    def versionSuffix = "UnknownA"
+    def result = 'git rev-parse --abbrev-ref HEAD'.execute(null, workingDir)
+    result.waitFor()
+    if (result.exitValue() == 0) {
+        def gitBranch = result.text.trim().replaceAll('/','_')
+        if (gitBranch == 'master') {
+            versionSuffix = ''
+        } else if (gitBranch == 'develop') {
+            versionSuffix = '-SNAPSHOT'
+        } else {
+            versionSuffix = '-' + gitBranch
+        }
+
+    }
+    return "${version.text.trim()}${versionSuffix}"
+}
+
+task outputComputedVersion {
+    def computedVersion = new File('VERSION-computed')
+    computedVersion.delete()
+    computedVersion.write(getTheVersion())
+    println(getTheVersion())
+}
+
 
 group = 'uk.gov.dft.bluebadge'
 version = getTheVersion()
 sourceCompatibility = 1.8
-
-configurations.all {
-    resolutionStrategy {
-        // don't cache changing modules at all
-        cacheChangingModulesFor 0, 'seconds'
-    }
-    exclude group: 'commons-logging', module: 'commons-logging'
-}
 
 repositories {
     mavenCentral()
@@ -54,23 +79,51 @@ repositories {
     maven {
         url 'https://artifactory.does.not.exist/artifactory/gradle-dev-local'
     }
-    maven {
-        url "https://dl.bintray.com/gov-uk-notify/maven"
+}
+
+publishing {
+    publications {
+        project_service(MavenPublication) {
+            from components.java
+            artifactId "print-service"
+        }
     }
 }
 
-sourceSets {
-    main {
-        java {
-            srcDir 'src/main/java'
-            srcDir 'src/generated/java'
+artifactory {
+    contextUrl = "https://artifactory.does.not.exist/artifactory"   //The base Artifactory URL if not overridden by the publisher/resolver
+    publish {
+        repository {
+            repoKey = 'gradle-dev-local'
+            maven = true
+        }
+
+        publishArtifacts = true
+        publishPom = true
+        defaults {
+            publications('project_service')
+            publishArtifacts = true
+            publishPom = true
         }
     }
-    test {
-        java {
-            srcDir 'src/test/java'
+
+    resolve {
+        repository {
+            repoKey = 'gradle-release'
+            maven = true
+
         }
     }
+
+}
+
+configurations.all {
+    resolutionStrategy {
+        // don't cache changing modules at all
+        cacheChangingModulesFor 0, 'seconds'
+    }
+    exclude group: 'commons-logging', module: 'commons-logging'
+    version = getTheVersion()
 }
 
 dependencies {
@@ -103,89 +156,6 @@ dependencies {
     testRuntime('org.junit.jupiter:junit-jupiter-engine:5.3.2')
 }
 
-jacoco {
-    toolVersion = "0.8.1"
-}
-
-archivesBaseName = "print-service"
-compileJava.dependsOn 'googleJavaFormat'
-
-publishing {
-    publications {
-        project_service(MavenPublication) {
-            from components.java
-            artifactId "${archivesBaseName}"
-        }
-    }
-}
-
-def getTheVersion() {
-    def workingDir = new File("${project.projectDir}")
-    def version = 'git describe --abbrev=0'.execute(null, workingDir)
-    version.waitFor()
-    def versionSuffix = "UnknownA"
-    def result = 'git rev-parse --abbrev-ref HEAD'.execute(null, workingDir)
-    result.waitFor()
-    if (result.exitValue() == 0) {
-        def gitBranch = result.text.trim().replaceAll('/','_')
-        if (gitBranch == 'master') {
-            versionSuffix = ''
-        } else if (gitBranch == 'develop') {
-            versionSuffix = '-SNAPSHOT'
-        } else {
-            versionSuffix = '-' + gitBranch
-        }
-
-    }
-    return "${version.text.trim()}${versionSuffix}"
-}
-
-allprojects {
-    apply plugin: 'java'
-    apply plugin: 'maven'
-    apply plugin: 'maven-publish'
-    apply plugin: 'com.jfrog.artifactory'
-    apply plugin: 'jacoco'
-
-    group = 'uk.gov.dft.bluebadge'
-    version = getTheVersion()
-    sourceCompatibility = 1.8
-
-    repositories {
-        mavenCentral()
-        jcenter()
-        maven {
-            url 'https://artifactory.does.not.exist/artifactory/gradle-release-dev'
-        }
-    }
-}
-
-artifactory {
-    contextUrl = "https://artifactory.does.not.exist/artifactory"   //The base Artifactory URL if not overridden by the publisher/resolver
-    publish {
-        repository {
-            repoKey = 'gradle-dev-local'
-            maven = true
-        }
-
-        publishArtifacts = true
-        publishPom = true
-        defaults {
-            publications('project_service')
-            publishArtifacts = true
-            publishPom = true
-        }
-    }
-
-    resolve {
-        repository {
-            repoKey = 'gradle-release'
-            maven = true
-
-        }
-    }
-
-}
 
 task generateSwagger() {
 
@@ -236,11 +206,14 @@ task generateService(dependsOn: 'unzipGenerated', type: Sync) {
     into "src/generated/java/uk/gov/dft/bluebadge/service/printservice/generated"
 }
 
-task outputComputedVersion {
-    def computedVersion = new File('VERSION-computed')
-    computedVersion.delete()
-    computedVersion.write(getTheVersion())
-    println(getTheVersion())
+jacoco {
+    toolVersion = "0.8.1"
+}
+
+test {
+    jacoco {
+        excludes += ['.*uk.gov.dft.bluebadge.webapp.la.controller.request.*', '.*uk.gov.dft.bluebadge.webapp.la.controller.viewmodel.*', '.*uk.gov.dft.bluebadge.webapp.la.client.usermanagement.model.*','.*uk.gov.dft.bluebadge.webapp.la.exception.*']
+    }
 }
 
 test {
@@ -251,5 +224,10 @@ test {
     }
 }
 
+bootRun {
+    sourceResources sourceSets.main
+}
+
 build.finalizedBy(outputComputedVersion)
 
+compileJava.dependsOn 'googleJavaFormat'
