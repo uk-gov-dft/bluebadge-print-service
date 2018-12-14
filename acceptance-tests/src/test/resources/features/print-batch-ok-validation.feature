@@ -6,7 +6,7 @@ Feature: Verify Print batch ok validation
     * def result = callonce read('./oauth2.feature')
     * header Authorization = 'Bearer ' + result.accessToken
     * def cmdLineUtilsConfig = {}
-    * def CommandLineUtils = Java.type('uk.gov.service.bluebadge.test.utils.CommandLineUtils')
+    * def CommandLineUtils = Java.type('uk.gov.service.printservice.test.utils.CommandLineUtils')
     * def cmdLineUtils = new CommandLineUtils(cmdLineUtilsConfig)
 
   Scenario: Verify valid print batch comparing xml
