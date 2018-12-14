@@ -1,5 +1,5 @@
 blue-badge:
-  env: ${bb_env:ci}
+  env: ${bb_env:dev}
   auth-server:
     url: http://localhost:8380/bb_auth
     client-id: bb_user_management_id
