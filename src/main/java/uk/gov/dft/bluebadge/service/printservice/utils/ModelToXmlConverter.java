@@ -242,24 +242,20 @@ public class ModelToXmlConverter {
   }
 
   private void writeName(XMLStreamWriter writer, String holder) throws XMLStreamException {
-    writer.writeStartElement("Name");
-
-    String forename = holder;
+    String name = holder;
     String surname = "";
 
     if (holder.length() > 28) {
       int idx = holder.indexOf(" ");
-      forename = holder.substring(0, idx).trim();
+      name = holder.substring(0, idx).trim();
       surname = holder.substring(idx).trim();
     }
-    writer.writeStartElement("Forename");
-    writer.writeCharacters(forename);
+    writer.writeStartElement("Name");
+    writer.writeCharacters(name);
     writer.writeEndElement();
 
     writer.writeStartElement("Surname");
     writer.writeCharacters(surname);
-    writer.writeEndElement();
-
     writer.writeEndElement();
   }
 

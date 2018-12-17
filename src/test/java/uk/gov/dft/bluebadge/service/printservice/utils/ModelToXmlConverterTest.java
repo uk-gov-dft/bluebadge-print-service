@@ -450,7 +450,7 @@ class ModelToXmlConverterTest {
   }
 
   @DisplayName(
-      "Should return populate only Forename=`Jane Second` and leave Surname blank for BadgeIdentifier=AA34BB")
+      "Should return populate only Name=`Jane Second` and leave Surname blank for BadgeIdentifier=AA34BB")
   @SneakyThrows
   @Test
   void testShortName() {
@@ -463,12 +463,12 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA34BB']/Name/Forename";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA34BB']/Name";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
     assertEquals("Jane Second", node.getTextContent());
 
     expression =
-        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA34BB']/Name/Surname";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA34BB']/Surname";
     node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
     assertEquals("", node.getTextContent());
 
@@ -476,7 +476,7 @@ class ModelToXmlConverterTest {
   }
 
   @DisplayName(
-      "Should return populate Forename=`Michelangelo` and Surname=`Lodovico Buonarroti Simoni` for BadgeIdentifier=AA12BB")
+      "Should return populate Name=`Michelangelo` and Surname=`Lodovico Buonarroti Simoni` for BadgeIdentifier=AA12BB")
   @SneakyThrows
   @Test
   void testLongName() {
@@ -489,12 +489,12 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/Name/Forename";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/Name";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
     assertEquals("Michelangelo", node.getTextContent());
 
     expression =
-        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/Name/Surname";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/Surname";
     node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
     assertEquals("Lodovico Buonarroti Simoni", node.getTextContent());
 
