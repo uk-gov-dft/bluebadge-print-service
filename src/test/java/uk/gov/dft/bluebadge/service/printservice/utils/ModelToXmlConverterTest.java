@@ -111,7 +111,7 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/Batch/LocalAuthorities/LocalAuthority[LACode='ANGL']/IssuingCountry";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority[LACode='ANGL']/IssuingCountry";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
     assertEquals("W", node.getTextContent());
@@ -131,14 +131,14 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/Batch/LocalAuthorities/LocalAuthority[LACode='ANGL']/LanguageCode";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority[LACode='ANGL']/LanguageCode";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
     assertEquals("EW", node.getTextContent());
     deleteXmlFile(xmlPath);
   }
 
-  @DisplayName("Should return ClockType = `WALLET` for LACode=ANGL")
+  @DisplayName("Should return ClockType = `Wallet` for LACode=ANGL")
   @SneakyThrows
   @Test
   void testClockTypeWales() {
@@ -151,10 +151,10 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/Batch/LocalAuthorities/LocalAuthority[LACode='ANGL']/ClockType";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority[LACode='ANGL']/ClockType";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
-    assertEquals("WALLET", node.getTextContent());
+    assertEquals("Wallet", node.getTextContent());
     deleteXmlFile(xmlPath);
   }
 
@@ -171,7 +171,7 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/Batch/LocalAuthorities/LocalAuthority[LACode='GLOCC']/IssuingCountry";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority[LACode='GLOCC']/IssuingCountry";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
     assertEquals("E", node.getTextContent());
@@ -191,14 +191,14 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/Batch/LocalAuthorities/LocalAuthority[LACode='GLOCC']/LanguageCode";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority[LACode='GLOCC']/LanguageCode";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
     assertEquals("E", node.getTextContent());
     deleteXmlFile(xmlPath);
   }
 
-  @DisplayName("Should return ClockType = `STANDARD` for LACode=GLOCC")
+  @DisplayName("Should return ClockType = `Standard` for LACode=GLOCC")
   @SneakyThrows
   @Test
   void testClockTypeEngland() {
@@ -211,10 +211,10 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/Batch/LocalAuthorities/LocalAuthority[LACode='GLOCC']/ClockType";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority[LACode='GLOCC']/ClockType";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
-    assertEquals("STANDARD", node.getTextContent());
+    assertEquals("Standard", node.getTextContent());
     deleteXmlFile(xmlPath);
   }
 
@@ -232,7 +232,7 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/Batch/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/PrintedBadgeReference";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/PrintedBadgeReference";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
     assertEquals("AA12BB 9 0377X0121", node.getTextContent());
@@ -252,7 +252,7 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/Batch/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='CC12DD']/PrintedBadgeReference";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='CC12DD']/PrintedBadgeReference";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
     assertEquals("CC12DD 9 O0121", node.getTextContent());
@@ -279,7 +279,7 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/Batch/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='CC12DD']/photo";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='CC12DD']/Photo";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
     String expected =
@@ -302,7 +302,7 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/Batch/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/DispatchMethodCode";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/DispatchMethodCode";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
     assertEquals("M", node.getTextContent());
@@ -322,7 +322,7 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/Batch/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='CC12DD']/DispatchMethodCode";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='CC12DD']/DispatchMethodCode";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
     assertEquals("C", node.getTextContent());
@@ -342,7 +342,7 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/Batch/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/FastTrackCode";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/FastTrackCode";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
     assertEquals("N", node.getTextContent());
@@ -362,7 +362,7 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/Batch/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA34BB']/FastTrackCode";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA34BB']/FastTrackCode";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
     assertEquals("Y", node.getTextContent());
@@ -382,7 +382,7 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/Batch/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/PostageCode";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/PostageCode";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
     assertEquals("SC", node.getTextContent());
@@ -402,7 +402,7 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/Batch/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA34BB']/PostageCode";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA34BB']/PostageCode";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
     assertEquals("SD1", node.getTextContent());
@@ -422,7 +422,7 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/Batch/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/BarCodeData";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/BarCodeData";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
     assertEquals("77X0121", node.getTextContent());
@@ -442,7 +442,7 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/Batch/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='CC12DD']/BarCodeData";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='CC12DD']/BarCodeData";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
     assertEquals("O0121", node.getTextContent());
@@ -463,12 +463,12 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/Batch/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA34BB']/Name/Forename";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA34BB']/Name/Forename";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
     assertEquals("Jane Second", node.getTextContent());
 
     expression =
-        "/BadgePrintExtract/Batch/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA34BB']/Name/Surname";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA34BB']/Name/Surname";
     node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
     assertEquals("", node.getTextContent());
 
@@ -489,12 +489,12 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/Batch/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/Name/Forename";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/Name/Forename";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
     assertEquals("Michelangelo", node.getTextContent());
 
     expression =
-        "/BadgePrintExtract/Batch/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/Name/Surname";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/Name/Surname";
     node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
     assertEquals("Lodovico Buonarroti Simoni", node.getTextContent());
 
@@ -514,7 +514,7 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/Batch/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='CC12DD']/LetterAddress";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='CC12DD']/LetterAddress";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
     NodeList addrLines = node.getChildNodes();
 

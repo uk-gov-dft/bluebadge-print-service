@@ -286,7 +286,7 @@ public class ModelToXmlConverter {
     writer.writeEndElement();
 
     writer.writeStartElement("ClockType");
-    String clock = nation.equalsIgnoreCase("W") ? "WALLET" : "STANDARD";
+    String clock = nation.equalsIgnoreCase("W") ? "Wallet" : "Standard";
     writer.writeCharacters(clock);
     writer.writeEndElement();
 
