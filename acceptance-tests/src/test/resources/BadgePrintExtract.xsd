@@ -41,8 +41,8 @@
   </xs:simpleType>
   <xs:simpleType name="ClockTypeType">
         <xs:restriction base="xs:string">
-          <xs:enumeration value="STANDARD"/>
-          <xs:enumeration value="WALLET"/>
+          <xs:enumeration value="Standard"/>
+          <xs:enumeration value="Wallet"/>
         </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="BadgeIdentifierType">

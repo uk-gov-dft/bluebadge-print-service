@@ -10,7 +10,7 @@
          <LAName>Aberdeen City Council</LAName>
          <IssuingCountry>S</IssuingCountry>
          <LanguageCode>E</LanguageCode>
-         <ClockType>STANDARD</ClockType>
+         <ClockType>Standard</ClockType>
          <PhoneNumber>01224 522599</PhoneNumber>
          <EmailAddress>disabledbadges@aberdeencity.gov.uk</EmailAddress>
          <Badges>
@@ -214,7 +214,7 @@ AiIgIiICIiAiIgIiICIiAiIgIiICIiAiIgIiICIiAiIg/9k=</Photo>
          <LAName>Doncaster MBC</LAName>
          <IssuingCountry>E</IssuingCountry>
          <LanguageCode>E</LanguageCode>
-         <ClockType>STANDARD</ClockType>
+         <ClockType>Standard</ClockType>
          <PhoneNumber>01302 862549</PhoneNumber>
          <EmailAddress>general.enquiries@doncaster.gov.uk</EmailAddress>
          <Badges>
@@ -322,7 +322,7 @@ AiIgIiICIiAiIgIiICIiAiIgIiICIiAiIgIiICIiAiIg/9k=</Photo>
          <LAName>Leicestershire County Council</LAName>
          <IssuingCountry>E</IssuingCountry>
          <LanguageCode>E</LanguageCode>
-         <ClockType>STANDARD</ClockType>
+         <ClockType>Standard</ClockType>
          <PhoneNumber>01163050001</PhoneNumber>
          <EmailAddress>customerservices@leics.gov.uk</EmailAddress>
          <Badges>
