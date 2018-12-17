@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="windows-1252"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://northgate-is.com/BadgePrintExtract" xmlns:b="http://northgate-is.com/BadgePrintExtract">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
   <xs:simpleType name="Varchar10">
         <xs:restriction base="xs:string">
           <xs:maxLength value="10"/>
@@ -93,16 +93,16 @@
   <xs:element name="BadgePrintExtract">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="b:Batch"/>
-        <xs:element ref="b:LocalAuthorities"/>
+        <xs:element ref="Batch"/>
+        <xs:element ref="LocalAuthorities"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
   <xs:element name="Batch">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="b:Filename"/>
-        <xs:element ref="b:ReExtract"/>
+        <xs:element ref="Filename"/>
+        <xs:element ref="ReExtract"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
@@ -111,98 +111,98 @@
   <xs:element name="LocalAuthorities">
     <xs:complexType>
       <xs:sequence>
-        <xs:element maxOccurs="unbounded" ref="b:LocalAuthority"/>
+        <xs:element maxOccurs="unbounded" ref="LocalAuthority"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
   <xs:element name="LocalAuthority">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="b:LACode"/>
-        <xs:element ref="b:LAName"/>
-        <xs:element ref="b:IssuingCountry"/>
-        <xs:element ref="b:LanguageCode"/>
-        <xs:element ref="b:ClockType"/>
-        <xs:element ref="b:PhoneNumber" minOccurs="0"/>
-        <xs:element ref="b:EmailAddress" minOccurs="0"/>
-        <xs:element ref="b:Badges"/>
+        <xs:element ref="LACode"/>
+        <xs:element ref="LAName"/>
+        <xs:element ref="IssuingCountry"/>
+        <xs:element ref="LanguageCode"/>
+        <xs:element ref="ClockType"/>
+        <xs:element ref="PhoneNumber" minOccurs="0"/>
+        <xs:element ref="EmailAddress" minOccurs="0"/>
+        <xs:element ref="Badges"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  <xs:element name="LACode" type="b:Varchar100"/>
-  <xs:element name="LAName" type="b:Varchar100"/>
-  <xs:element name="IssuingCountry" type="b:IssuingCountryType"/>
-  <xs:element name="LanguageCode" type="b:LanguageCodeType"/>
-  <xs:element name="ClockType" type="b:ClockTypeType"/>
-  <xs:element name="PhoneNumber" type="b:Varchar100"/>
-  <xs:element name="EmailAddress" type="b:Varchar100"/>
+  <xs:element name="LACode" type="Varchar100"/>
+  <xs:element name="LAName" type="Varchar100"/>
+  <xs:element name="IssuingCountry" type="IssuingCountryType"/>
+  <xs:element name="LanguageCode" type="LanguageCodeType"/>
+  <xs:element name="ClockType" type="ClockTypeType"/>
+  <xs:element name="PhoneNumber" type="Varchar100"/>
+  <xs:element name="EmailAddress" type="Varchar100"/>
   <xs:element name="Badges">
     <xs:complexType>
       <xs:sequence>
-        <xs:element maxOccurs="unbounded" ref="b:BadgeDetails"/>
+        <xs:element maxOccurs="unbounded" ref="BadgeDetails"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
   <xs:element name="BadgeDetails">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="b:BadgeIdentifier"/>
-        <xs:element ref="b:PrintedBadgeReference"/>
-        <xs:element ref="b:StartDate"/>
-        <xs:element ref="b:ExpiryDate"/>
-        <xs:element ref="b:DispatchMethodCode"/>
-        <xs:element ref="b:FastTrackCode"/>
-        <xs:element ref="b:PostageCode"/>
-        <xs:element ref="b:Photo" minOccurs="0"/>
-        <xs:element ref="b:BarCodeData"/>
-        <xs:element ref="b:Forename"/>
-        <xs:element ref="b:Surname" minOccurs="0"/>
-        <xs:element ref="b:LetterAddress"/>
-        <xs:element minOccurs="0" ref="b:CollectionAddress"/>
+        <xs:element ref="BadgeIdentifier"/>
+        <xs:element ref="PrintedBadgeReference"/>
+        <xs:element ref="StartDate"/>
+        <xs:element ref="ExpiryDate"/>
+        <xs:element ref="DispatchMethodCode"/>
+        <xs:element ref="FastTrackCode"/>
+        <xs:element ref="PostageCode"/>
+        <xs:element ref="Photo" minOccurs="0"/>
+        <xs:element ref="BarCodeData"/>
+        <xs:element ref="Forename"/>
+        <xs:element ref="Surname" minOccurs="0"/>
+        <xs:element ref="LetterAddress"/>
+        <xs:element minOccurs="0" ref="CollectionAddress"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  <xs:element name="BadgeIdentifier" type="b:BadgeIdentifierType"/>
-  <xs:element name="PrintedBadgeReference" type="b:BadgeReferenceNumberType"/>
-  <xs:element name="StartDate" type="b:DateFormat"/>
-  <xs:element name="ExpiryDate" type="b:DateFormat"/>
-  <xs:element name="DispatchMethodCode" type="b:DispatchMethodCodeType"/>
-  <xs:element name="FastTrackCode" type="b:FastTrackCodeType"/>
-  <xs:element name="PostageCode" type="b:PostageCodeType"/>
+  <xs:element name="BadgeIdentifier" type="BadgeIdentifierType"/>
+  <xs:element name="PrintedBadgeReference" type="BadgeReferenceNumberType"/>
+  <xs:element name="StartDate" type="DateFormat"/>
+  <xs:element name="ExpiryDate" type="DateFormat"/>
+  <xs:element name="DispatchMethodCode" type="DispatchMethodCodeType"/>
+  <xs:element name="FastTrackCode" type="FastTrackCodeType"/>
+  <xs:element name="PostageCode" type="PostageCodeType"/>
   <xs:element name="Photo" type="xs:base64Binary"/>
-  <xs:element name="BarCodeData" type="b:BarCodeDataType"/>
-  <xs:element name="Forename" type="b:Varchar40"/>
-  <xs:element name="Surname" type="b:Varchar40"/>
+  <xs:element name="BarCodeData" type="BarCodeDataType"/>
+  <xs:element name="Forename" type="Varchar40"/>
+  <xs:element name="Surname" type="Varchar40"/>
   <xs:element name="LetterAddress">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="b:NameLine1" minOccurs="0"/>
-        <xs:element ref="b:AddressLine1" minOccurs="0"/>
-        <xs:element ref="b:AddressLine2" minOccurs="0"/>
-        <xs:element ref="b:Town" minOccurs="0"/>
-        <xs:element ref="b:Country"/>
-        <xs:element ref="b:Postcode"/>
+        <xs:element ref="NameLine1" minOccurs="0"/>
+        <xs:element ref="AddressLine1" minOccurs="0"/>
+        <xs:element ref="AddressLine2" minOccurs="0"/>
+        <xs:element ref="Town" minOccurs="0"/>
+        <xs:element ref="Country"/>
+        <xs:element ref="Postcode"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
-  <xs:element name="NameLine1" type="b:Varchar120"/>
-  <xs:element name="AddressLine1" type="b:Varchar50"/>
-  <xs:element name="AddressLine2" type="b:Varchar40"/>
-  <xs:element name="Town" type="b:Varchar40"/>
-  <xs:element name="Country" type="b:Varchar100"/>
-  <xs:element name="Postcode" type="b:Varchar10"/>
+  <xs:element name="NameLine1" type="Varchar120"/>
+  <xs:element name="AddressLine1" type="Varchar50"/>
+  <xs:element name="AddressLine2" type="Varchar40"/>
+  <xs:element name="Town" type="Varchar40"/>
+  <xs:element name="Country" type="Varchar100"/>
+  <xs:element name="Postcode" type="Varchar10"/>
   <xs:element name="CollectionAddress">
     <xs:complexType>
       <xs:sequence>
-        <xs:element name="NameLine1" type="b:Varchar100" minOccurs="0"/>
-        <xs:element name="NameLine2" type="b:Varchar100"  minOccurs="0"/>
-        <xs:element name="AddressLine1" type="b:Varchar100" minOccurs="0"/>
-        <xs:element name="AddressLine2" type="b:Varchar100" minOccurs="0"/>
-        <xs:element name="AddressLine3" type="b:Varchar100" minOccurs="0"/>
-        <xs:element name="AddressLine4" type="b:Varchar100" minOccurs="0"/>
-        <xs:element name="Town" type="b:Varchar100" minOccurs="0"/>
-        <xs:element name="Country" type="b:Varchar100" minOccurs="0"/>
-        <xs:element name="Postcode" type="b:Varchar100" minOccurs="0"/>
+        <xs:element name="NameLine1" type="Varchar100" minOccurs="0"/>
+        <xs:element name="NameLine2" type="Varchar100"  minOccurs="0"/>
+        <xs:element name="AddressLine1" type="Varchar100" minOccurs="0"/>
+        <xs:element name="AddressLine2" type="Varchar100" minOccurs="0"/>
+        <xs:element name="AddressLine3" type="Varchar100" minOccurs="0"/>
+        <xs:element name="AddressLine4" type="Varchar100" minOccurs="0"/>
+        <xs:element name="Town" type="Varchar100" minOccurs="0"/>
+        <xs:element name="Country" type="Varchar100" minOccurs="0"/>
+        <xs:element name="Postcode" type="Varchar100" minOccurs="0"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>

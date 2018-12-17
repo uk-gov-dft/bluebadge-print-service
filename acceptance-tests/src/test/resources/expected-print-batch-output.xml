@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="windows-1252"?>
-<BadgePrintExtract xmlns="http://northgate-is.com/BadgePrintExtract">
+<BadgePrintExtract>
    <Batch>
       <Filename>BADGEEXTRACT180808120021.xml</Filename>
       <ReExtract>no</ReExtract>
