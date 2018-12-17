@@ -60,6 +60,7 @@ public class ModelToXmlConverter {
     writer.writeStartElement("ReExtract");
     writer.writeCharacters("no");
     writer.writeEndElement();
+    writer.writeEndElement();
 
     Map<String, List<Badge>> ordered = groupByLA(batch);
 
@@ -74,7 +75,6 @@ public class ModelToXmlConverter {
       writer.writeEndElement();
       writer.writeEndElement();
     }
-    writer.writeEndElement();
     writer.writeEndElement();
     writer.writeEndElement();
     writer.writeEndDocument();
@@ -133,7 +133,7 @@ public class ModelToXmlConverter {
     writer.writeCharacters(mapPostageCode(badge.getDeliveryOptionCode()));
     writer.writeEndElement();
 
-    writer.writeStartElement("photo");
+    writer.writeStartElement("Photo");
     Optional<byte[]> imageFile = s3.downloadBadgeFile(badge.getImageLink());
     if (imageFile.isPresent()) {
       String image = toBase64(imageFile.get());
