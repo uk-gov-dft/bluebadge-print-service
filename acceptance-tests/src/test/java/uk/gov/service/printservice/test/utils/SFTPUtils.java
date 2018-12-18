@@ -6,7 +6,6 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Vector;
@@ -61,7 +60,8 @@ public class SFTPUtils {
   public void clean() throws Exception {
     try (SftpChannelManager channelManager = new SftpChannelManager()) {
       //noinspection unchecked
-      for (ChannelSftp.LsEntry item : (Vector<ChannelSftp.LsEntry>)channelManager.channel.ls(dropbox)) {
+      for (ChannelSftp.LsEntry item :
+          (Vector<ChannelSftp.LsEntry>) channelManager.channel.ls(dropbox)) {
         System.out.println("file: " + item.getFilename());
         if (!item.getAttrs().isDir()) {
           channelManager.channel.rm(dropbox + "/" + item.getFilename()); // Remove file.
@@ -74,7 +74,7 @@ public class SFTPUtils {
   public int getFileCount() throws JSchException, SftpException {
     int count;
 
-    try (SftpChannelManager channelManager = new SftpChannelManager()){
+    try (SftpChannelManager channelManager = new SftpChannelManager()) {
       channelManager.channel.cd(dropbox);
       count = channelManager.channel.ls(dropbox).size();
     }
@@ -83,12 +83,12 @@ public class SFTPUtils {
   }
 
   public boolean putFile(String resourcePath) {
-    try (SftpChannelManager channelManager = new SftpChannelManager()){
+    try (SftpChannelManager channelManager = new SftpChannelManager()) {
       channelManager.channel.cd(dropbox);
       File f = new File(this.getClass().getResource(resourcePath).toURI());
       channelManager.channel.put(new FileInputStream(f), f.getName(), ChannelSftp.OVERWRITE);
       return true;
-    }catch (Exception e){
+    } catch (Exception e) {
       return false;
     }
   }

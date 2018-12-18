@@ -83,7 +83,7 @@ public class S3Utils {
     return putObject(bucket, fileName, fileName);
   }
 
-  public boolean objectExists(String bucket, String objectKey){
+  public boolean objectExists(String bucket, String objectKey) {
     return s3.doesObjectExist(bucket, objectKey);
   }
 }

@@ -60,6 +60,7 @@ public class ModelToXmlConverter {
     writer.writeStartElement("ReExtract");
     writer.writeCharacters("no");
     writer.writeEndElement();
+    writer.writeEndElement();
 
     Map<String, List<Badge>> ordered = groupByLA(batch);
 
@@ -74,7 +75,6 @@ public class ModelToXmlConverter {
       writer.writeEndElement();
       writer.writeEndElement();
     }
-    writer.writeEndElement();
     writer.writeEndElement();
     writer.writeEndElement();
     writer.writeEndDocument();
@@ -133,7 +133,7 @@ public class ModelToXmlConverter {
     writer.writeCharacters(mapPostageCode(badge.getDeliveryOptionCode()));
     writer.writeEndElement();
 
-    writer.writeStartElement("photo");
+    writer.writeStartElement("Photo");
     Optional<byte[]> imageFile = s3.downloadBadgeFile(badge.getImageLink());
     if (imageFile.isPresent()) {
       String image = toBase64(imageFile.get());
@@ -242,24 +242,20 @@ public class ModelToXmlConverter {
   }
 
   private void writeName(XMLStreamWriter writer, String holder) throws XMLStreamException {
-    writer.writeStartElement("Name");
-
-    String forename = holder;
+    String name = holder;
     String surname = "";
 
     if (holder.length() > 28) {
       int idx = holder.indexOf(" ");
-      forename = holder.substring(0, idx).trim();
+      name = holder.substring(0, idx).trim();
       surname = holder.substring(idx).trim();
     }
-    writer.writeStartElement("Forename");
-    writer.writeCharacters(forename);
+    writer.writeStartElement("Name");
+    writer.writeCharacters(name);
     writer.writeEndElement();
 
     writer.writeStartElement("Surname");
     writer.writeCharacters(surname);
-    writer.writeEndElement();
-
     writer.writeEndElement();
   }
 
@@ -286,7 +282,7 @@ public class ModelToXmlConverter {
     writer.writeEndElement();
 
     writer.writeStartElement("ClockType");
-    String clock = nation.equalsIgnoreCase("W") ? "WALLET" : "STANDARD";
+    String clock = nation.equalsIgnoreCase("W") ? "Wallet" : "Standard";
     writer.writeCharacters(clock);
     writer.writeEndElement();
 
