@@ -25,9 +25,10 @@ public class PrintController extends AbstractController implements PrintBatchApi
   @Override
   public ResponseEntity<Void> printBatch(@ApiParam() @Valid @RequestBody Batch batch) {
     try {
+      log.info("Beginning print batch.");
       service.print(batch);
     } catch (Exception e) {
-      log.error(e.getMessage());
+      log.error(e.getMessage(), e);
       Error error = new Error();
       error.setMessage(e.getMessage());
       throw new InternalServerException(error);

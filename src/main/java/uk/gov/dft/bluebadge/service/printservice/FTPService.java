@@ -9,6 +9,8 @@ import com.jcraft.jsch.SftpException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.dft.bluebadge.service.printservice.config.FTPClientConfig;
@@ -39,8 +41,13 @@ public class FTPService {
       sftpChannel = (ChannelSftp) channel;
       sftpChannel.cd(ftpConfig.getDropbox());
       File file = new File(filename);
-      sftpChannel.put(new FileInputStream(file), file.getName(), ChannelSftp.OVERWRITE);
-    } catch (JSchException | FileNotFoundException | SftpException e) {
+      try(FileInputStream fileInputStream = new FileInputStream(file)) {
+        sftpChannel.put(fileInputStream, file.getName(), ChannelSftp.OVERWRITE);
+      } catch (IOException e) {
+        log.error("Error happened while sending file to sftp", e);
+        return false;
+      }
+    } catch (JSchException | SftpException e) {
       log.error("Error happened while sending file to sftp", e);
       return false;
     } finally {

@@ -29,9 +29,9 @@ public class StorageService {
   }
 
   public boolean uploadToPrinterBucket(String src, String fileName)
-      throws IOException, InterruptedException {
+      throws IOException {
 
-    log.info("Uploading document to S3. Payload: {}", src);
+    log.info("Uploading document to S3.  FileName:{}, Payload: {}", fileName, src);
 
     String keyName = UUID.randomUUID().toString() + "-" + fileName;
     keyName = URLEncoder.encode(keyName, ENCODING_CHAR_SET);

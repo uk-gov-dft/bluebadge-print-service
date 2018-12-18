@@ -44,16 +44,17 @@ public class PrintService {
     boolean uploaded = false;
     try {
       uploaded = uploadToS3(batch);
-    } catch (InterruptedException | IOException e) {
+    } catch (IOException e) {
       log.error("Can't upload file to s3", e);
     }
 
     if (uploaded) {
+      log.info("Batch uploaded to S3, processing.");
       processBatches();
     }
   }
 
-  private boolean uploadToS3(Batch batch) throws IOException, InterruptedException {
+  private boolean uploadToS3(Batch batch) throws IOException {
     ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
     mapper.registerModule(new JavaTimeModule());
 
@@ -75,12 +76,14 @@ public class PrintService {
     boolean success = true;
     try {
       List<String> files = s3.listPrinterBucketFiles();
+      log.info("Processing {} files", files.size());
       for (String file : files) {
         log.debug("Downloading file: {} from s3 printer bucket", file);
         success &= processBatch(file);
       }
     } catch (Exception e) {
-      log.error("Error while processing badges", e);
+      log.error("Error while processing badges:" + e.getMessage(), e);
+      return false;
     }
 
     return success;

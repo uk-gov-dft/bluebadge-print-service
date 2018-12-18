@@ -27,7 +27,7 @@ public class ReferenceDataApiClient {
    * @return List of reference data items.
    */
   public List<ReferenceData> retrieveReferenceData() {
-    log.debug("Loading reference data.");
+    log.info("Loading reference data.");
 
     ReferenceDataResponse response =
         restTemplate
@@ -39,6 +39,7 @@ public class ReferenceDataApiClient {
                 ReferenceDataResponse.class)
             .getBody();
 
+    log.info("Reference data loaded.");
     return response.getData();
   }
 }
