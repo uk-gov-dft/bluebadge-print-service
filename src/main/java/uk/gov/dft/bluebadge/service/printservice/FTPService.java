@@ -29,7 +29,8 @@ public class FTPService {
     JSch jsch = new JSch();
     Session session = null;
     ChannelSftp sftpChannel = null;
-    try {
+    File file = new File(filename);
+    try(FileInputStream fileInputStream = new FileInputStream(file)) {
       jsch.setKnownHosts(ftpConfig.getKnownhosts());
       session = jsch.getSession(ftpConfig.getUser(), ftpConfig.getHost(), ftpConfig.getPort());
 
@@ -40,15 +41,11 @@ public class FTPService {
       channel.connect();
       sftpChannel = (ChannelSftp) channel;
       sftpChannel.cd(ftpConfig.getDropbox());
-      File file = new File(filename);
-      try(FileInputStream fileInputStream = new FileInputStream(file)) {
-        sftpChannel.put(fileInputStream, file.getName(), ChannelSftp.OVERWRITE);
-      } catch (IOException e) {
-        log.error("Error happened while sending file to sftp", e);
-        return false;
-      }
-    } catch (JSchException | SftpException e) {
-      log.error("Error happened while sending file to sftp", e);
+
+      sftpChannel.put(fileInputStream, file.getName(), ChannelSftp.OVERWRITE);
+
+    } catch (Exception e) {
+      log.error("Error happened while sending file to sftp:" + e.getMessage(), e);
       return false;
     } finally {
       sftpChannel.exit();
