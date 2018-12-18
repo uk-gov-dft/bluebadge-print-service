@@ -75,6 +75,13 @@ cd ..
 gradle acceptanceTests
 testExitCode=$?
 
+# Save the logs if something went wrong
+if [[ "$testExitCode" -ne 0 ]]; then
+   cd dev-env-develop
+   docker-compose logs -t --no-color > ../docker.log
+   cd ..
+fi
+
 # Tear down
 tearDown
 
