@@ -19,7 +19,7 @@ public class S3Config {
   @NotNull
   private String s3PrinterBucket;
 
-  @Value("${amazon.bb_badge_bucket}")
+  @Value("${amazon.bb-badge-bucket}")
   @NotNull
   private String s3BadgeBucket;
 

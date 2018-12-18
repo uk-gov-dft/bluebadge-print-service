@@ -19,3 +19,7 @@ server:
   servlet:
     context-path: /uk-gov-dft/print-service/1.0.0
 
+amazon:
+  bb-printer-bucket: uk-gov-dft-${bb_env}-printer
+  bb-badge-bucket: uk-gov-dft-${bb_env}-badge
+
