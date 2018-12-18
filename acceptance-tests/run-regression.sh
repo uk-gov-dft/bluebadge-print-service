@@ -68,6 +68,7 @@ docker-compose up -d --no-color
 psql -h localhost -U developer -d bb_dev -f ./scripts/db/setup-users.sql
 
 ssh-keyscan -p 2222 localhost > ~/.ssh/sftp_known_hosts
+curl http://localhost:8881/manage/actuator/env
 
 # Run the acceptance tests
 cd ..
