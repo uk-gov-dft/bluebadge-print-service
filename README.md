@@ -38,4 +38,8 @@ At the moment all connection details for sftp are defaulted to:
   dropbox: /upload
   knownhosts: ~/.ssh/sftp_known_hosts
 
+these can be overridden by providing  corresponding enviroment variables:
+  SFTP_HOST, SFTP_PORT, SFTP_USER, SFTP_PASS, SFTP_FOLDER, SFTP_KNOWNHOSTS
+ 
+
 
