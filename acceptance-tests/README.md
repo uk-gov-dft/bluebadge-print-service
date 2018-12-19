@@ -21,7 +21,8 @@ To connect to fstp server there should be environment variables provided:
   sftp_user (default 'foo')
   sftp_pass (default 'pass')
   sftp_folder (default '/upload')
-
+  sftp_knownhosts (default '~/.ssh/sftp_known_hosts')
+ 
 
 ### Relevant Articles: 
 - [Test a REST API with Java](http://www.baeldung.com/2011/10/13/integration-testing-a-rest-api/)
