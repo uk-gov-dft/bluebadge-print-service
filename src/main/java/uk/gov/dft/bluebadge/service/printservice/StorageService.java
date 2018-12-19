@@ -28,8 +28,7 @@ public class StorageService {
     this.s3Config = s3Config;
   }
 
-  public boolean uploadToPrinterBucket(String src, String fileName)
-      throws IOException {
+  public boolean uploadToPrinterBucket(String src, String fileName) throws IOException {
 
     log.info("Uploading document to S3.  FileName:{}, Payload: {}", fileName, src);
 

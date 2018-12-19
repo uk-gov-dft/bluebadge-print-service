@@ -3,14 +3,9 @@ package uk.gov.dft.bluebadge.service.printservice;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import com.jcraft.jsch.SftpException;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.dft.bluebadge.service.printservice.config.FTPClientConfig;
@@ -30,7 +25,7 @@ public class FTPService {
     Session session = null;
     ChannelSftp sftpChannel = null;
     File file = new File(filename);
-    try(FileInputStream fileInputStream = new FileInputStream(file)) {
+    try (FileInputStream fileInputStream = new FileInputStream(file)) {
       jsch.setKnownHosts(ftpConfig.getKnownhosts());
       session = jsch.getSession(ftpConfig.getUser(), ftpConfig.getHost(), ftpConfig.getPort());
 
