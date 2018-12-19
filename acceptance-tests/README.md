@@ -13,6 +13,15 @@ gradle bootRun
 ```
 gradle acceptanceTests
 ```
+To run acceptance tests 'bb_env' environment variable should be provided ('dev', 'ci', etc)
+
+To connect to fstp server there should be environment variables provided:
+  sftp_host (default 'localhost')
+  sftp_port (default '2222')
+  sftp_user (default 'foo')
+  sftp_pass (default 'pass')
+  sftp_folder (default '/upload')
+
 
 ### Relevant Articles: 
 - [Test a REST API with Java](http://www.baeldung.com/2011/10/13/integration-testing-a-rest-api/)
