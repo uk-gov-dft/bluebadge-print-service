@@ -24,6 +24,15 @@ To connect to fstp server there should be environment variables provided:
   sftp_knownhosts (default '~/.ssh/sftp_known_hosts')
  
 
+### How to validate a printer provider print batch xml request file using command line
+Check this file: 
+acceptance-tests/src/test/resources/testPrintBatchXmlFile.sh
+
+### Hot to validate a printer provider print batch xml request file from within karate
+Check this file
+acceptance-tests/src/test/resources/features/print-batch-ok-validation.feature
+
+
 ### Relevant Articles: 
 - [Test a REST API with Java](http://www.baeldung.com/2011/10/13/integration-testing-a-rest-api/)
 - [Introduction to WireMock](http://www.baeldung.com/introduction-to-wiremock)

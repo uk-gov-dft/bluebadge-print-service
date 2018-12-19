@@ -5,9 +5,14 @@ Feature: Verify Print batch ok validation
     * url baseUrl
     * def result = callonce read('./oauth2.feature')
     * header Authorization = 'Bearer ' + result.accessToken
-    * def cmdLineUtilsConfig = {}
-    * def CommandLineUtils = Java.type('uk.gov.service.printservice.test.utils.CommandLineUtils')
-    * def cmdLineUtils = new CommandLineUtils(cmdLineUtilsConfig)
+    * def validateXmlPrintBatchRequest =
+    """
+    function(script) {
+      var XMLValidator = Java.type('uk.gov.service.printservice.test.utils.XMLValidator');
+      var xmlValidator = new XMLValidator();
+      return xmlValidator.validate(script, 'BadgePrintExtract.xsd');
+    }
+    """
 
   Scenario: Verify valid print batch comparing xml
     * def batch =
@@ -52,14 +57,19 @@ Feature: Verify Print batch ok validation
           }
         ]
       }
+    ]
     """
     Given path 'printBatch'
     And request batch
     When method POST
-    Then status 200
+    #Then status 200
     And def actualPrintBatchOutput = read('../actual-print-batch-output.xml')
     And def expectedPrintBatchOutput = read('../expected-print-batch-output.xml')
     And match actualPrintBatchOutput == expectedPrintBatchOutput
+    And def validFileActualResult = validateXmlPrintBatchRequest('actual-print-batch-output.xml')
+    And match validFileActualResult == true
+    And def invalidFileActualResult = validateXmlPrintBatchRequest('invalid-languageCode-in-output-actual-print-batch-output.xml')
+    And match invalidFileActualResult == false
 
 
   # Examples of using XML
