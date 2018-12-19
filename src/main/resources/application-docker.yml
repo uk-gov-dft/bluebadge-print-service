@@ -8,3 +8,11 @@ blue-badge:
 amazon:
   bb-printer-bucket: uk-gov-dft-${bb_env:ci}-printer
   bb-badge-bucket: uk-gov-dft-${bb_env:ci}-badge
+
+ftp:
+  host: ${SFTP_HOST:sftp-server}
+  port: ${SFTP_PORT:22}
+  user: foo
+   ***REMOVED***
+  dropbox: /upload
+  knownhosts: ~/.ssh/sftp_known_hosts

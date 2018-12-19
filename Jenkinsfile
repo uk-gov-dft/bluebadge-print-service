@@ -69,6 +69,7 @@ node {
     }
     stage("Acceptance Tests") {
         node('Functional') {
+
             git(
                url: "${REPONAME}",
                credentialsId: 'dft-buildbot-valtech',
@@ -77,7 +78,7 @@ node {
 
             timeout(time: 10, unit: 'MINUTES') {
                 try {
-                    sh 'bash -c "echo $PATH && cd acceptance-tests && ./run-regression.sh"'
+                    sh 'bash -c "echo $PATH && export SFTP_HOST=localhost && export SFTP_PORT=2222 && cd acceptance-tests && ./run-regression.sh"'
                 }
                 finally {
                     archiveArtifacts allowEmptyArchive: true, artifacts: '**/docker.log'
