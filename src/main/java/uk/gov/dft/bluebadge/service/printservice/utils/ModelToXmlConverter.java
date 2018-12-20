@@ -31,7 +31,7 @@ import uk.gov.dft.bluebadge.service.printservice.referencedata.ReferenceDataServ
 @Component
 @Slf4j
 public class ModelToXmlConverter {
-
+  private static final String PERSON = "PERSON";
   private final StorageService s3;
   private final ReferenceDataService referenceData;
 
@@ -65,12 +65,12 @@ public class ModelToXmlConverter {
     Map<String, List<Badge>> ordered = groupByLA(batch);
 
     writer.writeStartElement("LocalAuthorities");
-    for (String la : ordered.keySet()) {
+    for (Map.Entry<String, List<Badge>> entry : ordered.entrySet()) {
       writer.writeStartElement("LocalAuthority");
-      writeLocalAuthority(writer, la);
+      writeLocalAuthority(writer, entry.getKey());
       writer.writeStartElement("Badges");
-      for (Badge badge : ordered.get(la)) {
-        writeBadgeDetails(writer, badge, la);
+      for (Badge badge : entry.getValue()) {
+        writeBadgeDetails(writer, badge, entry.getKey());
       }
       writer.writeEndElement();
       writer.writeEndElement();
@@ -246,7 +246,7 @@ public class ModelToXmlConverter {
     String surname = "";
 
     if (holder.length() > 28) {
-      int idx = holder.indexOf(" ");
+      int idx = holder.indexOf(' ');
       name = holder.substring(0, idx).trim();
       surname = holder.substring(idx).trim();
     }
@@ -328,7 +328,7 @@ public class ModelToXmlConverter {
   }
 
   private String getPrintedBadgeReference(Badge badge) {
-    boolean isPerson = badge.getParty().getTypeCode().equals("PERSON");
+    boolean isPerson = badge.getParty().getTypeCode().equals(PERSON);
     String dob =
         isPerson
             ? badge.getParty().getPerson().getDob().format(DateTimeFormatter.ofPattern("MMyy"))
@@ -340,13 +340,13 @@ public class ModelToXmlConverter {
   }
 
   private String getBarCode(Badge badge, String reference) {
-    boolean isPerson = badge.getParty().getTypeCode().equals("PERSON");
+    boolean isPerson = badge.getParty().getTypeCode().equals(PERSON);
 
     return isPerson ? StringUtils.right(reference, 7) : StringUtils.right(reference, 5);
   }
 
   private String getHolder(Badge badge) {
-    boolean isPerson = badge.getParty().getTypeCode().equals("PERSON");
+    boolean isPerson = badge.getParty().getTypeCode().equals(PERSON);
 
     return isPerson
         ? badge.getParty().getPerson().getBadgeHolderName()

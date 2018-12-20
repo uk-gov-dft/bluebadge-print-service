@@ -18,7 +18,7 @@ public class PrintController extends AbstractController implements PrintBatchApi
 
   private PrintService service;
 
-  public PrintController(PrintService service) {
+  PrintController(PrintService service) {
     this.service = service;
   }
 

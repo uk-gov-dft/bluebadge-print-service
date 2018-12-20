@@ -19,16 +19,16 @@ import uk.gov.dft.bluebadge.service.printservice.config.S3Config;
 @Slf4j
 public class StorageService {
 
-  public static final String ENCODING_CHAR_SET = "UTF-8";
+  private static final String ENCODING_CHAR_SET = "UTF-8";
   private final AmazonS3 amazonS3;
   private final S3Config s3Config;
 
-  public StorageService(S3Config s3Config, AmazonS3 amazonS3) {
+  StorageService(S3Config s3Config, AmazonS3 amazonS3) {
     this.amazonS3 = amazonS3;
     this.s3Config = s3Config;
   }
 
-  public boolean uploadToPrinterBucket(String src, String fileName) throws IOException {
+  boolean uploadToPrinterBucket(String src, String fileName) throws IOException {
 
     log.info("Uploading document to S3.  FileName:{}, Payload: {}", fileName, src);
 
@@ -40,20 +40,18 @@ public class StorageService {
     return amazonS3.doesObjectExist(s3Config.getS3PrinterBucket(), keyName);
   }
 
-  public List<String> listPrinterBucketFiles() {
+  List<String> listPrinterBucketFiles() {
     ObjectListing result = amazonS3.listObjects(s3Config.getS3PrinterBucket());
     List<S3ObjectSummary> summaries = result.getObjectSummaries();
-    List<String> files =
-        summaries
-            .stream()
-            .filter(f -> f.getKey().endsWith(".json"))
-            .map(f -> f.getKey())
-            .collect(Collectors.toList());
 
-    return files;
+    return summaries
+        .stream()
+        .filter(f -> f.getKey().endsWith(".json"))
+        .map(S3ObjectSummary::getKey)
+        .collect(Collectors.toList());
   }
 
-  public Optional<String> downloadPrinterFileAsString(String key) {
+  Optional<String> downloadPrinterFileAsString(String key) {
     if (amazonS3.doesObjectExist(s3Config.getS3PrinterBucket(), key)) {
       log.debug("json file: {} exists in s3 bucket {}", key, s3Config.getS3PrinterBucket());
       return Optional.of(amazonS3.getObjectAsString(s3Config.getS3PrinterBucket(), key));

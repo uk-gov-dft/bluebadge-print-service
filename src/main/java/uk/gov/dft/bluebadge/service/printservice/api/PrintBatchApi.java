@@ -15,15 +15,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import uk.gov.dft.bluebadge.common.api.model.CommonResponse;
 import uk.gov.dft.bluebadge.service.printservice.model.Batch;
 
-@Api(value = "PrintBatch", description = "the PrintBatch API")
+@Api(value = "PrintBatch")
 public interface PrintBatchApi {
 
   Logger log = LoggerFactory.getLogger(PrintBatchApi.class);
@@ -43,7 +41,6 @@ public interface PrintBatchApi {
   @ApiOperation(
     value = "Creates a Batch of badges to be send for printing",
     nickname = "printBatchPost",
-    notes = "",
     tags = {
       "print Batch",
     }
@@ -54,19 +51,11 @@ public interface PrintBatchApi {
       @ApiResponse(code = 400, message = "Invalid request", response = CommonResponse.class)
     }
   )
-  @RequestMapping(
+  @PostMapping(
     value = "/printBatch",
     produces = {"application/json"},
-    consumes = {"application/json"},
-    method = RequestMethod.POST
+    consumes = {"application/json"}
   )
-  default ResponseEntity<Void> printBatch(
-      @ApiParam(value = "Batch badges to be send for printing") @Valid @RequestBody Batch batch) {
-    if (getObjectMapper().isPresent() && getAcceptHeader().isPresent()) {
-    } else {
-      log.warn(
-          "ObjectMapper or HttpServletRequest not configured in default PrintBatchApi interface so no example is generated");
-    }
-    return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
-  }
+  ResponseEntity<Void> printBatch(
+      @ApiParam(value = "Batch badges to be send for printing") @Valid @RequestBody Batch batch);
 }
