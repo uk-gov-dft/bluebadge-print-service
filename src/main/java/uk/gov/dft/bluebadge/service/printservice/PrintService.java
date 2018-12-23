@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import javax.xml.stream.XMLStreamException;
@@ -18,7 +19,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import uk.gov.dft.bluebadge.service.printservice.config.S3Config;
 import uk.gov.dft.bluebadge.service.printservice.model.Batch;
+import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBatch;
+import uk.gov.dft.bluebadge.service.printservice.utils.BatchConfirmationXmlException;
 import uk.gov.dft.bluebadge.service.printservice.utils.ModelToXmlConverter;
+import uk.gov.dft.bluebadge.service.printservice.utils.XmlToProcessedBatch;
 
 @Service
 @Slf4j
@@ -37,6 +41,25 @@ public class PrintService {
     this.s3 = s3;
     this.ftp = ftp;
     this.xmlConverter = xmlConverter;
+  }
+
+  List<ProcessedBatch> getProcessedBatches() {
+    log.info("Returning processed batches.");
+    XmlToProcessedBatch processor = new XmlToProcessedBatch();
+    List<ProcessedBatch> processedBatches = new ArrayList<>();
+    List<String> fileKeys = s3.listInBucketXmlFileKeys();
+    for (String fileKey : fileKeys) {
+      log.info("Parsing {}", fileKey);
+      try {
+        processedBatches.add(
+            processor.readProcessedBatchFile(
+                s3.downloadS3File(s3Config.getS3InBucket(), fileKey), fileKey));
+      } catch (BatchConfirmationXmlException e) {
+        processedBatches.add(
+            ProcessedBatch.builder().filename(fileKey).errorMessage(e.getDetailedError()).build());
+      }
+    }
+    return processedBatches;
   }
 
   public void print(Batch batch) {

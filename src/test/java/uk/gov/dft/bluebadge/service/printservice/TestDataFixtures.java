@@ -82,7 +82,7 @@ public class TestDataFixtures {
   private static Batch batch1() {
     Batch batch = new Batch();
     batch.setFilename("filename1");
-    batch.setBatchType("STANDARD");
+    batch.setBatchType(Batch.BatchTypeEnum.STANDARD);
     batch.setBadges(Arrays.asList(badge1(), badge2(), badge3()));
     return batch;
   }
@@ -90,7 +90,7 @@ public class TestDataFixtures {
   private static Batch batch2() {
     Batch batch = new Batch();
     batch.setFilename("filename2");
-    batch.setBatchType("FASTTRACK");
+    batch.setBatchType(Batch.BatchTypeEnum.FASTTRACK);
     batch.setBadges(Arrays.asList(badge2(), badge3(), badge4()));
 
     return batch;

@@ -2,9 +2,8 @@ package uk.gov.dft.bluebadge.service.printservice.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
-import java.util.ArrayList;
 import java.util.List;
-import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -16,24 +15,22 @@ import org.springframework.validation.annotation.Validated;
 @ToString
 @Data
 public class Batch {
+  public enum BatchTypeEnum {
+    FASTTRACK,
+    STANDARD,
+    LA;
+  }
+
   @JsonProperty("filename")
-  @ApiModelProperty(value = "")
+  @ApiModelProperty()
   private String filename = null;
 
   @JsonProperty("batchType")
-  @ApiModelProperty(example = "FASTTRACK, STANDARD or LA", value = "")
-  @NotEmpty
-  private String batchType = null;
+  @ApiModelProperty()
+  @NotNull
+  private BatchTypeEnum batchType = null;
 
   @JsonProperty("badges")
-  @ApiModelProperty(value = "")
+  @ApiModelProperty()
   private List<Badge> badges = null;
-
-  public Batch addBadgesItem(Badge badge) {
-    if (this.badges == null) {
-      this.badges = new ArrayList<>();
-    }
-    this.badges.add(badge);
-    return this;
-  }
 }

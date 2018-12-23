@@ -45,6 +45,7 @@ springfox.documentation.swagger.v2.path: /api-docs
 amazon:
   bb-printer-bucket: uk-gov-dft-${blue-badge.env}-printer
   bb-badge-bucket: uk-gov-dft-${blue-badge.env}-badge
+  bb-processed-badge-bucket: uk-gov-dft-${blue-badge.env}-badge-in
   signed-url-duration-ms: 60000
    
 ftp:
