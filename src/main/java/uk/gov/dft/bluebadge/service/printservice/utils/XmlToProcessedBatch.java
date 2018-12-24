@@ -5,14 +5,19 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
+
+import lombok.extern.slf4j.Slf4j;
 import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBadge;
 import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBatch;
 
+@Component
 @Slf4j
 public class XmlToProcessedBatch {
 

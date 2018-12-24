@@ -64,5 +64,5 @@ public interface PrintBatchApi {
     produces = {"application/json"},
     consumes = {"application/json"}
   )
-  ResponseEntity<ProcessedBatchesResponse> processedBatchesGet();
+  ResponseEntity<ProcessedBatchesResponse> processedBatches();
 }

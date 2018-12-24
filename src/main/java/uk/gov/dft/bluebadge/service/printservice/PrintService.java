@@ -28,148 +28,141 @@ import uk.gov.dft.bluebadge.service.printservice.utils.XmlToProcessedBatch;
 @Slf4j
 public class PrintService {
 
-  private static final Path XML_DIR =
-      Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_xml");
+	private static final Path XML_DIR = Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_xml");
 
-  private final StorageService s3;
-  private final FTPService ftp;
-  private final ModelToXmlConverter xmlConverter;
+	private final StorageService s3;
+	private final FTPService ftp;
+	private final ModelToXmlConverter xmlConverter;
+	private final XmlToProcessedBatch xmlProcessor;
 
-  @Autowired private S3Config s3Config;
+	PrintService(StorageService s3, FTPService ftp, ModelToXmlConverter xmlConverter, XmlToProcessedBatch xmlProcessor) {
+		this.s3 = s3;
+		this.ftp = ftp;
+		this.xmlConverter = xmlConverter;
+		this.xmlProcessor = xmlProcessor;
+	}
 
-  PrintService(StorageService s3, FTPService ftp, ModelToXmlConverter xmlConverter) {
-    this.s3 = s3;
-    this.ftp = ftp;
-    this.xmlConverter = xmlConverter;
-  }
+	List<ProcessedBatch> getProcessedBatches() {
+		log.info("Returning processed batches.");
+		List<ProcessedBatch> processedBatches = new ArrayList<>();
+		List<String> files = s3.listInBucketXmlFiles();
+		for (String file : files) {
+			log.info("Parsing {}", file);
+			try {
+				processedBatches
+				    .add(xmlProcessor.readProcessedBatchFile(s3.downloadS3File(s3.getInBucket(), file), file));
+			} catch (BatchConfirmationXmlException e) {
+				processedBatches.add(ProcessedBatch.builder().filename(file).errorMessage(e.getDetailedError()).build());
+			}
+		}
+		return processedBatches;
+	}
 
-  List<ProcessedBatch> getProcessedBatches() {
-    log.info("Returning processed batches.");
-    XmlToProcessedBatch processor = new XmlToProcessedBatch();
-    List<ProcessedBatch> processedBatches = new ArrayList<>();
-    List<String> fileKeys = s3.listInBucketXmlFileKeys();
-    for (String fileKey : fileKeys) {
-      log.info("Parsing {}", fileKey);
-      try {
-        processedBatches.add(
-            processor.readProcessedBatchFile(
-                s3.downloadS3File(s3Config.getS3InBucket(), fileKey), fileKey));
-      } catch (BatchConfirmationXmlException e) {
-        processedBatches.add(
-            ProcessedBatch.builder().filename(fileKey).errorMessage(e.getDetailedError()).build());
-      }
-    }
-    return processedBatches;
-  }
+	public void print(Batch batch) {
 
-  public void print(Batch batch) {
+		boolean uploaded = false;
+		try {
+			uploaded = uploadToS3(batch);
+		} catch (IOException e) {
+			log.error("Can't upload file to s3", e);
+		}
 
-    boolean uploaded = false;
-    try {
-      uploaded = uploadToS3(batch);
-    } catch (IOException e) {
-      log.error("Can't upload file to s3", e);
-    }
+		if (uploaded) {
+			log.info("Batch uploaded to S3, processing.");
+			processBatches();
+		}
+	}
 
-    if (uploaded) {
-      log.info("Batch uploaded to S3, processing.");
-      processBatches();
-    }
-  }
+	private boolean uploadToS3(Batch batch) throws IOException {
+		ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+		mapper.registerModule(new JavaTimeModule());
 
-  private boolean uploadToS3(Batch batch) throws IOException {
-    ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-    mapper.registerModule(new JavaTimeModule());
+		String json = mapper.writeValueAsString(batch);
 
-    String json = mapper.writeValueAsString(batch);
+		String filename = batch.getBatchType() + "_"
+		    + LocalDateTime.now().format(DateTimeFormatter.ofPattern("YYYYMMddHHmmss")) + ".json";
 
-    String filename =
-        batch.getBatchType()
-            + "_"
-            + LocalDateTime.now().format(DateTimeFormatter.ofPattern("YYYYMMddHHmmss"))
-            + ".json";
+		boolean uploaded = s3.uploadToPrinterBucket(json, filename);
+		log.debug("Json payload {} has been uploaded: {}", json, uploaded);
 
-    boolean uploaded = s3.uploadToPrinterBucket(json, filename);
-    log.debug("Json payload {} has been uploaded: {}", json, uploaded);
+		return uploaded;
+	}
 
-    return uploaded;
-  }
+	private boolean processBatches() {
+		boolean success = true;
+		try {
+			List<String> files = s3.listPrinterBucketFiles();
+			log.info("Processing {} files", files.size());
+			for (String file : files) {
+				log.debug("Downloading file: {} from s3 printer bucket", file);
+				success &= processBatch(file);
+			}
+		} catch (Exception e) {
+			log.error("Error while processing badges:" + e.getMessage(), e);
+			return false;
+		}
 
-  private boolean processBatches() {
-    boolean success = true;
-    try {
-      List<String> files = s3.listPrinterBucketFiles();
-      log.info("Processing {} files", files.size());
-      for (String file : files) {
-        log.debug("Downloading file: {} from s3 printer bucket", file);
-        success &= processBatch(file);
-      }
-    } catch (Exception e) {
-      log.error("Error while processing badges:" + e.getMessage(), e);
-      return false;
-    }
+		return success;
+	}
 
-    return success;
-  }
+	@Async("batchExecutor")
+	private boolean processBatch(String key) {
 
-  @Async("batchExecutor")
-  private boolean processBatch(String key) {
+		Optional<String> json;
+		try {
+			json = s3.downloadPrinterFileAsString(key);
+		} catch (Exception e) {
+			log.error("Can't download file: {} from s3 bucket: {}", key, s3.getPrinterBucket());
+			log.error("Error while downloading: {}", e);
+			return false;
+		}
 
-    Optional<String> json;
-    try {
-      json = s3.downloadPrinterFileAsString(key);
-    } catch (Exception e) {
-      log.error("Can't download file: {} from s3 bucket: {}", key, s3Config.getS3PrinterBucket());
-      log.error("Error while downloading: {}", e);
-      return false;
-    }
+		String xmlFileName;
+		if (json.isPresent()) {
+			try {
+				xmlFileName = prepareXml(json.get());
+			} catch (IOException | XMLStreamException e) {
+				log.error("Can't process json string: {} into valid xml", json.get());
+				log.error("Error while converting into xml: {}", e);
+				return false;
+			}
+		} else {
+			log.error("Can't download file: {} from s3", key);
+			return false;
+		}
 
-    String xmlFileName;
-    if (json.isPresent()) {
-      try {
-        xmlFileName = prepareXml(json.get());
-      } catch (IOException | XMLStreamException e) {
-        log.error("Can't process json string: {} into valid xml", json.get());
-        log.error("Error while converting into xml: {}", e);
-        return false;
-      }
-    } else {
-      log.error("Can't download file: {} from s3", key);
-      return false;
-    }
+		boolean transferred = false;
+		try {
+			transferred = ftp.send(xmlFileName);
+		} catch (Exception e) {
+			log.error("Can't send file: {} ftp", xmlFileName);
+			log.error("Error while sending file to ftp: {}", e.getMessage());
+		}
 
-    boolean transferred = false;
-    try {
-      transferred = ftp.send(xmlFileName);
-    } catch (Exception e) {
-      log.error("Can't send file: {} ftp", xmlFileName);
-      log.error("Error while sending file to ftp: {}", e.getMessage());
-    }
+		if (transferred) {
+			s3.deletePrinterBucketFile(key);
+		}
+		cleanTempResources();
 
-    if (transferred) {
-      s3.deletePrinterBucketFile(key);
-    }
-    cleanTempResources();
+		return transferred;
+	}
 
-    return transferred;
-  }
+	private String prepareXml(String json) throws IOException, XMLStreamException {
+		log.debug("Prepare xml file");
 
-  private String prepareXml(String json) throws IOException, XMLStreamException {
-    log.debug("Prepare xml file");
+		ObjectMapper objectMapper = new ObjectMapper();
+		objectMapper.registerModule(new JavaTimeModule());
 
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.registerModule(new JavaTimeModule());
+		Batch batch = objectMapper.readValue(json, Batch.class);
 
-    Batch batch = objectMapper.readValue(json, Batch.class);
+		return xmlConverter.toXml(batch, XML_DIR);
+	}
 
-    return xmlConverter.toXml(batch, XML_DIR);
-  }
-
-  private void cleanTempResources() {
-    try {
-      FileSystemUtils.deleteRecursively(XML_DIR);
-    } catch (IOException e) {
-      log.error("Error while deleting local temporary resources: {}", e.getMessage());
-    }
-  }
+	private void cleanTempResources() {
+		try {
+			FileSystemUtils.deleteRecursively(XML_DIR);
+		} catch (IOException e) {
+			log.error("Error while deleting local temporary resources: {}", e.getMessage());
+		}
+	}
 }

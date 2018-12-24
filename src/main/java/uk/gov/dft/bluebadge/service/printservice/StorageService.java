@@ -51,7 +51,7 @@ public class StorageService {
         .collect(Collectors.toList());
   }
 
-  List<String> listInBucketXmlFileKeys() {
+  List<String> listInBucketXmlFiles() {
     ObjectListing result = amazonS3.listObjects(s3Config.getS3InBucket());
     List<S3ObjectSummary> summaries = result.getObjectSummaries();
 
@@ -84,4 +84,12 @@ public class StorageService {
   void deletePrinterBucketFile(String key) {
     amazonS3.deleteObject(s3Config.getS3PrinterBucket(), key);
   }
+  
+  public String getPrinterBucket() {
+  		return s3Config.getS3PrinterBucket();
+  }
+
+  public String getInBucket() {
+		return s3Config.getS3InBucket();
+}
 }

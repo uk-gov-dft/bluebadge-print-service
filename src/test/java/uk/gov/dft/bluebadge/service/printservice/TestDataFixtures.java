@@ -1,7 +1,10 @@
 package uk.gov.dft.bluebadge.service.printservice;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.LocalAuthorityRefData;
 import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.LocalAuthorityRefData.LocalAuthorityMetaData;
@@ -13,10 +16,71 @@ import uk.gov.dft.bluebadge.service.printservice.model.Contact;
 import uk.gov.dft.bluebadge.service.printservice.model.Organisation;
 import uk.gov.dft.bluebadge.service.printservice.model.Party;
 import uk.gov.dft.bluebadge.service.printservice.model.Person;
+import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBadge;
+import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBadge.CancellationEnum;
+import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBatch;
 
 public class TestDataFixtures {
 
   public static String testJson = "{\"filename\" : \"filename1\", \"batchType\" : \"STANDARD\"}";
+
+  public static String validXml =
+      "<?xml version=\"1.0\" encoding=\"US-ASCII\"?>\n"
+          + "<BadgePrintConfirmations xmlns=\"http://YourSite.com/BadgePrintConfirmations\">\n"
+          + "<Confirmation>\n"
+          + "<BadgeIdentifier>xxxxxx</BadgeIdentifier>\n"
+          + "<Cancellation>no</Cancellation>\n"
+          + "<DispatchedDate>2018-08-04T10:21:21</DispatchedDate>\n"
+          + "</Confirmation>\n"
+          + "<Confirmation>\n"
+          + "<BadgeIdentifier>xxxxxx</BadgeIdentifier>\n"
+          + "<Cancellation>no</Cancellation>\n"
+          + "<DispatchedDate>2018-08-04T10:15:49</DispatchedDate>\n"
+          + "</Confirmation>\n"
+          + "<Confirmation>\n"
+          + "<BadgeIdentifier>xxxxxx</BadgeIdentifier>\n"
+          + "<Cancellation>no</Cancellation>\n"
+          + "<DispatchedDate>2018-08-04T10:17:08</DispatchedDate>\n"
+          + "</Confirmation>\n"
+          + "<Confirmation>\n"
+          + "<BadgeIdentifier>xxxxxx</BadgeIdentifier>\n"
+          + "<Cancellation>no</Cancellation>\n"
+          + "<DispatchedDate>2018-08-04T10:21:24</DispatchedDate>\n"
+          + "</Confirmation>\n"
+          + "<Confirmation>\n"
+          + "<BadgeIdentifier>xxxxxx</BadgeIdentifier>\n"
+          + "<Cancellation>no</Cancellation>\n"
+          + "<DispatchedDate>2018-08-04T10:17:22</DispatchedDate>\n"
+          + "</Confirmation>\n"
+          + "<Confirmation>\n"
+          + "<BadgeIdentifier>xxxxxx</BadgeIdentifier>\n"
+          + "<Cancellation>no</Cancellation>\n"
+          + "<DispatchedDate>2018-08-04T10:15:54</DispatchedDate>\n"
+          + "</Confirmation>\n"
+          + "</BadgePrintConfirmations>";
+
+  public static String rejectedXml =
+      "<?xml version=\"1.0\" encoding=\"US-ASCII\"?>\n"
+          + "<BadgePrintRejections xmlns=\"http://YourSite.com/BadgePrintRejections\">\n"
+          + "<Rejection>\n"
+          + "<BadgeIdentifier>xxxxxx</BadgeIdentifier>\n"
+          + "<ErrorMessage>: Photograph not found</ErrorMessage>\n"
+          + "</Rejection>\n"
+          + "<Rejection>\n"
+          + "<BadgeIdentifier>xxxxxx</BadgeIdentifier>\n"
+          + "<ErrorMessage>: Photograph not found</ErrorMessage>\n"
+          + "</Rejection>\n"
+          + "</BadgePrintRejections>";
+  
+  
+  public static ProcessedBatch successBatch = ProcessedBatch.builder().filename("processed_batch.xml").processedBadges(processedBadges()).build();
+
+	private static List<ProcessedBadge> processedBadges() {
+		ProcessedBadge badge1 = ProcessedBadge.builder().badgeNumber("AA12BB").cancellation(CancellationEnum.NO).dispatchedDate(OffsetDateTime.now()).build(); 
+		ProcessedBadge badge2 = ProcessedBadge.builder().badgeNumber("BB34CC").cancellation(CancellationEnum.YES).dispatchedDate(OffsetDateTime.now()).build();
+		
+		return Arrays.asList(badge1, badge2);
+	}	
 
   public static Batches batchesPayload() {
     Batches xmlBatches = new Batches();

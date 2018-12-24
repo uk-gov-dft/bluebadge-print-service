@@ -46,7 +46,7 @@ public class PrintController extends AbstractController implements PrintBatchApi
   }
 
   @Override
-  public ResponseEntity<ProcessedBatchesResponse> processedBatchesGet() {
+  public ResponseEntity<ProcessedBatchesResponse> processedBatches() {
     return ResponseEntity.ok(
         ProcessedBatchesResponse.builder().data(service.getProcessedBatches()).build());
   }

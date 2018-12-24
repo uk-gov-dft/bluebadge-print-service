@@ -6,6 +6,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import lombok.SneakyThrows;
@@ -22,6 +23,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import com.google.common.collect.Lists;
 
 @RunWith(JUnitPlatform.class)
 @Slf4j
@@ -43,7 +46,7 @@ public class PrintControllerTest {
   }
 
   @Test
-  @DisplayName("Accepts payload and returns HTTP 200 ")
+  @DisplayName("Accepts payload for printBatch and returns HTTP 200 ")
   @SneakyThrows
   public void request_print_batch_success() {
     String body = ResourceLoader.loadTestResource("printbatch_20181127122345.json");
@@ -57,7 +60,7 @@ public class PrintControllerTest {
   }
 
   @Test
-  @DisplayName("Accepts payload and returns HTTP 500 ")
+  @DisplayName("Accepts payload for printBatch and returns HTTP 500 ")
   @SneakyThrows
   public void request_print_batch_throws_exception() {
     String body = ResourceLoader.loadTestResource("printbatch_20181127122345.json");
@@ -68,5 +71,17 @@ public class PrintControllerTest {
     doThrow(new RuntimeException("Some underlying problems")).when(service).print(any());
     mvc.perform(builder).andExpect(status().is5xxServerError());
     verify(service, times(1)).print(any());
+  }
+
+  @Test
+  @DisplayName("Returns processed batches and HTTP 200")
+  @SneakyThrows
+  public void get_processed_batches_success() {
+    RequestBuilder builder =
+        MockMvcRequestBuilders.get("/processed-batches")
+            .contentType(MediaType.APPLICATION_JSON);
+    when(service.getProcessedBatches()).thenReturn(Lists.newArrayList());
+    mvc.perform(builder).andExpect(status().isOk());
+    verify(service, times(1)).getProcessedBatches();
   }
 }
