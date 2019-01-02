@@ -12,7 +12,13 @@ import org.springframework.validation.annotation.Validated;
 @EqualsAndHashCode
 public class ProcessedBatch {
 
+  public enum FileTypeEnum {
+    CONFIRMATION,
+    REJECTION;
+  }
+
   private String filename;
   private String errorMessage;
+  private FileTypeEnum fileType;
   private List<ProcessedBadge> processedBadges;
 }

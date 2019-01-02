@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.google.common.collect.Lists;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
@@ -23,8 +24,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import com.google.common.collect.Lists;
 
 @RunWith(JUnitPlatform.class)
 @Slf4j
@@ -78,8 +77,7 @@ public class PrintControllerTest {
   @SneakyThrows
   public void get_processed_batches_success() {
     RequestBuilder builder =
-        MockMvcRequestBuilders.get("/processed-batches")
-            .contentType(MediaType.APPLICATION_JSON);
+        MockMvcRequestBuilders.get("/processed-batches").contentType(MediaType.APPLICATION_JSON);
     when(service.getProcessedBatches()).thenReturn(Lists.newArrayList());
     mvc.perform(builder).andExpect(status().isOk());
     verify(service, times(1)).getProcessedBatches();

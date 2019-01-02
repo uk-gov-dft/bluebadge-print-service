@@ -19,6 +19,7 @@ public class BatchConfirmationXmlException extends Exception {
   }
 
   public BatchConfirmationXmlException(String detailedError) {
+    super(detailedError);
     this.detailedError = detailedError;
   }
 

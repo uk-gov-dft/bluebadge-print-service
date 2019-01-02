@@ -2,16 +2,13 @@ package uk.gov.dft.bluebadge.service.printservice;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.LocalAuthorityRefData;
 import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.LocalAuthorityRefData.LocalAuthorityMetaData;
 import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.Nation;
 import uk.gov.dft.bluebadge.service.printservice.model.Badge;
 import uk.gov.dft.bluebadge.service.printservice.model.Batch;
-import uk.gov.dft.bluebadge.service.printservice.model.Batches;
 import uk.gov.dft.bluebadge.service.printservice.model.Contact;
 import uk.gov.dft.bluebadge.service.printservice.model.Organisation;
 import uk.gov.dft.bluebadge.service.printservice.model.Party;
@@ -24,70 +21,27 @@ public class TestDataFixtures {
 
   public static String testJson = "{\"filename\" : \"filename1\", \"batchType\" : \"STANDARD\"}";
 
-  public static String validXml =
-      "<?xml version=\"1.0\" encoding=\"US-ASCII\"?>\n"
-          + "<BadgePrintConfirmations xmlns=\"http://YourSite.com/BadgePrintConfirmations\">\n"
-          + "<Confirmation>\n"
-          + "<BadgeIdentifier>xxxxxx</BadgeIdentifier>\n"
-          + "<Cancellation>no</Cancellation>\n"
-          + "<DispatchedDate>2018-08-04T10:21:21</DispatchedDate>\n"
-          + "</Confirmation>\n"
-          + "<Confirmation>\n"
-          + "<BadgeIdentifier>xxxxxx</BadgeIdentifier>\n"
-          + "<Cancellation>no</Cancellation>\n"
-          + "<DispatchedDate>2018-08-04T10:15:49</DispatchedDate>\n"
-          + "</Confirmation>\n"
-          + "<Confirmation>\n"
-          + "<BadgeIdentifier>xxxxxx</BadgeIdentifier>\n"
-          + "<Cancellation>no</Cancellation>\n"
-          + "<DispatchedDate>2018-08-04T10:17:08</DispatchedDate>\n"
-          + "</Confirmation>\n"
-          + "<Confirmation>\n"
-          + "<BadgeIdentifier>xxxxxx</BadgeIdentifier>\n"
-          + "<Cancellation>no</Cancellation>\n"
-          + "<DispatchedDate>2018-08-04T10:21:24</DispatchedDate>\n"
-          + "</Confirmation>\n"
-          + "<Confirmation>\n"
-          + "<BadgeIdentifier>xxxxxx</BadgeIdentifier>\n"
-          + "<Cancellation>no</Cancellation>\n"
-          + "<DispatchedDate>2018-08-04T10:17:22</DispatchedDate>\n"
-          + "</Confirmation>\n"
-          + "<Confirmation>\n"
-          + "<BadgeIdentifier>xxxxxx</BadgeIdentifier>\n"
-          + "<Cancellation>no</Cancellation>\n"
-          + "<DispatchedDate>2018-08-04T10:15:54</DispatchedDate>\n"
-          + "</Confirmation>\n"
-          + "</BadgePrintConfirmations>";
+  public static ProcessedBatch successBatch =
+      ProcessedBatch.builder()
+          .filename("processed_batch.xml")
+          .processedBadges(processedBadges())
+          .build();
 
-  public static String rejectedXml =
-      "<?xml version=\"1.0\" encoding=\"US-ASCII\"?>\n"
-          + "<BadgePrintRejections xmlns=\"http://YourSite.com/BadgePrintRejections\">\n"
-          + "<Rejection>\n"
-          + "<BadgeIdentifier>xxxxxx</BadgeIdentifier>\n"
-          + "<ErrorMessage>: Photograph not found</ErrorMessage>\n"
-          + "</Rejection>\n"
-          + "<Rejection>\n"
-          + "<BadgeIdentifier>xxxxxx</BadgeIdentifier>\n"
-          + "<ErrorMessage>: Photograph not found</ErrorMessage>\n"
-          + "</Rejection>\n"
-          + "</BadgePrintRejections>";
-  
-  
-  public static ProcessedBatch successBatch = ProcessedBatch.builder().filename("processed_batch.xml").processedBadges(processedBadges()).build();
+  private static List<ProcessedBadge> processedBadges() {
+    ProcessedBadge badge1 =
+        ProcessedBadge.builder()
+            .badgeNumber("AA12BB")
+            .cancellation(CancellationEnum.NO)
+            .dispatchedDate(OffsetDateTime.now())
+            .build();
+    ProcessedBadge badge2 =
+        ProcessedBadge.builder()
+            .badgeNumber("BB34CC")
+            .cancellation(CancellationEnum.YES)
+            .dispatchedDate(OffsetDateTime.now())
+            .build();
 
-	private static List<ProcessedBadge> processedBadges() {
-		ProcessedBadge badge1 = ProcessedBadge.builder().badgeNumber("AA12BB").cancellation(CancellationEnum.NO).dispatchedDate(OffsetDateTime.now()).build(); 
-		ProcessedBadge badge2 = ProcessedBadge.builder().badgeNumber("BB34CC").cancellation(CancellationEnum.YES).dispatchedDate(OffsetDateTime.now()).build();
-		
-		return Arrays.asList(badge1, badge2);
-	}	
-
-  public static Batches batchesPayload() {
-    Batches xmlBatches = new Batches();
-    xmlBatches.add(batch1());
-    xmlBatches.add(batch2());
-
-    return xmlBatches;
+    return Arrays.asList(badge1, badge2);
   }
 
   public static Batch standardBatchPayload() {
@@ -96,10 +50,6 @@ public class TestDataFixtures {
 
   public static Batch fasttrackBatchPayload() {
     return batch2();
-  }
-
-  public static Stream<Batch> payloads() {
-    return Stream.of(standardBatchPayload(), fasttrackBatchPayload());
   }
 
   public static LocalAuthorityRefData welshLocalAuthority() {
@@ -164,7 +114,7 @@ public class TestDataFixtures {
     Badge details = new Badge();
     details.setBadgeNumber("AA12BB");
     details.setLocalAuthorityShortCode("ANGL");
-    details.setStartDate(LocalDate.of(2019, 01, 02));
+    details.setStartDate(LocalDate.of(2019, 1, 2));
     details.setExpiryDate(LocalDate.of(2021, 1, 1));
     details.setImageLink("http://url_to_s3_bucket_photo1");
     details.setParty(
@@ -182,7 +132,7 @@ public class TestDataFixtures {
     Badge details = new Badge();
     details.setBadgeNumber("AA34BB");
     details.setLocalAuthorityShortCode("ANGL");
-    details.setStartDate(LocalDate.of(2019, 01, 02));
+    details.setStartDate(LocalDate.of(2019, 1, 2));
     details.setExpiryDate(LocalDate.of(2021, 1, 1));
     details.setImageLink("http://url_to_s3_bucket_photo2");
     details.setParty(
@@ -201,7 +151,7 @@ public class TestDataFixtures {
     Badge details = new Badge();
     details.setBadgeNumber("CC12DD");
     details.setLocalAuthorityShortCode("GLOCC");
-    details.setStartDate(LocalDate.of(2019, 01, 02));
+    details.setStartDate(LocalDate.of(2019, 1, 2));
     details.setExpiryDate(LocalDate.of(2021, 1, 1));
     details.setImageLink(null);
     details.setParty(
@@ -220,7 +170,7 @@ public class TestDataFixtures {
     Badge details = new Badge();
     details.setBadgeNumber("CC34DD");
     details.setLocalAuthorityShortCode("GLOCC");
-    details.setStartDate(LocalDate.of(2019, 01, 02));
+    details.setStartDate(LocalDate.of(2019, 1, 2));
     details.setExpiryDate(LocalDate.of(2021, 1, 1));
     details.setImageLink("http://url_to_s3_bucket_photo4");
     details.setParty(
@@ -284,14 +234,6 @@ public class TestDataFixtures {
     p.setBadgeHolderName("Michael Third");
     p.setDob(LocalDate.of(1934, 2, 5));
     p.setGenderCode("MALE");
-    return p;
-  }
-
-  private static Person person4() {
-    Person p = new Person();
-    p.setBadgeHolderName("XmlName Last");
-    p.setDob(LocalDate.of(1964, 12, 15));
-    p.setGenderCode("UNSPECIFIED");
     return p;
   }
 

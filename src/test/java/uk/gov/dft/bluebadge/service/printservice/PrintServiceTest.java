@@ -1,6 +1,6 @@
 package uk.gov.dft.bluebadge.service.printservice;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
@@ -11,23 +11,17 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.standardBatchPayload;
-import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.testJson;
-import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.validXml;
-import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.rejectedXml;
 import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.successBatch;
+import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.testJson;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
-import javax.xml.stream.XMLStreamException;
-
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -35,28 +29,22 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.platform.runner.JUnitPlatform;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
-
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import uk.gov.dft.bluebadge.service.printservice.config.S3Config;
 import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBatch;
+import uk.gov.dft.bluebadge.service.printservice.utils.BatchConfirmationXmlException;
 import uk.gov.dft.bluebadge.service.printservice.utils.ModelToXmlConverter;
 import uk.gov.dft.bluebadge.service.printservice.utils.XmlToProcessedBatch;
 
 @RunWith(JUnitPlatform.class)
 @Slf4j
-public class PrintServiceTest {
+class PrintServiceTest {
 
-	private S3Config s3Config = mock(S3Config.class);
-  private StorageService s3 = mock(StorageService.class);
-  private FTPService ftp = mock(FTPService.class);
-  private ModelToXmlConverter xmlConverter = mock(ModelToXmlConverter.class);
-  private XmlToProcessedBatch xmlProcessor = mock(XmlToProcessedBatch.class);
-  
-  @Autowired
-  private PrintService service = new PrintService(s3, ftp, xmlConverter, xmlProcessor);
+  private StorageService mockS3 = mock(StorageService.class);
+  private FTPService mockFtpService = mock(FTPService.class);
+  private ModelToXmlConverter mockXmlConverter = mock(ModelToXmlConverter.class);
+  private XmlToProcessedBatch mockXmlToProcessedBatch = mock(XmlToProcessedBatch.class);
+
+  private PrintService service =
+      new PrintService(mockS3, mockFtpService, mockXmlConverter, mockXmlToProcessedBatch);
 
   private String originalTmpDir = System.getProperty("java.io.tmpdir");
 
@@ -76,140 +64,171 @@ public class PrintServiceTest {
   }
 
   @Test
-  @DisplayName("Should convert received payload into json content and send to save on s3")
+  @DisplayName("Should convert received payload into json content and send to save on mockS3")
   @SneakyThrows
-  public void printSuccess() {
+  void printSuccess() {
     setup();
 
     service.print(standardBatchPayload());
 
-    verify(s3, times(1)).uploadToPrinterBucket(any(), any());
-    verify(s3, times(1)).listPrinterBucketFiles();
-    verify(s3, times(1)).downloadPrinterFileAsString(any());
-    verify(s3, times(1)).deletePrinterBucketFile(any());
+    verify(mockS3, times(1)).uploadToPrinterBucket(any(), any());
+    verify(mockS3, times(1)).listPrinterBucketFiles();
+    verify(mockS3, times(1)).downloadPrinterFileAsString(any());
+    verify(mockS3, times(1)).deletePrinterBucketFile(any());
 
-    verify(ftp, times(1)).send(any());
+    verify(mockFtpService, times(1)).send(any());
 
-    verify(xmlConverter, times(1)).toXml(any(), any());
+    verify(mockXmlConverter, times(1)).toXml(any(), any());
   }
 
   @Test
-  @DisplayName("Should fail if json content can't be uploaded on s3")
+  @DisplayName("Should fail if json content can't be uploaded on mockS3")
   @SneakyThrows
-  public void printFailureToUploadToS3() {
+  void printFailureToUploadToS3() {
     setup();
-    when(s3.uploadToPrinterBucket(any(), any())).thenReturn(false);
+    when(mockS3.uploadToPrinterBucket(any(), any())).thenReturn(false);
 
     service.print(standardBatchPayload());
 
-    verify(s3, times(1)).uploadToPrinterBucket(any(), any());
-    verify(s3, never()).listPrinterBucketFiles();
-    verify(s3, never()).downloadPrinterFileAsString(any());
-    verify(s3, never()).deletePrinterBucketFile(any());
+    verify(mockS3, times(1)).uploadToPrinterBucket(any(), any());
+    verify(mockS3, never()).listPrinterBucketFiles();
+    verify(mockS3, never()).downloadPrinterFileAsString(any());
+    verify(mockS3, never()).deletePrinterBucketFile(any());
 
-    verify(ftp, never()).send(any());
+    verify(mockFtpService, never()).send(any());
 
-    verify(xmlConverter, never()).toXml(any(), any());
+    verify(mockXmlConverter, never()).toXml(any(), any());
   }
 
   @Test
-  @DisplayName("Should fail if file can't be downloaded from s3")
+  @DisplayName("Should fail if file can't be downloaded from mockS3")
   @SneakyThrows
-  public void printFailureToDownloadFromS3() {
+  void printFailureToDownloadFromS3() {
     setup();
-    when(s3.downloadPrinterFileAsString(any())).thenReturn(Optional.empty());
+    when(mockS3.downloadPrinterFileAsString(any())).thenReturn(Optional.empty());
 
     service.print(standardBatchPayload());
 
-    verify(s3, times(1)).uploadToPrinterBucket(any(), any());
-    verify(s3, times(1)).listPrinterBucketFiles();
-    verify(s3, times(1)).downloadPrinterFileAsString(any());
-    verify(s3, never()).deletePrinterBucketFile(any());
+    verify(mockS3, times(1)).uploadToPrinterBucket(any(), any());
+    verify(mockS3, times(1)).listPrinterBucketFiles();
+    verify(mockS3, times(1)).downloadPrinterFileAsString(any());
+    verify(mockS3, never()).deletePrinterBucketFile(any());
 
-    verify(ftp, never()).send(any());
+    verify(mockFtpService, never()).send(any());
 
-    verify(xmlConverter, never()).toXml(any(), any());
+    verify(mockXmlConverter, never()).toXml(any(), any());
   }
 
   @Test
   @DisplayName("Should fail if file can't be transferred to FTP")
   @SneakyThrows
-  public void printFailureToSendFileToFTP() {
+  void printFailureToSendFileToFTP() {
     setup();
-    when(ftp.send(any())).thenReturn(false);
+    when(mockFtpService.send(any())).thenReturn(false);
 
     service.print(standardBatchPayload());
 
-    verify(s3, times(1)).uploadToPrinterBucket(any(), any());
-    verify(s3, times(1)).listPrinterBucketFiles();
-    verify(s3, times(1)).downloadPrinterFileAsString(any());
-    verify(s3, never()).deletePrinterBucketFile(any());
+    verify(mockS3, times(1)).uploadToPrinterBucket(any(), any());
+    verify(mockS3, times(1)).listPrinterBucketFiles();
+    verify(mockS3, times(1)).downloadPrinterFileAsString(any());
+    verify(mockS3, never()).deletePrinterBucketFile(any());
 
-    verify(ftp, times(1)).send(any());
+    verify(mockFtpService, times(1)).send(any());
 
-    verify(xmlConverter, times(1)).toXml(any(), any());
+    verify(mockXmlConverter, times(1)).toXml(any(), any());
   }
 
   @Test
   @DisplayName("Should fail if file can't be deserealized to XML")
   @SneakyThrows
-  public void printFailureToConvertToXML() {
+  void printFailureToConvertToXML() {
     setup();
-    doThrow(IOException.class).when(xmlConverter).toXml(any(), any());
+    doThrow(IOException.class).when(mockXmlConverter).toXml(any(), any());
 
     service.print(standardBatchPayload());
 
-    verify(s3, times(1)).uploadToPrinterBucket(any(), any());
-    verify(s3, times(1)).listPrinterBucketFiles();
-    verify(s3, times(1)).downloadPrinterFileAsString(any());
-    verify(s3, never()).deletePrinterBucketFile(any());
+    verify(mockS3, times(1)).uploadToPrinterBucket(any(), any());
+    verify(mockS3, times(1)).listPrinterBucketFiles();
+    verify(mockS3, times(1)).downloadPrinterFileAsString(any());
+    verify(mockS3, never()).deletePrinterBucketFile(any());
 
-    verify(ftp, never()).send(any());
+    verify(mockFtpService, never()).send(any());
 
-    verify(xmlConverter, times(1)).toXml(any(), any());
+    verify(mockXmlConverter, times(1)).toXml(any(), any());
   }
 
   @Test
   @DisplayName("Should return successfully processed batches")
   @SneakyThrows
-  public void getProcessedBatchesSuccess() {
-    setup();
+  void getProcessedBatchesSuccess() {
 
-    when(s3.listInBucketXmlFiles()).thenReturn(Arrays.asList("processed_batch.xml"));
+    when(mockS3.listInBucketXmlFiles())
+        .thenReturn(
+            Arrays.asList(
+                "validProcessedBatch1.xml",
+                "invalidProcessedBatch1.xml",
+                "validProcessedBatch2.xml"));
+    when(mockS3.downloadS3File(any(), eq("validProcessedBatch1.xml")))
+        .thenReturn(
+            getClass().getResourceAsStream("/processedBatchXml/ValidConfirmationSingleBadge.xml"));
+    when(mockS3.downloadS3File(any(), eq("validProcessedBatch2.xml")))
+        .thenReturn(
+            getClass().getResourceAsStream("/processedBatchXml/ValidConfirmationSingleBadge2.xml"));
+    when(mockS3.downloadS3File(any(), eq("invalidProcessedBatch1.xml")))
+        .thenReturn(
+            getClass()
+                .getResourceAsStream(
+                    "/processedBatchXml/InvalidConfirmationUnexpectedElement.xml"));
+    when(mockXmlToProcessedBatch.readProcessedBatchFile(any(), eq("invalidProcessedBatch1.xml")))
+        .thenThrow(new BatchConfirmationXmlException("Unexpected"));
+    when(mockXmlToProcessedBatch.readProcessedBatchFile(any(), eq("validProcessedBatch1.xml")))
+        .thenReturn(ProcessedBatch.builder().filename("validProcessedBatch1.xml").build());
+    when(mockXmlToProcessedBatch.readProcessedBatchFile(any(), eq("validProcessedBatch2.xml")))
+        .thenReturn(ProcessedBatch.builder().filename("validProcessedBatch2.xml").build());
+    // When 2 valid files and one unparsable...
     List<ProcessedBatch> batches = service.getProcessedBatches();
 
-    verify(s3, times(1)).listInBucketXmlFiles();
-    verify(xmlProcessor, times(1)).readProcessedBatchFile(any(), eq("processed_batch.xml"));
-    assertEquals(1, batches.size());
+    verify(mockS3, times(1)).listInBucketXmlFiles();
+    verify(mockXmlToProcessedBatch, times(1))
+        .readProcessedBatchFile(any(), eq("validProcessedBatch1.xml"));
+    verify(mockXmlToProcessedBatch, times(1))
+        .readProcessedBatchFile(any(), eq("validProcessedBatch2.xml"));
+    verify(mockXmlToProcessedBatch, times(1))
+        .readProcessedBatchFile(any(), eq("invalidProcessedBatch1.xml"));
+
+    // Then all 3 get processed
+    assertThat(batches.size()).isEqualTo(3);
+    assertThat(batches)
+        .contains(
+            ProcessedBatch.builder()
+                .errorMessage("Unexpected")
+                .filename("invalidProcessedBatch1.xml")
+                .build());
+    assertThat(batches)
+        .contains(ProcessedBatch.builder().filename("validProcessedBatch1.xml").build());
+    assertThat(batches)
+        .contains(ProcessedBatch.builder().filename("validProcessedBatch2.xml").build());
   }
 
-  
-  private void setup()
-      throws MalformedURLException, IOException, InterruptedException, Exception,
-          XMLStreamException {
-    when(s3.uploadToPrinterBucket(any(), any())).thenReturn(true);
+  private void setup() throws Exception {
+    when(mockS3.uploadToPrinterBucket(any(), any())).thenReturn(true);
 
-    when(ftp.send(any())).thenReturn(true);
+    when(mockFtpService.send(any())).thenReturn(true);
 
-    when(s3.listPrinterBucketFiles()).thenReturn(Arrays.asList("printbatch_1.json"));
-    when(s3.downloadPrinterFileAsString(any())).thenReturn(Optional.of(testJson));
-    
-    InputStream isProcessed = new ByteArrayInputStream(validXml.getBytes(Charset.forName("UTF-8")));
-    when(s3.downloadS3File(any(), eq("processed_batch.xml"))).thenReturn(isProcessed);
-        
-    InputStream isRejected = new ByteArrayInputStream(rejectedXml.getBytes(Charset.forName("UTF-8")));
-    when(s3.downloadS3File(any(), eq("rejected_batch.xml"))).thenReturn(isRejected);
- 
-    when(xmlProcessor.readProcessedBatchFile(any(), any())).thenReturn(successBatch); 
-    
-    when(s3.getInBucket()).thenReturn("inBucket");
-    
+    when(mockS3.listPrinterBucketFiles())
+        .thenReturn(Collections.singletonList("printbatch_1.json"));
+    when(mockS3.downloadPrinterFileAsString(any())).thenReturn(Optional.of(testJson));
+
+    when(mockXmlToProcessedBatch.readProcessedBatchFile(any(), any())).thenReturn(successBatch);
+
+    when(mockS3.getInBucket()).thenReturn("inBucket");
+
     String xml =
         Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_xml", "BADGEEXTRACT_1.xml")
             .toString();
-    when(xmlConverter.toXml(any(), any())).thenReturn(xml);
+    when(mockXmlConverter.toXml(any(), any())).thenReturn(xml);
 
-    when(ftp.send(any())).thenReturn(true);
-    doNothing().when(s3).deletePrinterBucketFile(any());
+    when(mockFtpService.send(any())).thenReturn(true);
+    doNothing().when(mockS3).deletePrinterBucketFile(any());
   }
 }

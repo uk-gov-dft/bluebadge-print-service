@@ -84,12 +84,12 @@ public class StorageService {
   void deletePrinterBucketFile(String key) {
     amazonS3.deleteObject(s3Config.getS3PrinterBucket(), key);
   }
-  
+
   public String getPrinterBucket() {
-  		return s3Config.getS3PrinterBucket();
+    return s3Config.getS3PrinterBucket();
   }
 
   public String getInBucket() {
-		return s3Config.getS3InBucket();
-}
+    return s3Config.getS3InBucket();
+  }
 }

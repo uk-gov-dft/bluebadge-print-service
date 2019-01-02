@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -13,11 +14,9 @@ import java.util.List;
 import java.util.Optional;
 import javax.xml.stream.XMLStreamException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
-import uk.gov.dft.bluebadge.service.printservice.config.S3Config;
 import uk.gov.dft.bluebadge.service.printservice.model.Batch;
 import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBatch;
 import uk.gov.dft.bluebadge.service.printservice.utils.BatchConfirmationXmlException;
@@ -28,141 +27,163 @@ import uk.gov.dft.bluebadge.service.printservice.utils.XmlToProcessedBatch;
 @Slf4j
 public class PrintService {
 
-	private static final Path XML_DIR = Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_xml");
+  private static final Path XML_DIR =
+      Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_xml");
 
-	private final StorageService s3;
-	private final FTPService ftp;
-	private final ModelToXmlConverter xmlConverter;
-	private final XmlToProcessedBatch xmlProcessor;
+  private final StorageService s3;
+  private final FTPService ftp;
+  private final ModelToXmlConverter xmlConverter;
+  private final XmlToProcessedBatch xmlToProcessedBatch;
 
-	PrintService(StorageService s3, FTPService ftp, ModelToXmlConverter xmlConverter, XmlToProcessedBatch xmlProcessor) {
-		this.s3 = s3;
-		this.ftp = ftp;
-		this.xmlConverter = xmlConverter;
-		this.xmlProcessor = xmlProcessor;
-	}
+  PrintService(
+      StorageService s3,
+      FTPService ftp,
+      ModelToXmlConverter xmlConverter,
+      XmlToProcessedBatch xmlToProcessedBatch) {
+    this.s3 = s3;
+    this.ftp = ftp;
+    this.xmlConverter = xmlConverter;
+    this.xmlToProcessedBatch = xmlToProcessedBatch;
+  }
 
-	List<ProcessedBatch> getProcessedBatches() {
-		log.info("Returning processed batches.");
-		List<ProcessedBatch> processedBatches = new ArrayList<>();
-		List<String> files = s3.listInBucketXmlFiles();
-		for (String file : files) {
-			log.info("Parsing {}", file);
-			try {
-				processedBatches
-				    .add(xmlProcessor.readProcessedBatchFile(s3.downloadS3File(s3.getInBucket(), file), file));
-			} catch (BatchConfirmationXmlException e) {
-				processedBatches.add(ProcessedBatch.builder().filename(file).errorMessage(e.getDetailedError()).build());
-			}
-		}
-		return processedBatches;
-	}
+  List<ProcessedBatch> getProcessedBatches() {
+    log.info("Returning processed batches.");
+    List<ProcessedBatch> processedBatches = new ArrayList<>();
+    List<String> files = s3.listInBucketXmlFiles();
+    int successCount = 0;
 
-	public void print(Batch batch) {
+    for (String file : files) {
+      log.info("Parsing {}", file);
+      try (InputStream is = s3.downloadS3File(s3.getInBucket(), file)) {
+        processedBatches.add(xmlToProcessedBatch.readProcessedBatchFile(is, file));
+        successCount++;
+      } catch (BatchConfirmationXmlException e) {
+        processedBatches.add(
+            ProcessedBatch.builder().filename(file).errorMessage(e.getDetailedError()).build());
+      } catch (Exception e) {
+        // Catch, log and create a response for any unexpected exceptions and then carry on processing.
+        // Possible causes: Invalid date format, S3 problem.
+        log.error("Unexpected exception parsing file:" + file, e);
+        processedBatches.add(
+            ProcessedBatch.builder().filename(file).errorMessage(e.getMessage()).build());
+      }
+    }
+    log.info(
+        "Processed {} batch file(s), {} successful, {} failed.",
+        files.size(),
+        successCount,
+        files.size() - successCount);
+    return processedBatches;
+  }
 
-		boolean uploaded = false;
-		try {
-			uploaded = uploadToS3(batch);
-		} catch (IOException e) {
-			log.error("Can't upload file to s3", e);
-		}
+  public void print(Batch batch) {
 
-		if (uploaded) {
-			log.info("Batch uploaded to S3, processing.");
-			processBatches();
-		}
-	}
+    boolean uploaded = false;
+    try {
+      uploaded = uploadToS3(batch);
+    } catch (IOException e) {
+      log.error("Can't upload file to s3", e);
+    }
 
-	private boolean uploadToS3(Batch batch) throws IOException {
-		ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-		mapper.registerModule(new JavaTimeModule());
+    if (uploaded) {
+      log.info("Batch uploaded to S3, processing.");
+      processBatches();
+    }
+  }
 
-		String json = mapper.writeValueAsString(batch);
+  private boolean uploadToS3(Batch batch) throws IOException {
+    ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+    mapper.registerModule(new JavaTimeModule());
 
-		String filename = batch.getBatchType() + "_"
-		    + LocalDateTime.now().format(DateTimeFormatter.ofPattern("YYYYMMddHHmmss")) + ".json";
+    String json = mapper.writeValueAsString(batch);
 
-		boolean uploaded = s3.uploadToPrinterBucket(json, filename);
-		log.debug("Json payload {} has been uploaded: {}", json, uploaded);
+    String filename =
+        batch.getBatchType()
+            + "_"
+            + LocalDateTime.now().format(DateTimeFormatter.ofPattern("YYYYMMddHHmmss"))
+            + ".json";
 
-		return uploaded;
-	}
+    boolean uploaded = s3.uploadToPrinterBucket(json, filename);
+    log.debug("Json payload {} has been uploaded: {}", json, uploaded);
 
-	private boolean processBatches() {
-		boolean success = true;
-		try {
-			List<String> files = s3.listPrinterBucketFiles();
-			log.info("Processing {} files", files.size());
-			for (String file : files) {
-				log.debug("Downloading file: {} from s3 printer bucket", file);
-				success &= processBatch(file);
-			}
-		} catch (Exception e) {
-			log.error("Error while processing badges:" + e.getMessage(), e);
-			return false;
-		}
+    return uploaded;
+  }
 
-		return success;
-	}
+  private boolean processBatches() {
+    boolean success = true;
+    try {
+      List<String> files = s3.listPrinterBucketFiles();
+      log.info("Processing {} files", files.size());
+      for (String file : files) {
+        log.debug("Downloading file: {} from s3 printer bucket", file);
+        success &= processBatch(file);
+      }
+    } catch (Exception e) {
+      log.error("Error while processing badges:" + e.getMessage(), e);
+      return false;
+    }
 
-	@Async("batchExecutor")
-	private boolean processBatch(String key) {
+    return success;
+  }
 
-		Optional<String> json;
-		try {
-			json = s3.downloadPrinterFileAsString(key);
-		} catch (Exception e) {
-			log.error("Can't download file: {} from s3 bucket: {}", key, s3.getPrinterBucket());
-			log.error("Error while downloading: {}", e);
-			return false;
-		}
+  @Async("batchExecutor")
+  private boolean processBatch(String key) {
 
-		String xmlFileName;
-		if (json.isPresent()) {
-			try {
-				xmlFileName = prepareXml(json.get());
-			} catch (IOException | XMLStreamException e) {
-				log.error("Can't process json string: {} into valid xml", json.get());
-				log.error("Error while converting into xml: {}", e);
-				return false;
-			}
-		} else {
-			log.error("Can't download file: {} from s3", key);
-			return false;
-		}
+    Optional<String> json;
+    try {
+      json = s3.downloadPrinterFileAsString(key);
+    } catch (Exception e) {
+      log.error("Can't download file: {} from s3 bucket: {}", key, s3.getPrinterBucket());
+      log.error("Error while downloading: {}", e);
+      return false;
+    }
 
-		boolean transferred = false;
-		try {
-			transferred = ftp.send(xmlFileName);
-		} catch (Exception e) {
-			log.error("Can't send file: {} ftp", xmlFileName);
-			log.error("Error while sending file to ftp: {}", e.getMessage());
-		}
+    String xmlFileName;
+    if (json.isPresent()) {
+      try {
+        xmlFileName = prepareXml(json.get());
+      } catch (IOException | XMLStreamException e) {
+        log.error("Can't process json string: {} into valid xml", json.get());
+        log.error("Error while converting into xml: {}", e);
+        return false;
+      }
+    } else {
+      log.error("Can't download file: {} from s3", key);
+      return false;
+    }
 
-		if (transferred) {
-			s3.deletePrinterBucketFile(key);
-		}
-		cleanTempResources();
+    boolean transferred = false;
+    try {
+      transferred = ftp.send(xmlFileName);
+    } catch (Exception e) {
+      log.error("Can't send file: {} ftp", xmlFileName);
+      log.error("Error while sending file to ftp: {}", e.getMessage());
+    }
 
-		return transferred;
-	}
+    if (transferred) {
+      s3.deletePrinterBucketFile(key);
+    }
+    cleanTempResources();
 
-	private String prepareXml(String json) throws IOException, XMLStreamException {
-		log.debug("Prepare xml file");
+    return transferred;
+  }
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		objectMapper.registerModule(new JavaTimeModule());
+  private String prepareXml(String json) throws IOException, XMLStreamException {
+    log.debug("Prepare xml file");
 
-		Batch batch = objectMapper.readValue(json, Batch.class);
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.registerModule(new JavaTimeModule());
 
-		return xmlConverter.toXml(batch, XML_DIR);
-	}
+    Batch batch = objectMapper.readValue(json, Batch.class);
 
-	private void cleanTempResources() {
-		try {
-			FileSystemUtils.deleteRecursively(XML_DIR);
-		} catch (IOException e) {
-			log.error("Error while deleting local temporary resources: {}", e.getMessage());
-		}
-	}
+    return xmlConverter.toXml(batch, XML_DIR);
+  }
+
+  private void cleanTempResources() {
+    try {
+      FileSystemUtils.deleteRecursively(XML_DIR);
+    } catch (IOException e) {
+      log.error("Error while deleting local temporary resources: {}", e.getMessage());
+    }
+  }
 }
