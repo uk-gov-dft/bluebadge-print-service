@@ -23,6 +23,7 @@ if (project != rootProject) {
 
 dependencies {
     compile('com.amazonaws:aws-java-sdk-s3:1.11.385')
+	compile('com.jcraft:jsch:0.1.55')
     testCompile group: 'org.springframework', name:'spring-jdbc', version: '5.0.6.RELEASE'
     testCompile group: 'com.intuit.karate', name: 'karate-apache', version: '0.7.0.2'
     testCompile group: 'com.intuit.karate', name: 'karate-junit4', version: '0.7.0.2'

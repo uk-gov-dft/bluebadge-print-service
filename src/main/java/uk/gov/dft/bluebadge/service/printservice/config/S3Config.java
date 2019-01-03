@@ -17,7 +17,11 @@ import org.springframework.context.annotation.Configuration;
 public class S3Config {
   @Value("${amazon.bb-printer-bucket}")
   @NotNull
-  private String s3Bucket;
+  private String s3PrinterBucket;
+
+  @Value("${amazon.bb-badge-bucket}")
+  @NotNull
+  private String s3BadgeBucket;
 
   @Value("${amazon.signed-url-duration-ms:5000}")
   @NotNull

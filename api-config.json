@@ -1,284 +1,323 @@
 {
-  "spec":{
-    "swagger":"2.0",
-    "info":{
-      "version":"1.0",
-      "title":"Print service API"
+  "spec": {
+    "swagger": "2.0",
+    "info": {
+      "version": "1.0.0",
+      "title": "Print service API"
     },
-    "host":"virtserver.swaggerhub.com",
-    "basePath":"/uk-gov-dft/print-service/1.0",
-    "schemes":[
+    "host": "virtserver.swaggerhub.com",
+    "basePath": "/uk-gov-dft/print-service/1.0",
+    "schemes": [
       "https"
     ],
-    "paths":{
-      "/printBatch":{
-        "post":{
-          "tags":[
+    "paths": {
+      "/print-batch": {
+        "post": {
+          "tags": [
             "print batch"
           ],
-          "summary":"Creates a batch of badges to be send for printing",
-          "consumes":[
+          "summary": "Creates a batch of badges to be send for printing",
+          "consumes": [
             "application/json"
           ],
-          "produces":[
+          "produces": [
             "application/json"
           ],
-          "parameters":[
+          "parameters": [
             {
-              "in":"body",
-              "name":"batch",
-              "description":"Batch badges to be send for printing",
-              "required":false,
-              "schema":{
-                "$ref":"#/definitions/Batch"
+              "in": "body",
+              "name": "batch",
+              "description": "Batch badges to be send for printing",
+              "schema": {
+                "$ref": "#/definitions/Batch"
               }
             }
           ],
-          "responses":{
-            "200":{
-              "description":"OK."
+          "responses": {
+            "200": {
+              "description": "OK."
             },
-            "400":{
-              "description":"Invalid request",
-              "schema":{
-                "$ref":"#/definitions/CommonResponse"
+            "400": {
+              "description": "Invalid request",
+              "schema": {
+                "$ref": "#/definitions/CommonResponse"
               }
             }
           }
         }
       }
     },
-    "definitions":{
-      "Batches":{
-        "type":"array",
-        "items":{
-          "$ref":"#/definitions/Batch"
+    "definitions": {
+      "Batches": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/Batch"
         }
       },
-      "Batch":{
-        "type":"object",
-        "properties":{
-          "filename":{
-            "type":"string"
+      "Batch": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string"
           },
-          "batchType":{
-            "type":"string",
-            "example":"FASTTRACK, STANDARD or LA"
+          "batchType": {
+            "type": "string",
+            "example": "FASTTRACK, STANDARD or LA"
           },
-          "localAuthorities":{
-            "type":"array",
-            "items":{
-              "$ref":"#/definitions/LocalAuthority"
+          "badges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Badge"
             }
           }
         }
       },
-      "Name":{
-        "type":"object",
-        "properties":{
-          "forename":{
-            "type":"string",
-            "example":"John Smith (badge_holder)"
+      "Badge": {
+        "type": "object",
+        "properties": {
+          "localAuthorityShortCode" : {
+            "type" : "string",
+            "example" : "ABERD",
+            "pattern" : "^[A-Z]+$",
+            "description" : "Short code of local authority."
           },
-          "surname":{
-            "type":"string",
-            "example":"If holder_name is greater than 27 characters, at the first space delimited of the string, split onto 'surname'"
+          "badgeNumber": {
+            "type": "string",
+            "example": "091215",
+            "description": "The unique badge number for this badge."
+          },
+          "party": {
+            "$ref": "#/definitions/Party"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "description": "The date that the badge comes into effect.",
+            "example": "2018-07-07"
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date",
+            "description": "The date the badge expires.",
+            "example": "2019-06-31"
+          },
+          "deliverToCode": {
+            "type": "string",
+            "maxLength": 10,
+            "example": "HOME",
+            "description": "A short code from the DELIVER group of reference data."
+          },
+          "deliveryOptionCode": {
+            "type": "string",
+            "maxLength": 10,
+            "example": "STAND",
+            "description": "A short code from the DELOP group of reference data. e.g. STAND or FAST"
+          },
+          "imageLink": {
+            "type": "string",
+            "maxLength": 255,
+            "description": "A URL for the badge photo.",
+            "example": "http://tiny.url?q=ab63fg"
           }
         }
       },
-      "LetterAddress":{
-        "type":"object",
-        "properties":{
-          "nameLine":{
-            "type":"string",
-            "example":"John Smith (badge_holder) regardless if we deliver to home or council"
+      "Party": {
+        "type": "object",
+        "properties": {
+          "typeCode": {
+            "type": "string",
+            "description": "A short code from the PARTY group of reference data. e.g. PERSON or ORG.",
+            "maxLength": 10,
+            "example": "PERSON"
           },
-          "addressLine1":{
-            "type":"string",
-            "example":"person or council 'address line 1' depends on dispatchMethodCode"
+          "contact": {
+            "$ref": "#/definitions/Contact"
           },
-          "addressLine2":{
-            "type":"string",
-            "example":"person or council 'address line 2' depends on dispatchMethodCode"
+          "person": {
+            "$ref": "#/definitions/Person"
           },
-          "town":{
-            "type":"string",
-            "example":"person or council 'town' depends on dispatchMethodCode"
+          "organisation": {
+            "$ref": "#/definitions/Organisation"
+          }
+        },
+        "required": [
+          "typeCode",
+          "contact"
+        ]
+      },
+      "Person": {
+        "type": "object",
+        "properties": {
+          "badgeHolderName": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "Dwight Appleman"
           },
-          "country":{
-            "type":"string",
-            "example":"always 'United Kingdom'"
+          "dob": {
+            "type": "string",
+            "format": "date",
+            "example": "1972-09-13",
+            "description": "Date of birth YYYY-MM-DD"
           },
-          "postcode":{
-            "type":"string",
-            "example":"person or council 'postcode' depends on dispatchMethodCode"
+          "genderCode": {
+            "type": "string",
+            "example": "MALE",
+            "description": "A short code from the GENDER group of reference data. e.g. MALE, FEMALE or UNSPECIFIED."
+          }
+        },
+        "required": [
+          "badgeHolderName"
+        ],
+        "example": {
+          "badgeHolderName": "Fred Bloggs",
+          "dob": "1972-09-12",
+          "genderCode": "MALE"
+        }
+      },
+      "Organisation": {
+        "type": "object",
+        "properties": {
+          "badgeHolderName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "badgeHolderName"
+        ],
+        "example": {
+          "badgeHolderName": "The Monroe Institute"
+        }
+      },
+      "Contact": {
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "The administrative contact for the badge(s).",
+            "example": "June Whitfield"
+          },
+          "buildingStreet": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "65 Basil Chambers"
+          },
+          "line2": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "Northern Quarter"
+          },
+          "townCity": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "Manchester"
+          },
+          "postCode": {
+            "type": "string",
+            "example": "SK6 8GH",
+            "pattern": "^[A-Za-z]{1,2}[0-9][0-9A-Za-z]?\\s?[0-9][A-Za-z]{2}$"
+          },
+          "primaryPhoneNumber": {
+            "type": "string",
+            "maxLength": 20,
+            "example": "01616548765"
+          },
+          "secondaryPhoneNumber": {
+            "type": "string",
+            "maxLength": 20,
+            "example": "01616548765"
+          },
+          "emailAddress": {
+            "type": "string",
+            "pattern": "^\\S+\\@\\S+",
+            "maxLength": 100,
+            "example": "june@bigbrainknitting.com"
+          }
+        },
+        "required": [
+          "buildingStreet",
+          "townCity",
+          "postCode",
+          "primaryPhoneNumber"
+        ]
+      },
+      "CommonResponse": {
+        "type": "object",
+        "properties": {
+          "apiVersion": {
+            "type": "string"
+          },
+          "context": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "error": {
+            "$ref": "#/definitions/Error"
           }
         }
       },
-      "BadgeDetails":{
-        "type":"object",
-        "properties":{
-          "badgeIdentifier":{
-            "type":"string",
-            "example":"6 digit badge number in DfT system"
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer"
           },
-          "printedBadgeReference":{
-            "type":"string",
-            "example":"first 6 characters is 'badgeIdentifier' 7th character is the issue number this will always be 0 DDBB – month/year of birth of badge_holder, G - Gender (X=Male, Y=Female, Z=Not Specified) MMYY - month/year of badge expiry e.g. 'AA12BB 0 0290X1220'"
+          "message": {
+            "type": "string"
           },
-          "startDate":{
-            "type":"string",
-            "example":"badge start date '2018-08-03'"
-          },
-          "expiryDate":{
-            "type":"string",
-            "example":"badge expiry date '2020-08-03'"
-          },
-          "dispatchMethodCode":{
-            "type":"string",
-            "example":"deliver to LA - 'C', deliver to home - 'M'"
-          },
-          "fastTrackCode":{
-            "type":"string",
-            "example":"based on deliver_option_code 'Y' or 'N'"
-          },
-          "postageCode":{
-            "type":"string",
-            "example":"example 'SC' if deliver_option_code = 'STAND', 'SD1' if deliver_option_code = 'FAST'"
-          },
-          "photo":{
-            "type":"string",
-            "example":"aws-s3-url to image, in case if image not provided - url to default palceholder          image"
-          },
-          "barCodeData":{
-            "type":"string",
-            "example":"last 7 characters of the 'printedBadgeReference' for PERSON badge, last 5 characters of the 'printedBadgeReference' for ORGANISATION badge, e.g. '44X0621'"
-          },
-          "name":{
-            "$ref":"#/definitions/Name"
-          },
-          "letterAddress":{
-            "$ref":"#/definitions/LetterAddress"
-          }
-        }
-      },
-      "LocalAuthority":{
-        "type":"object",
-        "properties":{
-          "laCode":{
-            "type":"string",
-            "example":"LA short code 'ABERD'"
-          },
-          "laName":{
-            "type":"string",
-            "example":"LA description 'Aberdinshire council'"
-          },
-          "issuingCountry":{
-            "type":"string",
-            "example":"Country 'E' = English 'S' = Scottish 'W' = Welsh 'N' = Northern Ireland, convert this from LA metadata"
-          },
-          "languageCode":{
-            "type":"string",
-            "example":"if LA Nation = Wales 'EW', If LA Nation = England, Northern Ireland or Scotland then 'E'"
-          },
-          "clockType":{
-            "type":"string",
-            "example":"Northern Ireland = 'STANDARD', Wales = 'WALLET', England = 'STANDARD', Scotland = 'STANDARD'"
-          },
-          "phoneNumber":{
-            "type":"string",
-            "example":"phone number '01234 567890' - from LA metadata"
-          },
-          "emailAddress":{
-            "type":"string",
-            "example":"email 'enquiries@dcuc.gov.uk' - from LA metadata"
-          },
-          "badges":{
-            "type":"array",
-            "items":{
-              "$ref":"#/definitions/BadgeDetails"
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/Error_errors"
             }
           }
         }
       },
-      "CommonResponse":{
-        "type":"object",
-        "properties":{
-          "apiVersion":{
-            "type":"string"
+      "Error_errors": {
+        "properties": {
+          "field": {
+            "type": "string"
           },
-          "context":{
-            "type":"string"
+          "reason": {
+            "type": "string"
           },
-          "id":{
-            "type":"string"
+          "message": {
+            "type": "string"
           },
-          "method":{
-            "type":"string"
+          "location": {
+            "type": "string"
           },
-          "error":{
-            "$ref":"#/definitions/Error"
-          }
-        }
-      },
-      "Error":{
-        "type":"object",
-        "properties":{
-          "code":{
-            "type":"integer"
-          },
-          "message":{
-            "type":"string"
-          },
-          "errors":{
-            "type":"array",
-            "items":{
-              "$ref":"#/definitions/Error_errors"
-            }
-          }
-        }
-      },
-      "Error_errors":{
-        "properties":{
-          "field":{
-            "type":"string"
-          },
-          "reason":{
-            "type":"string"
-          },
-          "message":{
-            "type":"string"
-          },
-          "location":{
-            "type":"string"
-          },
-          "locationType":{
-            "type":"string"
+          "locationType": {
+            "type": "string"
           }
         }
       }
     }
   },
   "options": {
-    "java8" : true,
-    "sortParamsByRequiredFlag" : false,
-    "modelPackage" : "uk.gov.dft.bluebadge.model.printservice.generated",
-    "apiPackage" : "uk.gov.dft.bluebadge.service.printservice.generated.controller",
-    "groupId" : "uk.gov.dft.bluebadge",
-    "artifactId" : "print-service",
-    "artifactVersion" : "1.0.0-SNAPSHOT",
-    "sourceFolder" : "generated/src/main/java",
-    "dateLibrary" : "java8-localdatetime",
-    "delegatePattern" : false,
-    "title" : "process-sample",
-    "configPackage" : "uk.gov.dft.bluebadge.service.printservice.generated.config.swagger",
-    "basePackage" : "uk.gov.dft.bluebadge.dontneed.printservice.generated.application",
-    "useBeanValidation" : true,
-    "performBeanValidation" : true,
-    "useOptional" : false,
-    "useTags" : true,
-    "hideGenerationTimestamp" : true,
-    "appVersion" : "1.0"
+    "java8": true,
+    "sortParamsByRequiredFlag": false,
+    "modelPackage": "uk.gov.dft.bluebadge.model.printservice.generated",
+    "apiPackage": "uk.gov.dft.bluebadge.service.printservice.generated.controller",
+    "groupId": "uk.gov.dft.bluebadge",
+    "artifactId": "print-service",
+    "artifactVersion": "1.0.0-SNAPSHOT",
+    "sourceFolder": "generated/src/main/java",
+    "dateLibrary": "java8-localdatetime",
+    "delegatePattern": false,
+    "title": "process-sample",
+    "configPackage": "uk.gov.dft.bluebadge.service.printservice.generated.config.swagger",
+    "basePackage": "uk.gov.dft.bluebadge.dontneed.printservice.generated.application",
+    "useBeanValidation": true,
+    "performBeanValidation": true,
+    "useOptional": false,
+    "useTags": true,
+    "hideGenerationTimestamp": true,
+    "appVersion": "1.0"
   }
-  
 }

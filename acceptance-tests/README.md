@@ -13,6 +13,16 @@ gradle bootRun
 ```
 gradle acceptanceTests
 ```
+To run acceptance tests 'bb_env' environment variable should be provided ('dev', 'ci', etc)
+
+To connect to fstp server there should be environment variables provided:
+  sftp_host (default 'localhost')
+  sftp_port (default '2222')
+  sftp_user (default 'foo')
+  sftp_pass (default 'pass')
+  sftp_folder (default '/upload')
+  sftp_knownhosts (default '~/.ssh/sftp_known_hosts')
+ 
 
 ### How to validate a printer provider print batch xml request file using command line
 Check this file: 

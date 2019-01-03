@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.dft.bluebadge.common.api.model.Error;
 import uk.gov.dft.bluebadge.common.controller.AbstractController;
 import uk.gov.dft.bluebadge.common.service.exception.InternalServerException;
-import uk.gov.dft.bluebadge.service.printservice.generated.controller.PrintBatchApi;
-import uk.gov.dft.bluebadge.service.printservice.model.xml.Batch;
+import uk.gov.dft.bluebadge.service.printservice.api.PrintBatchApi;
+import uk.gov.dft.bluebadge.service.printservice.model.Batch;
 
 @RestController
 @Slf4j
@@ -18,17 +18,17 @@ public class PrintController extends AbstractController implements PrintBatchApi
 
   private PrintService service;
 
-  public PrintController(PrintService service) {
+  PrintController(PrintService service) {
     this.service = service;
   }
 
   @Override
-  // todo: add permissions something like @PreAuthorize("hasAuthority('PERM_PRINT')")
   public ResponseEntity<Void> printBatch(@ApiParam() @Valid @RequestBody Batch batch) {
     try {
+      log.info("Beginning print batch.");
       service.print(batch);
     } catch (Exception e) {
-      log.error(e.getMessage());
+      log.error(e.getMessage(), e);
       Error error = new Error();
       error.setMessage(e.getMessage());
       throw new InternalServerException(error);

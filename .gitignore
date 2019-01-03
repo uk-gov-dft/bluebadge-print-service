@@ -42,3 +42,4 @@ VERSION-computed
 **/dev-env*
 acceptance-tests/bin
 acceptance-tests/build
+acceptance-tests/target

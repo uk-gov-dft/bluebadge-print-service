@@ -1,22 +1,23 @@
 package uk.gov.dft.bluebadge.service.printservice;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.endsWith;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.testJson;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.transfer.TransferManager;
-import com.amazonaws.services.s3.transfer.Upload;
-import com.amazonaws.services.s3.transfer.model.UploadResult;
-import java.io.File;
-import java.net.URL;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.PutObjectResult;
+import java.nio.file.Paths;
+import java.util.Optional;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
@@ -34,21 +35,24 @@ import uk.gov.dft.bluebadge.service.printservice.config.S3Config;
 public class StorageServiceTest {
   public static final int URL_DURATION_MS = 60000;
 
-  private StorageService storageService;
+  private StorageService service;
   @Mock private AmazonS3 s3;
-  @Mock private TransferManager transferManager;
-  private URL s3ObjectURL;
-  private URL s3SignedUrl;
+
+  private String originalTmpDir = System.getProperty("java.io.tmpdir");
 
   @BeforeEach
   void beforeEachTest(TestInfo testInfo) {
     log.info(String.format("About to execute [%s]", testInfo.getDisplayName()));
     setup();
+
+    String testTmpDir = Paths.get("src", "test", "resources", "tmp").toString();
+    System.setProperty("java.io.tmpdir", testTmpDir);
   }
 
   @AfterEach
   void afterEachTest(TestInfo testInfo) {
     log.info(String.format("Finished executing [%s]", testInfo.getDisplayName()));
+    System.setProperty("java.io.tmpdir", originalTmpDir);
   }
 
   @SneakyThrows
@@ -56,35 +60,61 @@ public class StorageServiceTest {
     initMocks(this);
 
     S3Config s3Config = new S3Config();
-    s3Config.setS3Bucket("test_bucket");
+    s3Config.setS3PrinterBucket("test_bucket");
     s3Config.setSignedUrlDurationMs(URL_DURATION_MS);
 
-    storageService = new StorageService(s3Config, s3, transferManager);
-
-    s3ObjectURL = new URL("http://test");
-    s3SignedUrl = new URL("http://testSigned");
+    service = new StorageService(s3Config, s3);
   }
 
   @Test
   @DisplayName("Should upload json file to s3")
-  public void upload() throws Exception {
-    Upload upload = mock(Upload.class);
-    when(transferManager.upload(any(), any(), any(), any())).thenReturn(upload);
+  @SneakyThrows
+  public void upload() {
+    PutObjectResult result = mock(PutObjectResult.class);
+    when(s3.putObject(any(String.class), any(String.class), any(String.class))).thenReturn(result);
+    when(s3.doesObjectExist(any(String.class), any(String.class))).thenReturn(true);
 
-    UploadResult uploadResult = mock(UploadResult.class);
-    when(upload.waitForUploadResult()).thenReturn(uploadResult);
-    when(uploadResult.getBucketName()).thenReturn("resultBucket");
-    when(uploadResult.getKey()).thenReturn("resultKey");
+    String fileName = "test.json";
+    boolean uploaded = service.uploadToPrinterBucket(testJson, fileName);
 
-    when(s3.getUrl("resultBucket", "resultKey")).thenReturn(s3ObjectURL);
-    when(s3.generatePresignedUrl(any())).thenReturn(s3SignedUrl);
+    assertTrue(uploaded);
+    verify(s3, times(1)).putObject(eq("test_bucket"), endsWith("test.json"), eq(testJson));
+    verify(s3, times(1)).doesObjectExist(eq("test_bucket"), endsWith("test.json"));
+  }
 
-    File file = new File("src/test/resources/printbatch_20181127122345.json");
-    URL s3Json = storageService.upload(file);
+  @Test
+  @DisplayName("Should download a json string form a bucket")
+  @SneakyThrows
+  public void downloadJson() {
 
-    assertNotNull(s3Json);
-    assertEquals(s3SignedUrl, s3Json);
-    verify(transferManager, times(1))
-        .upload(eq("test_bucket"), endsWith("printbatch_20181127122345.json"), any(), any());
+    when(s3.doesObjectExist(any(String.class), any(String.class))).thenReturn(true);
+    when(s3.getObjectAsString(any(String.class), any(String.class))).thenReturn(testJson);
+
+    Optional<String> actual = service.downloadPrinterFileAsString("test.json");
+
+    assertNotNull(actual.get());
+  }
+
+  @Test
+  @DisplayName("Should verify delete method has been invoked")
+  @SneakyThrows
+  public void deleteFile() {
+    doNothing().when(s3).deleteObject(any(), eq("test.json"));
+
+    service.deletePrinterBucketFile("test.json");
+
+    verify(s3, times(1)).deleteObject(any(), eq("test.json"));
+  }
+
+  @Test
+  @DisplayName("Should verify list all objects has been invoked")
+  @SneakyThrows
+  public void listFiles() {
+    ObjectListing result = mock(ObjectListing.class);
+    when(s3.listObjects(any(String.class))).thenReturn(result);
+
+    service.listPrinterBucketFiles();
+
+    verify(s3, times(1)).listObjects(any(String.class));
   }
 }
