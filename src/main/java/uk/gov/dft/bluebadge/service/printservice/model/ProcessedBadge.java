@@ -2,8 +2,6 @@ package uk.gov.dft.bluebadge.service.printservice.model;
 
 import java.time.OffsetDateTime;
 import javax.validation.constraints.NotNull;
-import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlType;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.validation.annotation.Validated;
@@ -13,8 +11,6 @@ import org.springframework.validation.annotation.Validated;
 @Builder
 public class ProcessedBadge {
 
-  @XmlType
-  @XmlEnum
   public enum CancellationEnum {
     NO,
     YES;

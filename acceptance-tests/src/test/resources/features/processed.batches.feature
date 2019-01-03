@@ -1,5 +1,5 @@
 @processed-batches
-Feature: Verify Print batch ok
+Feature: Verify Retrieval of batch processing results
 
   Background:
     * url baseUrl

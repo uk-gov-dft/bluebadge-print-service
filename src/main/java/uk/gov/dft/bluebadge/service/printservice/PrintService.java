@@ -47,10 +47,11 @@ public class PrintService {
   }
 
   /**
-   * Returns printing results.
-   * Either successful, CONFIRMATION type batches or REJECTIONs.
-   * Results received as XML files from S3 and parsed into List of ProcessedBatch pojos.
-   * @return List of processing results (from printing company) for previously submitted print requests.
+   * Returns printing results. Either successful, CONFIRMATION type batches or REJECTIONs. Results
+   * received as XML files from S3 and parsed into List of ProcessedBatch pojos.
+   *
+   * @return List of processing results (from printing company) for previously submitted print
+   *     requests.
    */
   List<ProcessedBatch> getProcessedBatches() {
     log.info("Returning processed batches.");

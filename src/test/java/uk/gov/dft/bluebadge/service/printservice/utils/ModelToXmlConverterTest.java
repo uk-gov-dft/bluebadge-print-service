@@ -1,5 +1,29 @@
 package uk.gov.dft.bluebadge.service.printservice.utils;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.englishLocalAuthority;
+import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.fasttrackBatchPayload;
+import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.standardBatchPayload;
+import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.welshLocalAuthority;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
+import java.util.Scanner;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
@@ -12,31 +36,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import uk.gov.dft.bluebadge.service.printservice.StorageService;
 import uk.gov.dft.bluebadge.service.printservice.referencedata.ReferenceDataService;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathFactory;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Optional;
-import java.util.Scanner;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.englishLocalAuthority;
-import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.fasttrackBatchPayload;
-import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.standardBatchPayload;
-import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.welshLocalAuthority;
 
 @Slf4j
 class ModelToXmlConverterTest {
@@ -282,7 +281,8 @@ class ModelToXmlConverterTest {
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
     String expected =
-        new Scanner(getClass().getResourceAsStream("/orgpictures/england_base64.txt"), "UTF-8").next();
+        new Scanner(getClass().getResourceAsStream("/orgpictures/england_base64.txt"), "UTF-8")
+            .next();
     assertEquals(expected, node.getTextContent());
 
     expression =
@@ -290,7 +290,8 @@ class ModelToXmlConverterTest {
     node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
     expected =
-        new Scanner(getClass().getResourceAsStream("/orgpictures/wales_base64.txt"), "UTF-8").next();
+        new Scanner(getClass().getResourceAsStream("/orgpictures/wales_base64.txt"), "UTF-8")
+            .next();
     assertEquals(expected, node.getTextContent());
 
     deleteXmlFile(file);

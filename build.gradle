@@ -135,7 +135,7 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-aop')
     compile('org.springframework.cloud:spring-cloud-starter-sleuth:2.0.1.RELEASE')
     compile('org.apache.commons:commons-lang3:3.7')
-    compile group: 'commons-io', name: 'commons-io', version: '2.6'
+    
     compile('io.springfox:springfox-swagger-ui:2.8.0')
     compile('io.springfox:springfox-swagger2:2.8.0')
 
@@ -150,11 +150,11 @@ dependencies {
     runtime('ch.qos.logback.contrib:logback-jackson:0.1.5')
     runtime('com.fasterxml.jackson.core:jackson-databind:2.9.3')
     testCompileOnly ('org.projectlombok:lombok:1.16.22')
-    testCompile('org.junit.jupiter:junit-jupiter-api:5.3.1')
-    testCompile('org.junit.jupiter:junit-jupiter-params:5.3.1')
+    testCompile('org.junit.jupiter:junit-jupiter-api:5.3.2')
+    testCompile('org.junit.jupiter:junit-jupiter-params:5.3.2')
     testRuntimeOnly(
-            'org.junit.jupiter:junit-jupiter-engine:5.3.1',
-            'org.junit.vintage:junit-vintage-engine:5.3.1'
+            'org.junit.jupiter:junit-jupiter-engine:5.3.2',
+            'org.junit.vintage:junit-vintage-engine:5.3.2'
     )
 }
 

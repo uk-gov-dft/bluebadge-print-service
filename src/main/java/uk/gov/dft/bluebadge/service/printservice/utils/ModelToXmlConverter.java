@@ -1,7 +1,23 @@
 package uk.gov.dft.bluebadge.service.printservice.utils;
 
+import static java.util.stream.Collectors.groupingBy;
+import static uk.gov.dft.bluebadge.service.printservice.model.Batch.BatchTypeEnum.FASTTRACK;
+
+import com.amazonaws.util.IOUtils;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import uk.gov.dft.bluebadge.service.printservice.StorageService;
@@ -12,25 +28,6 @@ import uk.gov.dft.bluebadge.service.printservice.model.Badge;
 import uk.gov.dft.bluebadge.service.printservice.model.Batch;
 import uk.gov.dft.bluebadge.service.printservice.model.Contact;
 import uk.gov.dft.bluebadge.service.printservice.referencedata.ReferenceDataService;
-
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import static java.util.stream.Collectors.groupingBy;
-import static uk.gov.dft.bluebadge.service.printservice.model.Batch.BatchTypeEnum.FASTTRACK;
 
 @Component
 @Slf4j
@@ -148,12 +145,13 @@ public class ModelToXmlConverter {
         LocalAuthorityRefData la = referenceData.retrieveLocalAuthority(laCode);
 
         String imageFileName;
-        if(la.getLocalAuthorityMetaData().getNation() == Nation.WLS){
+        if (la.getLocalAuthorityMetaData().getNation() == Nation.WLS) {
           imageFileName = "/pictures/org_W.jpg";
-        }else{
+        } else {
           imageFileName = "/pictures/org_E.jpg";
         }
-        writer.writeCharacters(toBase64(IOUtils.toByteArray(getClass().getResource(imageFileName))));
+        writer.writeCharacters(
+            toBase64(IOUtils.toByteArray(getClass().getResourceAsStream(imageFileName))));
       }
     }
     writer.writeEndElement();
