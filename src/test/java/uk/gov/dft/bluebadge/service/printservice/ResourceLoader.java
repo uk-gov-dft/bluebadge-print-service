@@ -8,9 +8,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
-public class ResourceLoader {
+class ResourceLoader {
 
-  public static String loadTestResource(String filename) throws IOException {
+  static String loadTestResource(String filename) throws IOException {
     Path testPath = Paths.get("src", "test", "resources", filename);
     String testPayload =
         FileSystems.getDefault()
@@ -20,8 +20,7 @@ public class ResourceLoader {
             .toString();
 
     Path path = Paths.get(testPayload);
-    String payload = readAllLines(path).stream().map(s -> s.trim()).collect(Collectors.joining(""));
 
-    return payload;
+    return readAllLines(path).stream().map(String::trim).collect(Collectors.joining(""));
   }
 }

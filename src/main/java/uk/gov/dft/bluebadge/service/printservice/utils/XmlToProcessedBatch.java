@@ -1,20 +1,19 @@
 package uk.gov.dft.bluebadge.service.printservice.utils;
 
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
-import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBadge;
-import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBatch;
-
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
 import java.io.InputStream;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
+import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBadge;
+import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBatch;
 
 @Component
 @Slf4j
@@ -33,7 +32,7 @@ public class XmlToProcessedBatch {
    * Read and parse confirmation/rejection file.
    *
    * @param xmlStream InputStream for file.
-   * @param filename  File name for logging and populating.
+   * @param filename File name for logging and populating.
    * @return Populated Batch results object.
    * @throws BatchConfirmationXmlException Holds info on location in file where error occurred.
    */
@@ -89,7 +88,8 @@ public class XmlToProcessedBatch {
       int eventType = reader.nextTag();
       if (eventType == XMLStreamReader.START_ELEMENT) {
         parseConfirmationOrRejectionChildStartElement(badgeBuilder, reader, filename);
-      } else if (eventType == XMLStreamReader.END_ELEMENT && CONFIRMATION.equalsIgnoreCase(reader.getLocalName())) {
+      } else if (eventType == XMLStreamReader.END_ELEMENT
+          && CONFIRMATION.equalsIgnoreCase(reader.getLocalName())) {
         ProcessedBadge badge = badgeBuilder.build();
         // Check required elements
         if (null == badge.getBadgeNumber()
@@ -112,7 +112,8 @@ public class XmlToProcessedBatch {
       int eventType = reader.nextTag();
       if (eventType == XMLStreamReader.START_ELEMENT) {
         parseConfirmationOrRejectionChildStartElement(badgeBuilder, reader, filename);
-      } else if (eventType == XMLStreamReader.END_ELEMENT && REJECTION.equalsIgnoreCase(reader.getLocalName())) {
+      } else if (eventType == XMLStreamReader.END_ELEMENT
+          && REJECTION.equalsIgnoreCase(reader.getLocalName())) {
         ProcessedBadge badge = badgeBuilder.build();
         // Check required elements
         if (null == badge.getBadgeNumber() || null == badge.getErrorMessage()) {
@@ -125,7 +126,9 @@ public class XmlToProcessedBatch {
     throw buildAndLogException("Premature end of file processing rejection.", reader, filename);
   }
 
-  private void parseConfirmationOrRejectionChildStartElement(ProcessedBadge.ProcessedBadgeBuilder badgeBuilder, XMLStreamReader reader, String filename) throws BatchConfirmationXmlException, XMLStreamException {
+  private void parseConfirmationOrRejectionChildStartElement(
+      ProcessedBadge.ProcessedBadgeBuilder badgeBuilder, XMLStreamReader reader, String filename)
+      throws BatchConfirmationXmlException, XMLStreamException {
     assert XMLStreamConstants.START_ELEMENT == reader.getEventType();
     String elementName = reader.getLocalName();
     if (BADGE_ID.equalsIgnoreCase(elementName)) {
@@ -133,13 +136,15 @@ public class XmlToProcessedBatch {
     } else if (ERROR_MESSAGE.equalsIgnoreCase(elementName)) {
       badgeBuilder.errorMessage(reader.getElementText());
     } else if (CANCELLATION.equalsIgnoreCase(elementName)) {
-      badgeBuilder.cancellation(
-          ProcessedBadge.CancellationEnum.fromValue(reader.getElementText()));
+      badgeBuilder.cancellation(ProcessedBadge.CancellationEnum.fromValue(reader.getElementText()));
     } else if (DISPATCHED_DATE.equalsIgnoreCase(elementName)) {
       badgeBuilder.dispatchedDate(parseIsoDateTime(reader.getElementText()));
     } else {
       throw buildAndLogException(
-          "Unexpected xml element whilst parsing rejection or confirmation child element:" + elementName, reader, filename);
+          "Unexpected xml element whilst parsing rejection or confirmation child element:"
+              + elementName,
+          reader,
+          filename);
     }
   }
 

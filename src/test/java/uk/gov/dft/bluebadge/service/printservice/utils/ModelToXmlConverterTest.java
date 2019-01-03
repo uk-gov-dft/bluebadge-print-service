@@ -30,15 +30,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import uk.gov.dft.bluebadge.service.printservice.StorageService;
 import uk.gov.dft.bluebadge.service.printservice.referencedata.ReferenceDataService;
 
-@RunWith(JUnitPlatform.class)
 @Slf4j
 class ModelToXmlConverterTest {
 

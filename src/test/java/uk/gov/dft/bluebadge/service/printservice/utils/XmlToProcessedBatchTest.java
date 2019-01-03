@@ -97,8 +97,7 @@ class XmlToProcessedBatchTest {
       processor.readProcessedBatchFile(is, "InvalidConfirmationUnexpectedElement.xml");
       failBecauseExceptionWasNotThrown(BatchConfirmationXmlException.class);
     } catch (BatchConfirmationXmlException e) {
-      assertThat(e.getDetailedError())
-          .contains("Unexpected xml element whilst parsing");
+      assertThat(e.getDetailedError()).contains("Unexpected xml element whilst parsing");
     }
   }
 

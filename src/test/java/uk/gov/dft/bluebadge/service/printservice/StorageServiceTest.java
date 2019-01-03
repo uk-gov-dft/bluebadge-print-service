@@ -25,15 +25,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import uk.gov.dft.bluebadge.service.printservice.config.S3Config;
 
-@RunWith(JUnitPlatform.class)
 @Slf4j
-public class StorageServiceTest {
-  public static final int URL_DURATION_MS = 60000;
+class StorageServiceTest {
+  private static final int URL_DURATION_MS = 60000;
 
   private StorageService service;
   @Mock private AmazonS3 s3;
@@ -56,7 +53,7 @@ public class StorageServiceTest {
   }
 
   @SneakyThrows
-  public void setup() {
+  void setup() {
     initMocks(this);
 
     S3Config s3Config = new S3Config();
@@ -69,7 +66,7 @@ public class StorageServiceTest {
   @Test
   @DisplayName("Should upload json file to s3")
   @SneakyThrows
-  public void upload() {
+  void upload() {
     PutObjectResult result = mock(PutObjectResult.class);
     when(s3.putObject(any(String.class), any(String.class), any(String.class))).thenReturn(result);
     when(s3.doesObjectExist(any(String.class), any(String.class))).thenReturn(true);
@@ -83,9 +80,9 @@ public class StorageServiceTest {
   }
 
   @Test
-  @DisplayName("Should download a json string form a bucket")
+  @DisplayName("Should download a json string from a bucket")
   @SneakyThrows
-  public void downloadJson() {
+  void downloadJson() {
 
     when(s3.doesObjectExist(any(String.class), any(String.class))).thenReturn(true);
     when(s3.getObjectAsString(any(String.class), any(String.class))).thenReturn(testJson);
@@ -98,7 +95,7 @@ public class StorageServiceTest {
   @Test
   @DisplayName("Should verify delete method has been invoked")
   @SneakyThrows
-  public void deleteFile() {
+  void deleteFile() {
     doNothing().when(s3).deleteObject(any(), eq("test.json"));
 
     service.deletePrinterBucketFile("test.json");
@@ -109,7 +106,7 @@ public class StorageServiceTest {
   @Test
   @DisplayName("Should verify list all objects has been invoked")
   @SneakyThrows
-  public void listFiles() {
+  void listFiles() {
     ObjectListing result = mock(ObjectListing.class);
     when(s3.listObjects(any(String.class))).thenReturn(result);
 

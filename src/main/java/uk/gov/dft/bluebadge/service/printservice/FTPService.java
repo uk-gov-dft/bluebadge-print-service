@@ -4,12 +4,11 @@ import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
+import java.io.File;
+import java.io.FileInputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.dft.bluebadge.service.printservice.config.FTPClientConfig;
-
-import java.io.File;
-import java.io.FileInputStream;
 
 @Service
 @Slf4j

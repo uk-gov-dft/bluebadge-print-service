@@ -17,24 +17,21 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-@RunWith(JUnitPlatform.class)
 @Slf4j
-public class PrintControllerTest {
+class PrintControllerTest {
 
   private MockMvc mvc;
 
   private PrintService service = mock(PrintService.class);
 
   @BeforeEach
-  public void beforeEachTest(TestInfo testInfo) {
+  void beforeEachTest(TestInfo testInfo) {
     mvc = MockMvcBuilders.standaloneSetup(new PrintController(service)).build();
     log.info(String.format("About to execute [%s]", testInfo.getDisplayName()));
   }
@@ -47,7 +44,7 @@ public class PrintControllerTest {
   @Test
   @DisplayName("Accepts payload for printBatch and returns HTTP 200 ")
   @SneakyThrows
-  public void request_print_batch_success() {
+  void request_print_batch_success() {
     String body = ResourceLoader.loadTestResource("printbatch_20181127122345.json");
     RequestBuilder builder =
         MockMvcRequestBuilders.post("/printBatch")
@@ -61,7 +58,7 @@ public class PrintControllerTest {
   @Test
   @DisplayName("Accepts payload for printBatch and returns HTTP 500 ")
   @SneakyThrows
-  public void request_print_batch_throws_exception() {
+  void request_print_batch_throws_exception() {
     String body = ResourceLoader.loadTestResource("printbatch_20181127122345.json");
     RequestBuilder builder =
         MockMvcRequestBuilders.post("/printBatch")
@@ -75,7 +72,7 @@ public class PrintControllerTest {
   @Test
   @DisplayName("Returns processed batches and HTTP 200")
   @SneakyThrows
-  public void get_processed_batches_success() {
+  void get_processed_batches_success() {
     RequestBuilder builder =
         MockMvcRequestBuilders.get("/processed-batches").contentType(MediaType.APPLICATION_JSON);
     when(service.getProcessedBatches()).thenReturn(Lists.newArrayList());

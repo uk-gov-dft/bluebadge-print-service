@@ -27,14 +27,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
-import org.junit.platform.runner.JUnitPlatform;
-import org.junit.runner.RunWith;
 import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBatch;
 import uk.gov.dft.bluebadge.service.printservice.utils.BatchConfirmationXmlException;
 import uk.gov.dft.bluebadge.service.printservice.utils.ModelToXmlConverter;
 import uk.gov.dft.bluebadge.service.printservice.utils.XmlToProcessedBatch;
 
-@RunWith(JUnitPlatform.class)
 @Slf4j
 class PrintServiceTest {
 
