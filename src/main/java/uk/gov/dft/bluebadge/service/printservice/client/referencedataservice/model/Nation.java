@@ -9,14 +9,14 @@ public enum Nation {
   SCO("S"),
   NIR("N");
 
-  private String code;
+  private String xmlPrintFileCode;
 
-  Nation(String code) {
-    this.code = code;
+  Nation(String xmlPrintFileCode) {
+    this.xmlPrintFileCode = xmlPrintFileCode;
   }
 
-  public String getCode() {
-    return code;
+  public String getXmlPrintFileCode() {
+    return xmlPrintFileCode;
   }
 
   @SuppressWarnings("unused")

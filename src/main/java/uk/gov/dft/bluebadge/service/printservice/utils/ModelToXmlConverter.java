@@ -1,8 +1,21 @@
 package uk.gov.dft.bluebadge.service.printservice.utils;
 
-import static java.util.stream.Collectors.groupingBy;
-import static uk.gov.dft.bluebadge.service.printservice.model.Batch.BatchTypeEnum.FASTTRACK;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
+import uk.gov.dft.bluebadge.service.printservice.StorageService;
+import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.LocalAuthorityRefData;
+import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.LocalAuthorityRefData.LocalAuthorityMetaData;
+import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.Nation;
+import uk.gov.dft.bluebadge.service.printservice.model.Badge;
+import uk.gov.dft.bluebadge.service.printservice.model.Batch;
+import uk.gov.dft.bluebadge.service.printservice.model.Contact;
+import uk.gov.dft.bluebadge.service.printservice.referencedata.ReferenceDataService;
 
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -15,19 +28,9 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Component;
-import uk.gov.dft.bluebadge.service.printservice.StorageService;
-import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.LocalAuthorityRefData;
-import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.LocalAuthorityRefData.LocalAuthorityMetaData;
-import uk.gov.dft.bluebadge.service.printservice.model.Badge;
-import uk.gov.dft.bluebadge.service.printservice.model.Batch;
-import uk.gov.dft.bluebadge.service.printservice.model.Contact;
-import uk.gov.dft.bluebadge.service.printservice.referencedata.ReferenceDataService;
+
+import static java.util.stream.Collectors.groupingBy;
+import static uk.gov.dft.bluebadge.service.printservice.model.Batch.BatchTypeEnum.FASTTRACK;
 
 @Component
 @Slf4j
@@ -143,12 +146,14 @@ public class ModelToXmlConverter {
       boolean isOrganisation = badge.getParty().getTypeCode().equals("ORG");
       if (isOrganisation) {
         LocalAuthorityRefData la = referenceData.retrieveLocalAuthority(laCode);
-        String nation = la.getLocalAuthorityMetaData().getNation().getCode();
-        Path orgE = Paths.get("src", "main", "resources", "pictures", "org_E.jpg");
-        Path orgW = Paths.get("src", "main", "resources", "pictures", "org_W.jpg");
-        File orgImageFile = nation.equalsIgnoreCase("W") ? orgW.toFile() : orgE.toFile();
-        String image = toBase64(Files.readAllBytes(orgImageFile.toPath()));
-        writer.writeCharacters(image);
+
+        String imageFileName;
+        if(la.getLocalAuthorityMetaData().getNation() == Nation.WLS){
+          imageFileName = "/pictures/org_W.jpg";
+        }else{
+          imageFileName = "/pictures/org_E.jpg";
+        }
+        writer.writeCharacters(toBase64(IOUtils.toByteArray(getClass().getResource(imageFileName))));
       }
     }
     writer.writeEndElement();
@@ -264,6 +269,8 @@ public class ModelToXmlConverter {
       throws XMLStreamException {
     LocalAuthorityRefData la = referenceData.retrieveLocalAuthority(laCode);
 
+    Nation nation = la.getLocalAuthorityMetaData().getNation();
+
     writer.writeStartElement("LACode");
     writer.writeCharacters(la.getShortCode());
     writer.writeEndElement();
@@ -273,17 +280,16 @@ public class ModelToXmlConverter {
     writer.writeEndElement();
 
     writer.writeStartElement("IssuingCountry");
-    String nation = la.getLocalAuthorityMetaData().getNation().getCode();
-    writer.writeCharacters(nation);
+    writer.writeCharacters(nation.getXmlPrintFileCode());
     writer.writeEndElement();
 
     writer.writeStartElement("LanguageCode");
-    String language = nation.equalsIgnoreCase("W") ? "EW" : "E";
+    String language = Nation.WLS == nation ? "EW" : "E";
     writer.writeCharacters(language);
     writer.writeEndElement();
 
     writer.writeStartElement("ClockType");
-    String clock = nation.equalsIgnoreCase("W") ? "Wallet" : "Standard";
+    String clock = Nation.WLS == nation ? "Wallet" : "Standard";
     writer.writeCharacters(clock);
     writer.writeEndElement();
 

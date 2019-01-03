@@ -97,7 +97,7 @@ public class TestDataFixtures {
     Batch batch = new Batch();
     batch.setFilename("filename1");
     batch.setBatchType(Batch.BatchTypeEnum.STANDARD);
-    batch.setBadges(Arrays.asList(badge1(), badge2(), badge3()));
+    batch.setBadges(Arrays.asList(badge1(), badge2(), badge3(), badgeWelshOrg()));
     return batch;
   }
 
@@ -184,6 +184,25 @@ public class TestDataFixtures {
                 "mike@email.com"),
             person3()));
     details.setDeliverToCode("HOME");
+    details.setDeliveryOptionCode("STAND");
+
+    return details;
+  }
+
+  private static Badge badgeWelshOrg() {
+
+    Badge details = new Badge();
+    details.setBadgeNumber("WALESO");
+    details.setLocalAuthorityShortCode("ANGL");
+    details.setStartDate(LocalDate.of(2019, 1, 2));
+    details.setExpiryDate(LocalDate.of(2021, 1, 1));
+    details.setImageLink(null);
+    details.setParty(
+        organisationParty(
+            createContact(
+                "XmlName Last", "88", "pleasant walk", "Manchester", "M4 3AS", "xml@email.com"),
+            organisation()));
+    details.setDeliverToCode("COUNCIL");
     details.setDeliveryOptionCode("STAND");
 
     return details;
