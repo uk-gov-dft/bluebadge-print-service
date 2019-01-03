@@ -4,9 +4,9 @@ import javax.xml.stream.XMLStreamReader;
 
 public class BatchConfirmationXmlException extends Exception {
 
-  private String detailedError;
+  private final String detailedError;
 
-  public BatchConfirmationXmlException(String message, XMLStreamReader reader, String fileName) {
+  BatchConfirmationXmlException(String message, XMLStreamReader reader, String fileName) {
     super(message);
     detailedError =
         message
