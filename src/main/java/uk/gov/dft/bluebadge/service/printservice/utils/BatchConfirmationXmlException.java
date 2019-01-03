@@ -10,11 +10,11 @@ public class BatchConfirmationXmlException extends Exception {
     super(message);
     detailedError =
         message
-            + "\n While processing file:"
+            + " While processing file:"
             + fileName
-            + "\n Location: Line-"
+            + " Location: Line-"
             + reader.getLocation().getLineNumber()
-            + "Column-"
+            + " Column-"
             + reader.getLocation().getColumnNumber();
   }
 

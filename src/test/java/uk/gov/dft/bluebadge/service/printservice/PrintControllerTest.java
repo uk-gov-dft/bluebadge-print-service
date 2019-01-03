@@ -9,7 +9,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.google.common.collect.Lists;
+import com.amazonaws.util.IOUtils;
+import java.util.ArrayList;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
@@ -45,7 +46,8 @@ class PrintControllerTest {
   @DisplayName("Accepts payload for printBatch and returns HTTP 200 ")
   @SneakyThrows
   void request_print_batch_success() {
-    String body = ResourceLoader.loadTestResource("printbatch_20181127122345.json");
+    String body =
+        IOUtils.toString(getClass().getResourceAsStream("/printbatch_20181127122345.json"));
     RequestBuilder builder =
         MockMvcRequestBuilders.post("/printBatch")
             .content(body)
@@ -59,7 +61,8 @@ class PrintControllerTest {
   @DisplayName("Accepts payload for printBatch and returns HTTP 500 ")
   @SneakyThrows
   void request_print_batch_throws_exception() {
-    String body = ResourceLoader.loadTestResource("printbatch_20181127122345.json");
+    String body =
+        IOUtils.toString(getClass().getResourceAsStream("/printbatch_20181127122345.json"));
     RequestBuilder builder =
         MockMvcRequestBuilders.post("/printBatch")
             .content(body)
@@ -75,7 +78,7 @@ class PrintControllerTest {
   void get_processed_batches_success() {
     RequestBuilder builder =
         MockMvcRequestBuilders.get("/processed-batches").contentType(MediaType.APPLICATION_JSON);
-    when(service.getProcessedBatches()).thenReturn(Lists.newArrayList());
+    when(service.getProcessedBatches()).thenReturn(new ArrayList<>());
     mvc.perform(builder).andExpect(status().isOk());
     verify(service, times(1)).getProcessedBatches();
   }
