@@ -4,11 +4,12 @@ import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
-import java.io.File;
-import java.io.FileInputStream;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.dft.bluebadge.service.printservice.config.FTPClientConfig;
+
+import java.io.File;
+import java.io.FileInputStream;
 
 @Service
 @Slf4j
@@ -43,8 +44,12 @@ public class FTPService {
       log.error("Error happened while sending file to sftp:" + e.getMessage(), e);
       return false;
     } finally {
-      sftpChannel.exit();
-      session.disconnect();
+      if (null != sftpChannel) {
+        sftpChannel.exit();
+      }
+      if (null != session) {
+        session.disconnect();
+      }
     }
 
     return true;

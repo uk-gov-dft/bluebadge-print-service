@@ -3,7 +3,6 @@ package uk.gov.dft.bluebadge.service.printservice.utils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.ValidationUtils;
 import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBadge;
 import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBatch;
 
@@ -87,36 +86,19 @@ public class XmlToProcessedBatch {
     ProcessedBadge.ProcessedBadgeBuilder badgeBuilder = ProcessedBadge.builder();
 
     while (reader.hasNext()) {
-      int eventType = reader.next();
-      String elementName;
+      int eventType = reader.nextTag();
       if (eventType == XMLStreamReader.START_ELEMENT) {
-        elementName = reader.getLocalName();
-        if (BADGE_ID.equalsIgnoreCase(elementName)) {
-          badgeBuilder.badgeNumber(reader.getElementText());
-        } else if (CANCELLATION.equalsIgnoreCase(elementName)) {
-          badgeBuilder.cancellation(
-              ProcessedBadge.CancellationEnum.fromValue(reader.getElementText()));
-        } else if (DISPATCHED_DATE.equalsIgnoreCase(elementName)) {
-          badgeBuilder.dispatchedDate(parseIsoDateTime(reader.getElementText()));
-        } else {
+        parseConfirmationOrRejectionChildStartElement(badgeBuilder, reader, filename);
+      } else if (eventType == XMLStreamReader.END_ELEMENT && CONFIRMATION.equalsIgnoreCase(reader.getLocalName())) {
+        ProcessedBadge badge = badgeBuilder.build();
+        // Check required elements
+        if (null == badge.getBadgeNumber()
+            || null == badge.getCancellation()
+            || null == badge.getDispatchedDate()) {
           throw buildAndLogException(
-              "Unexpected xml element whilst parsing confirmation:" + elementName + ".",
-              reader,
-              filename);
+              "Missing element processing confirmation." + badge + ".", reader, filename);
         }
-      } else if (eventType == XMLStreamReader.END_ELEMENT) {
-        elementName = reader.getLocalName();
-        if (CONFIRMATION.equals(elementName)) {
-          ProcessedBadge badge = badgeBuilder.build();
-          // Check required elements
-          if (null == badge.getBadgeNumber()
-              || null == badge.getCancellation()
-              || null == badge.getDispatchedDate()) {
-            throw buildAndLogException(
-                "Missing element processing confirmation." + badge + ".", reader, filename);
-          }
-          return badge;
-        }
+        return badge;
       }
     }
     throw buildAndLogException("Premature end of file parsing confirmation.", reader, filename);
@@ -127,32 +109,38 @@ public class XmlToProcessedBatch {
     ProcessedBadge.ProcessedBadgeBuilder badgeBuilder = ProcessedBadge.builder();
 
     while (reader.hasNext()) {
-      int eventType = reader.next();
-      String elementName;
+      int eventType = reader.nextTag();
       if (eventType == XMLStreamReader.START_ELEMENT) {
-        elementName = reader.getLocalName();
-        if (BADGE_ID.equalsIgnoreCase(elementName)) {
-          badgeBuilder.badgeNumber(reader.getElementText());
-        } else if (ERROR_MESSAGE.equalsIgnoreCase(elementName)) {
-          badgeBuilder.errorMessage(reader.getElementText());
-        } else {
+        parseConfirmationOrRejectionChildStartElement(badgeBuilder, reader, filename);
+      } else if (eventType == XMLStreamReader.END_ELEMENT && REJECTION.equalsIgnoreCase(reader.getLocalName())) {
+        ProcessedBadge badge = badgeBuilder.build();
+        // Check required elements
+        if (null == badge.getBadgeNumber() || null == badge.getErrorMessage()) {
           throw buildAndLogException(
-              "Unexpected xml element whilst parsing rejection:" + elementName, reader, filename);
+              "Missing element processing rejection." + badge + ".", reader, filename);
         }
-      } else if (eventType == XMLStreamReader.END_ELEMENT) {
-        elementName = reader.getLocalName();
-        if (REJECTION.equalsIgnoreCase(elementName)) {
-          ProcessedBadge badge = badgeBuilder.build();
-          // Check required elements
-          if (null == badge.getBadgeNumber() || null == badge.getErrorMessage()) {
-            throw buildAndLogException(
-                "Missing element processing rejection." + badge + ".", reader, filename);
-          }
-          return badgeBuilder.build();
-        }
+        return badgeBuilder.build();
       }
     }
     throw buildAndLogException("Premature end of file processing rejection.", reader, filename);
+  }
+
+  private void parseConfirmationOrRejectionChildStartElement(ProcessedBadge.ProcessedBadgeBuilder badgeBuilder, XMLStreamReader reader, String filename) throws BatchConfirmationXmlException, XMLStreamException {
+    assert XMLStreamConstants.START_ELEMENT == reader.getEventType();
+    String elementName = reader.getLocalName();
+    if (BADGE_ID.equalsIgnoreCase(elementName)) {
+      badgeBuilder.badgeNumber(reader.getElementText());
+    } else if (ERROR_MESSAGE.equalsIgnoreCase(elementName)) {
+      badgeBuilder.errorMessage(reader.getElementText());
+    } else if (CANCELLATION.equalsIgnoreCase(elementName)) {
+      badgeBuilder.cancellation(
+          ProcessedBadge.CancellationEnum.fromValue(reader.getElementText()));
+    } else if (DISPATCHED_DATE.equalsIgnoreCase(elementName)) {
+      badgeBuilder.dispatchedDate(parseIsoDateTime(reader.getElementText()));
+    } else {
+      throw buildAndLogException(
+          "Unexpected xml element whilst parsing rejection or confirmation child element:" + elementName, reader, filename);
+    }
   }
 
   OffsetDateTime parseIsoDateTime(String stringValue) {

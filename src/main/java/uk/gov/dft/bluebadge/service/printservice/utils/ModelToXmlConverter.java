@@ -1,6 +1,7 @@
 package uk.gov.dft.bluebadge.service.printservice.utils;
 
 import static java.util.stream.Collectors.groupingBy;
+import static uk.gov.dft.bluebadge.service.printservice.model.Batch.BatchTypeEnum.FASTTRACK;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -44,7 +45,7 @@ public class ModelToXmlConverter {
 
     XMLOutputFactory factory = XMLOutputFactory.newInstance();
 
-    Path xmlFileName = createXmlFile(batch.getBatchType().equals("FASTTRACK"), xmlDir);
+    Path xmlFileName = createXmlFile(batch.getBatchType().equals(FASTTRACK), xmlDir);
 
     XMLStreamWriter writer =
         factory.createXMLStreamWriter(new FileOutputStream(xmlFileName.toString()), "Cp1252");
