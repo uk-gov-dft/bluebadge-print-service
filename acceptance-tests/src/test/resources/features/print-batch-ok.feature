@@ -85,7 +85,10 @@ Feature: Verify Print batch ok
 		        "primaryPhoneNumber" : "",
 		        "secondaryPhoneNumber" : null,
 		        "emailAddress" : "mike@email.com"
-		      }
+		      },
+		      organisation: {
+                  badgeHolderName: 'TestData ORGTEST1234'
+               }
 		    },
 		    "startDate" : "2019-01-02",
 		    "expiryDate" : "2021-01-01",
@@ -98,20 +101,20 @@ Feature: Verify Print batch ok
     * set batch.badges[1].imageLink = "/pictures/smile2.jpg"
     * set batch.badges[2].imageLink = ""
 
-	* eval s3.putObject(badgeBucketName, '/pictures/smile1.jpg')
+    * eval s3.putObject(badgeBucketName, '/pictures/smile1.jpg')
     * eval s3.putObject(badgeBucketName, '/pictures/smile2.jpg')
 
-	* eval ftp.clean()
-	* def ftpFileCountBefore = ftp.getFileCount()
+    * eval ftp.clean()
+    * def ftpFileCountBefore = ftp.getFileCount()
     * eval s3.cleanBucket(printerBucketName)
-	* def s3FileCountBefore = s3.getNumberOfFilesInABucket(printerBucketName)
+    * def s3FileCountBefore = s3.getNumberOfFilesInABucket(printerBucketName)
     Given path 'printBatch'
     And request batch
     When method POST
     Then status 200
-	* def ftpFileCountAfter = ftp.getFileCount()
-	* def s3FileCountAfter = s3.getNumberOfFilesInABucket(printerBucketName)
+    * def ftpFileCountAfter = ftp.getFileCount()
+    * def s3FileCountAfter = s3.getNumberOfFilesInABucket(printerBucketName)
     * print 'ftpbefore:' + ftpFileCountBefore + ',ftpAfterCount:' + ftpFileCountAfter
     * print 's3before:' + s3FileCountBefore + ',s3AfterCount:' + s3FileCountAfter
-	* assert s3FileCountBefore == s3FileCountAfter
-	* assert ftpFileCountBefore + 1 == ftpFileCountAfter
+    * assert s3FileCountBefore == s3FileCountAfter
+    * assert ftpFileCountBefore + 1 == ftpFileCountAfter
