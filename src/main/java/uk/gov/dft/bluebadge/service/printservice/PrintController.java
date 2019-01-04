@@ -40,9 +40,14 @@ public class PrintController extends AbstractController implements PrintBatchApi
   }
 
   @Override
-  public ResponseEntity<Void> processedBatchesBatchNameDelete(
+  public ResponseEntity<Void> deleteBatch(
       @ApiParam(required = true) @PathVariable("batchName") String batchName) {
-    return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+
+    if(service.deleteBatch(batchName)){
+      return ResponseEntity.ok().build();
+    }else{
+      return ResponseEntity.notFound().build();
+    }
   }
 
   @Override

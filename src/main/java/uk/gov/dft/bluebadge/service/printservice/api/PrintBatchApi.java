@@ -47,7 +47,7 @@ public interface PrintBatchApi {
     produces = {"application/json"},
     consumes = {"application/json"}
   )
-  ResponseEntity<Void> processedBatchesBatchNameDelete(
+  ResponseEntity<Void> deleteBatch(
       @ApiParam(required = true) @PathVariable("batchName") String batchName);
 
   @ApiOperation(

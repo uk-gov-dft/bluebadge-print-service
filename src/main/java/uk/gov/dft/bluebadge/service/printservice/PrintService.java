@@ -193,4 +193,8 @@ public class PrintService {
       log.error("Error while deleting local temporary resources: {}", e.getMessage());
     }
   }
+
+  public boolean deleteBatch(String batchName) {
+    return s3.deleteS3FileByKey(s3.getInBucket(), batchName);
+  }
 }

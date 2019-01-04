@@ -92,4 +92,13 @@ public class StorageService {
   public String getInBucket() {
     return s3Config.getS3InBucket();
   }
+
+  boolean deleteS3FileByKey(String bucket, String key){
+    if(amazonS3.doesObjectExist(bucket, key)){
+      amazonS3.deleteObject(bucket,key);
+      return !amazonS3.doesObjectExist(bucket, key);
+    }else {
+      return false;
+    }
+  }
 }
