@@ -72,10 +72,10 @@ Feature: Verify Print batch ok
 		    "deliverToCode" : "HOME",
 		    "deliveryOptionCode" : "STAND",
 		  }, {
-		    "localAuthorityShortCode" : "GLOCC",
+		    "localAuthorityShortCode" : "ANGL",
 		    "badgeNumber" : "CC12DD",
 		    "party" : {
-		      "typeCode" : "PERSON",
+		      "typeCode" : "ORG",
 		      "contact" : {
 		        "fullName" : "Michael Third",
 		        "buildingStreet" : "century building",
@@ -85,11 +85,6 @@ Feature: Verify Print batch ok
 		        "primaryPhoneNumber" : "",
 		        "secondaryPhoneNumber" : null,
 		        "emailAddress" : "mike@email.com"
-		      },
-		      "person" : {
-		        "badgeHolderName" : "Michael Third",
-		        "dob" : "1934-02-05",
-		        "genderCode" : "MALE"
 		      }
 		    },
 		    "startDate" : "2019-01-02",
@@ -101,11 +96,11 @@ Feature: Verify Print batch ok
     """
     * set batch.badges[0].imageLink = "/pictures/smile1.jpg"
     * set batch.badges[1].imageLink = "/pictures/smile2.jpg"
-    * set batch.badges[2].imageLink = "/pictures/smile3.jpg"
+    * set batch.badges[2].imageLink = ""
 
 	* eval s3.putObject(badgeBucketName, '/pictures/smile1.jpg')
     * eval s3.putObject(badgeBucketName, '/pictures/smile2.jpg')
-    * eval s3.putObject(badgeBucketName, '/pictures/smile3.jpg')
+
 	* eval ftp.clean()
 	* def ftpFileCountBefore = ftp.getFileCount()
     * eval s3.cleanBucket(printerBucketName)

@@ -56,4 +56,10 @@ ftp:
   dropbox: ${SFTP_FOLDER:/upload}
   knownhosts: ${SFTP_KNOWNHOSTS:~/.ssh/sftp_known_hosts} 
 
+general:
+  organisation:
+    photo:
+      resourceuri:
+        england: /pictures/org_E.jpg
+        wales: /pictures/org_W.jpg
 

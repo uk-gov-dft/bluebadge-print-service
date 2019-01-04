@@ -27,6 +27,7 @@ import javax.xml.xpath.XPathFactory;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import uk.gov.dft.bluebadge.service.printservice.StorageService;
+import uk.gov.dft.bluebadge.service.printservice.config.GeneralConfig;
 import uk.gov.dft.bluebadge.service.printservice.referencedata.ReferenceDataService;
 
 @Slf4j
@@ -42,13 +44,21 @@ class ModelToXmlConverterTest {
 
   private StorageService s3 = mock(StorageService.class);
   private final ReferenceDataService referenceData = mock(ReferenceDataService.class);
+  private static final GeneralConfig mockGeneralConfig = mock(GeneralConfig.class);
 
-  private ModelToXmlConverter converter = new ModelToXmlConverter(s3, referenceData);
+  private ModelToXmlConverter converter =
+      new ModelToXmlConverter(s3, referenceData, mockGeneralConfig);
 
   private String originalTmpDir = System.getProperty("java.io.tmpdir");
 
   private String s3PictureFilePath =
       Paths.get("src", "test", "resources", "tmp", "printbatch_pics", "smile.jpg").toString();
+
+  @BeforeAll
+  static void before() {
+    when(mockGeneralConfig.getOrganisationPhotoUriEngland()).thenReturn("/pictures/org_E.jpg");
+    when(mockGeneralConfig.getOrganisationPhotoUriWales()).thenReturn("/pictures/org_W.jpg");
+  }
 
   @BeforeEach
   void beforeEachTest(TestInfo testInfo) {
