@@ -11,7 +11,7 @@ import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.fasttra
 import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.standardBatchPayload;
 import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.welshLocalAuthority;
 
-import java.io.File;
+import com.amazonaws.util.IOUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,7 +19,6 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Scanner;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamException;
@@ -29,6 +28,7 @@ import javax.xml.xpath.XPathFactory;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,6 +38,7 @@ import org.junit.jupiter.api.TestInfo;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 import uk.gov.dft.bluebadge.service.printservice.StorageService;
 import uk.gov.dft.bluebadge.service.printservice.config.GeneralConfig;
 import uk.gov.dft.bluebadge.service.printservice.model.Badge;
@@ -48,65 +49,67 @@ import uk.gov.dft.bluebadge.service.printservice.referencedata.ReferenceDataServ
 @Slf4j
 class ModelToXmlConverterTest {
 
-  private StorageService s3 = mock(StorageService.class);
-  private final ReferenceDataService referenceData = mock(ReferenceDataService.class);
+  private XPathFactory xpathfactory = XPathFactory.newInstance();
+  private XPath xpath = xpathfactory.newXPath();
+  private static Path xmlDir = Paths.get("src", "test", "resources", "tmp", "printbatch_xml");
+  private static StorageService s3 = mock(StorageService.class);
+  private static final ReferenceDataService referenceData = mock(ReferenceDataService.class);
   private static final GeneralConfig mockGeneralConfig = mock(GeneralConfig.class);
-
-  private ModelToXmlConverter converter =
+  private static Document parsedStandardXmlFile;
+  // Path to converted file.  File deleted at end of test class.
+  private static String standardXmlFile;
+  private static ModelToXmlConverter converter =
       new ModelToXmlConverter(s3, referenceData, mockGeneralConfig);
 
-  private String originalTmpDir = System.getProperty("java.io.tmpdir");
-
-  private String s3PictureFilePath =
-      Paths.get("src", "test", "resources", "tmp", "printbatch_pics", "smile.jpg").toString();
+  private String s3PictureFilePath = "/tmp/printbatch_pics/smile.jpg";
 
   @BeforeAll
-  static void before() {
+  static void before()
+      throws IOException, XMLStreamException, ParserConfigurationException, SAXException {
     when(mockGeneralConfig.getOrganisationPhotoUriEngland()).thenReturn("/pictures/org_E.jpg");
     when(mockGeneralConfig.getOrganisationPhotoUriWales()).thenReturn("/pictures/org_W.jpg");
+    when(referenceData.retrieveLocalAuthority("ANGL")).thenReturn(welshLocalAuthority());
+    when(referenceData.retrieveLocalAuthority("GLOCC")).thenReturn(englishLocalAuthority());
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true); // never forget this!
+
+    saveStandardXmlFile();
+    parsedStandardXmlFile = factory.newDocumentBuilder().parse(standardXmlFile);
+  }
+
+  @AfterAll
+  static void after() throws IOException {
+    Files.delete(Paths.get(standardXmlFile));
   }
 
   @BeforeEach
   void beforeEachTest(TestInfo testInfo) {
     log.info(String.format("About to execute [%s]", testInfo.getDisplayName()));
-
-    String testTmpDir = Paths.get("src", "test", "resources", "tmp").toString();
-    System.setProperty("java.io.tmpdir", testTmpDir);
   }
 
   @AfterEach
   void afterEachTest(TestInfo testInfo) {
     log.info(String.format("Finished executing [%s]", testInfo.getDisplayName()));
-    System.setProperty("java.io.tmpdir", originalTmpDir);
   }
 
   @DisplayName("Should convert model and save standard xml file in temp folder")
   @SneakyThrows
   @Test
   void convertStandardBatchAndSave() {
+    when(s3.downloadBadgeFile(any()))
+        .thenReturn(
+            Optional.of(IOUtils.toByteArray(getClass().getResourceAsStream(s3PictureFilePath))));
 
-    Path xmlDir = Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_xml");
-    File picture = new File(s3PictureFilePath);
-    when(s3.downloadBadgeFile(any())).thenReturn(Optional.of(Files.readAllBytes(picture.toPath())));
-    when(referenceData.retrieveLocalAuthority("ANGL")).thenReturn(welshLocalAuthority());
-    when(referenceData.retrieveLocalAuthority("GLOCC")).thenReturn(englishLocalAuthority());
-
-    String file = converter.toXml(standardBatchPayload(), xmlDir);
-    boolean expected = Files.exists(Paths.get(file));
-    assertTrue(expected);
-
-    deleteXmlFile(file);
+    assertTrue(Files.exists(Paths.get(standardXmlFile)));
   }
 
   @DisplayName("Should convert model and save FastTrack xml file in temp folder")
   @SneakyThrows
   @Test
   void convertFastTrackBatchAndSave() {
-    Path xmlDir = Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_xml");
-    File picture = new File(s3PictureFilePath);
-    when(s3.downloadBadgeFile(any())).thenReturn(Optional.of(Files.readAllBytes(picture.toPath())));
-    when(referenceData.retrieveLocalAuthority("ANGL")).thenReturn(welshLocalAuthority());
-    when(referenceData.retrieveLocalAuthority("GLOCC")).thenReturn(englishLocalAuthority());
+    when(s3.downloadBadgeFile(any()))
+        .thenReturn(
+            Optional.of(IOUtils.toByteArray(getClass().getResourceAsStream(s3PictureFilePath))));
 
     String file = converter.toXml(fasttrackBatchPayload(), xmlDir);
     boolean expected = Files.exists(Paths.get(file));
@@ -118,120 +121,65 @@ class ModelToXmlConverterTest {
   @SneakyThrows
   @Test
   void testIssuingCountryWales() {
-    String xmlPath = saveXmlFile();
-
-    DocumentBuilder builder = getDocumentBuilder();
-    Document doc = builder.parse(xmlPath);
-
-    XPathFactory xpathfactory = XPathFactory.newInstance();
-    XPath xpath = xpathfactory.newXPath();
-
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority[LACode='ANGL']/IssuingCountry";
-    Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
-    assertEquals("W", node.getTextContent());
-    deleteXmlFile(xmlPath);
+    assertEquals("W", getNodeTextInStandardXmlFile(expression));
   }
 
   @DisplayName("Should return LanguageCode = `EW` for LACode=ANGL")
   @SneakyThrows
   @Test
   void testLanguageCodeWales() {
-    String xmlPath = saveXmlFile();
-
-    DocumentBuilder builder = getDocumentBuilder();
-    Document doc = builder.parse(xmlPath);
-
-    XPathFactory xpathfactory = XPathFactory.newInstance();
-    XPath xpath = xpathfactory.newXPath();
 
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority[LACode='ANGL']/LanguageCode";
-    Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
-    assertEquals("EW", node.getTextContent());
-    deleteXmlFile(xmlPath);
+    assertEquals("EW", getNodeTextInStandardXmlFile(expression));
   }
 
   @DisplayName("Should return ClockType = `Wallet` for LACode=ANGL")
   @SneakyThrows
   @Test
   void testClockTypeWales() {
-    String xmlPath = saveXmlFile();
-
-    DocumentBuilder builder = getDocumentBuilder();
-    Document doc = builder.parse(xmlPath);
-
-    XPathFactory xpathfactory = XPathFactory.newInstance();
-    XPath xpath = xpathfactory.newXPath();
 
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority[LACode='ANGL']/ClockType";
-    Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
-    assertEquals("Wallet", node.getTextContent());
-    deleteXmlFile(xmlPath);
+    assertEquals("Wallet", getNodeTextInStandardXmlFile(expression));
   }
 
   @DisplayName("Should return IssuingCountry = `E` for LACode=GLOCC")
   @SneakyThrows
   @Test
   void testIssuingCountryEngland() {
-    String xmlPath = saveXmlFile();
-
-    DocumentBuilder builder = getDocumentBuilder();
-    Document doc = builder.parse(xmlPath);
-
-    XPathFactory xpathfactory = XPathFactory.newInstance();
-    XPath xpath = xpathfactory.newXPath();
 
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority[LACode='GLOCC']/IssuingCountry";
-    Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
-    assertEquals("E", node.getTextContent());
-    deleteXmlFile(xmlPath);
+    assertEquals("E", getNodeTextInStandardXmlFile(expression));
   }
 
   @DisplayName("Should return LanguageCode = `E` for LACode=GLOCC")
   @SneakyThrows
   @Test
   void testLanguageCodeEngland() {
-    String xmlPath = saveXmlFile();
-
-    DocumentBuilder builder = getDocumentBuilder();
-    Document doc = builder.parse(xmlPath);
-
-    XPathFactory xpathfactory = XPathFactory.newInstance();
-    XPath xpath = xpathfactory.newXPath();
 
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority[LACode='GLOCC']/LanguageCode";
-    Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
-    assertEquals("E", node.getTextContent());
-    deleteXmlFile(xmlPath);
+    assertEquals("E", getNodeTextInStandardXmlFile(expression));
   }
 
   @DisplayName("Should return ClockType = `Standard` for LACode=GLOCC")
   @SneakyThrows
   @Test
   void testClockTypeEngland() {
-    String xmlPath = saveXmlFile();
-
-    DocumentBuilder builder = getDocumentBuilder();
-    Document doc = builder.parse(xmlPath);
-
-    XPathFactory xpathfactory = XPathFactory.newInstance();
-    XPath xpath = xpathfactory.newXPath();
 
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority[LACode='GLOCC']/ClockType";
-    Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
-    assertEquals("Standard", node.getTextContent());
-    deleteXmlFile(xmlPath);
+    assertEquals("Standard", getNodeTextInStandardXmlFile(expression));
   }
 
   @DisplayName(
@@ -239,240 +187,133 @@ class ModelToXmlConverterTest {
   @SneakyThrows
   @Test
   void testBadgeIdentifierForPerson() {
-    String xmlPath = saveXmlFile();
-
-    DocumentBuilder builder = getDocumentBuilder();
-    Document doc = builder.parse(xmlPath);
-
-    XPathFactory xpathfactory = XPathFactory.newInstance();
-    XPath xpath = xpathfactory.newXPath();
 
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/PrintedBadgeReference";
-    Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
-    assertEquals("AA12BB 0 0377X0121", node.getTextContent());
-    deleteXmlFile(xmlPath);
+    assertEquals("AA12BB 0 0377X0121", getNodeTextInStandardXmlFile(expression));
   }
 
   @DisplayName("Should return PrintedBadgeReference = `CC12DD 9 O0121` for BadgeIdentifier=CC12DD")
   @SneakyThrows
   @Test
   void testBadgeIdentifierForOrganisation() {
-    String xmlPath = saveXmlFile();
-
-    DocumentBuilder builder = getDocumentBuilder();
-    Document doc = builder.parse(xmlPath);
-
-    XPathFactory xpathfactory = XPathFactory.newInstance();
-    XPath xpath = xpathfactory.newXPath();
 
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='CC12DD']/PrintedBadgeReference";
-    Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
-    assertEquals("CC12DD 0 O0121", node.getTextContent());
-    deleteXmlFile(xmlPath);
+    assertEquals("CC12DD 0 O0121", getNodeTextInStandardXmlFile(expression));
   }
 
   @DisplayName("Should return organisation stock photo for BadgeIdentifier=CC12DD")
   @SneakyThrows
   @Test
   void testStockPhotoForOrganisation() {
-    Path xmlDir = Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_xml");
     when(s3.downloadBadgeFile(any())).thenReturn(Optional.empty());
-    when(referenceData.retrieveLocalAuthority("ANGL")).thenReturn(welshLocalAuthority());
-    when(referenceData.retrieveLocalAuthority("GLOCC")).thenReturn(englishLocalAuthority());
-
-    String file = converter.toXml(standardBatchPayload(), xmlDir);
-
-    assertTrue(Files.exists(Paths.get(file)));
-
-    DocumentBuilder builder = getDocumentBuilder();
-    Document doc = builder.parse(file);
-
-    XPathFactory xpathfactory = XPathFactory.newInstance();
-    XPath xpath = xpathfactory.newXPath();
 
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='CC12DD']/Photo";
-    Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
     String expected =
         new Scanner(getClass().getResourceAsStream("/orgpictures/england_base64.txt"), "UTF-8")
             .next();
-    assertEquals(expected, node.getTextContent());
+    assertEquals(expected, getNodeTextInStandardXmlFile(expression));
 
     expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='WALESO']/Photo";
-    node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
     expected =
         new Scanner(getClass().getResourceAsStream("/orgpictures/wales_base64.txt"), "UTF-8")
             .next();
-    assertEquals(expected, node.getTextContent());
-
-    deleteXmlFile(file);
+    assertEquals(expected, getNodeTextInStandardXmlFile(expression));
   }
 
   @DisplayName("Should return DispatchMethodCode = `M` for BadgeIdentifier=AA12BB")
   @SneakyThrows
   @Test
   void testDispatchMethodCodeToHome() {
-    String xmlPath = saveXmlFile();
-
-    DocumentBuilder builder = getDocumentBuilder();
-    Document doc = builder.parse(xmlPath);
-
-    XPathFactory xpathfactory = XPathFactory.newInstance();
-    XPath xpath = xpathfactory.newXPath();
 
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/DispatchMethodCode";
-    Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
-    assertEquals("M", node.getTextContent());
-    deleteXmlFile(xmlPath);
+    assertEquals("M", getNodeTextInStandardXmlFile(expression));
   }
 
   @DisplayName("Should return DispatchMethodCode = `C` for BadgeIdentifier=CC12DD")
   @SneakyThrows
   @Test
   void testDispatchMethodCodeToCouncil() {
-    String xmlPath = saveXmlFile();
-
-    DocumentBuilder builder = getDocumentBuilder();
-    Document doc = builder.parse(xmlPath);
-
-    XPathFactory xpathfactory = XPathFactory.newInstance();
-    XPath xpath = xpathfactory.newXPath();
 
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='CC12DD']/DispatchMethodCode";
-    Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
-    assertEquals("C", node.getTextContent());
-    deleteXmlFile(xmlPath);
+    assertEquals("C", getNodeTextInStandardXmlFile(expression));
   }
 
   @DisplayName("Should return FastTrackCode = `N` for BadgeIdentifier=AA12BB")
   @SneakyThrows
   @Test
   void testFastTrackCodeNo() {
-    String xmlPath = saveXmlFile();
-
-    DocumentBuilder builder = getDocumentBuilder();
-    Document doc = builder.parse(xmlPath);
-
-    XPathFactory xpathfactory = XPathFactory.newInstance();
-    XPath xpath = xpathfactory.newXPath();
 
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/FastTrackCode";
-    Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
-    assertEquals("N", node.getTextContent());
-    deleteXmlFile(xmlPath);
+    assertEquals("N", getNodeTextInStandardXmlFile(expression));
   }
 
   @DisplayName("Should return FastTrackCode = `Y` for BadgeIdentifier=AA34BB")
   @SneakyThrows
   @Test
   void testFastTrackCodeYes() {
-    String xmlPath = saveXmlFile();
-
-    DocumentBuilder builder = getDocumentBuilder();
-    Document doc = builder.parse(xmlPath);
-
-    XPathFactory xpathfactory = XPathFactory.newInstance();
-    XPath xpath = xpathfactory.newXPath();
 
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA34BB']/FastTrackCode";
-    Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
-    assertEquals("Y", node.getTextContent());
-    deleteXmlFile(xmlPath);
+    assertEquals("Y", getNodeTextInStandardXmlFile(expression));
   }
 
   @DisplayName("Should return PostageCode = `SC` for BadgeIdentifier=AA12BB")
   @SneakyThrows
   @Test
   void testPostageCodeSC() {
-    String xmlPath = saveXmlFile();
-
-    DocumentBuilder builder = getDocumentBuilder();
-    Document doc = builder.parse(xmlPath);
-
-    XPathFactory xpathfactory = XPathFactory.newInstance();
-    XPath xpath = xpathfactory.newXPath();
 
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/PostageCode";
-    Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
-    assertEquals("SC", node.getTextContent());
-    deleteXmlFile(xmlPath);
+    assertEquals("SC", getNodeTextInStandardXmlFile(expression));
   }
 
   @DisplayName("Should return PostageCode = `SD1` for BadgeIdentifier=AA34BB")
   @SneakyThrows
   @Test
   void testPostageCodeSD1() {
-    String xmlPath = saveXmlFile();
-
-    DocumentBuilder builder = getDocumentBuilder();
-    Document doc = builder.parse(xmlPath);
-
-    XPathFactory xpathfactory = XPathFactory.newInstance();
-    XPath xpath = xpathfactory.newXPath();
 
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA34BB']/PostageCode";
-    Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
-    assertEquals("SD1", node.getTextContent());
-    deleteXmlFile(xmlPath);
+    assertEquals("SD1", getNodeTextInStandardXmlFile(expression));
   }
 
   @DisplayName("Should return BarCodeData = `77X0121` for BadgeIdentifier=AA12BB")
   @SneakyThrows
   @Test
   void testBarCodeDataForPerson() {
-    String xmlPath = saveXmlFile();
-
-    DocumentBuilder builder = getDocumentBuilder();
-    Document doc = builder.parse(xmlPath);
-
-    XPathFactory xpathfactory = XPathFactory.newInstance();
-    XPath xpath = xpathfactory.newXPath();
 
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/BarCodeData";
-    Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
-    assertEquals("77X0121", node.getTextContent());
-    deleteXmlFile(xmlPath);
+    assertEquals("77X0121", getNodeTextInStandardXmlFile(expression));
   }
 
   @DisplayName("Should return BarCodeData = `O0121` for BadgeIdentifier=CC12DD")
   @SneakyThrows
   @Test
   void testBarCodeDataForOrganisation() {
-    String xmlPath = saveXmlFile();
-
-    DocumentBuilder builder = getDocumentBuilder();
-    Document doc = builder.parse(xmlPath);
-
-    XPathFactory xpathfactory = XPathFactory.newInstance();
-    XPath xpath = xpathfactory.newXPath();
 
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='CC12DD']/BarCodeData";
-    Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
-    assertEquals("O0121", node.getTextContent());
-    deleteXmlFile(xmlPath);
+    assertEquals("O0121", getNodeTextInStandardXmlFile(expression));
   }
 
   @DisplayName(
@@ -480,31 +321,23 @@ class ModelToXmlConverterTest {
   @SneakyThrows
   @Test
   void testShortName() {
-    String xmlPath = saveXmlFile();
-
-    DocumentBuilder builder = getDocumentBuilder();
-    Document doc = builder.parse(xmlPath);
-
-    XPathFactory xpathfactory = XPathFactory.newInstance();
-    XPath xpath = xpathfactory.newXPath();
 
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA34BB']/Name/Surname";
-    Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
-    assertEquals("Jane Second", node.getTextContent());
+
+    assertEquals("Jane Second", getNodeTextInStandardXmlFile(expression));
 
     expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA34BB']/Name/Forename";
-    node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
-    assertThat(node).isNull();
+
+    assertThat(xpath.compile(expression).evaluate(parsedStandardXmlFile, XPathConstants.NODE))
+        .isNull();
 
     // Organisation
     expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='WALESO']/Name/OrganisationName";
-    node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
-    assertEquals("Organisation for disabled people", node.getTextContent());
 
-    deleteXmlFile(xmlPath);
+    assertEquals("Organisation for disabled people", getNodeTextInStandardXmlFile(expression));
   }
 
   @DisplayName(
@@ -512,42 +345,25 @@ class ModelToXmlConverterTest {
   @SneakyThrows
   @Test
   void testLongName() {
-    String xmlPath = saveXmlFile();
-
-    DocumentBuilder builder = getDocumentBuilder();
-    Document doc = builder.parse(xmlPath);
-
-    XPathFactory xpathfactory = XPathFactory.newInstance();
-    XPath xpath = xpathfactory.newXPath();
 
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/Name/Forename";
-    Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
-    assertEquals("Michelangelo", node.getTextContent());
+    assertEquals("Michelangelo", getNodeTextInStandardXmlFile(expression));
 
     expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/Name/Surname";
-    node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
-    assertEquals("Lodovico Buonarroti Simoni", node.getTextContent());
-
-    deleteXmlFile(xmlPath);
+    assertEquals("Lodovico Buonarroti Simoni", getNodeTextInStandardXmlFile(expression));
   }
 
   @DisplayName("Should deliver to council address for BadgeIdentifier=CC12DD")
   @SneakyThrows
   @Test
   void testDeliveryToCouncilAddress() {
-    String xmlPath = saveXmlFile();
-
-    DocumentBuilder builder = getDocumentBuilder();
-    Document doc = builder.parse(xmlPath);
-
-    XPathFactory xpathfactory = XPathFactory.newInstance();
-    XPath xpath = xpathfactory.newXPath();
 
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='CC12DD']/LetterAddress";
-    Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
+    Node node =
+        (Node) xpath.compile(expression).evaluate(parsedStandardXmlFile, XPathConstants.NODE);
     NodeList addrLines = node.getChildNodes();
 
     assertEquals("Organisation for disabled people", addrLines.item(0).getTextContent());
@@ -556,31 +372,19 @@ class ModelToXmlConverterTest {
     assertEquals("town", addrLines.item(3).getTextContent());
     assertEquals("United Kingdom", addrLines.item(4).getTextContent());
     assertEquals("SW1A 1AA", addrLines.item(5).getTextContent());
-
-    deleteXmlFile(xmlPath);
   }
 
-  private DocumentBuilder getDocumentBuilder() throws ParserConfigurationException {
-    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-    factory.setNamespaceAware(true); // never forget this!
-    return factory.newDocumentBuilder();
-  }
+  private static void saveStandardXmlFile() throws IOException, XMLStreamException {
+    when(s3.downloadBadgeFile(any()))
+        .thenReturn(
+            Optional.of(
+                IOUtils.toByteArray(
+                    ModelToXmlConverterTest.class
+                        .getResourceAsStream("/tmp/printbatch_pics/smile_small.jpg"))));
 
-  private String saveXmlFile() throws IOException, XMLStreamException {
-    String s3PictureFilePath =
-        Paths.get("src", "test", "resources", "tmp", "printbatch_pics", "smile_small.jpg")
-            .toString();
-    Path xmlDir = Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_xml");
-    File picture = new File(s3PictureFilePath);
-    when(s3.downloadBadgeFile(any())).thenReturn(Optional.of(Files.readAllBytes(picture.toPath())));
-    when(referenceData.retrieveLocalAuthority("ANGL")).thenReturn(welshLocalAuthority());
-    when(referenceData.retrieveLocalAuthority("GLOCC")).thenReturn(englishLocalAuthority());
-
-    String file = converter.toXml(standardBatchPayload(), xmlDir);
-    boolean expected = Files.exists(Paths.get(file));
+    standardXmlFile = converter.toXml(standardBatchPayload(), xmlDir);
+    boolean expected = Files.exists(Paths.get(standardXmlFile));
     assertTrue(expected);
-
-    return file;
   }
 
   @SneakyThrows
@@ -635,5 +439,12 @@ class ModelToXmlConverterTest {
     reference = converter.getPrintedBadgeReference(badge);
     assertThat(reference).isEqualTo("ABCDEF 0 O0150");
     assertThat(converter.getBarCode(badge)).isEqualTo("O0150");
+  }
+
+  @SneakyThrows
+  private String getNodeTextInStandardXmlFile(String xPathExpression) {
+    Node node =
+        (Node) xpath.compile(xPathExpression).evaluate(parsedStandardXmlFile, XPathConstants.NODE);
+    return node.getTextContent();
   }
 }

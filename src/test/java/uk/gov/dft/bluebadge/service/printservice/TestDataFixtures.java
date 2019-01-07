@@ -19,9 +19,9 @@ import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBatch;
 
 public class TestDataFixtures {
 
-  public static String testJson = "{\"filename\" : \"filename1\", \"batchType\" : \"STANDARD\"}";
+  static String testJson = "{\"filename\" : \"filename1\", \"batchType\" : \"STANDARD\"}";
 
-  public static ProcessedBatch successBatch =
+  static ProcessedBatch successBatch =
       ProcessedBatch.builder()
           .filename("processed_batch.xml")
           .processedBadges(processedBadges())

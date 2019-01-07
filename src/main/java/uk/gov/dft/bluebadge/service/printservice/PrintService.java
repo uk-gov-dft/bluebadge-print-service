@@ -194,7 +194,7 @@ public class PrintService {
     }
   }
 
-  public boolean deleteBatch(String batchName) {
+  boolean deleteBatch(String batchName) {
     return s3.deleteS3FileByKey(s3.getInBucket(), batchName);
   }
 }

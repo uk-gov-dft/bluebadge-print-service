@@ -3,7 +3,6 @@ package uk.gov.dft.bluebadge.service.printservice;
 import io.swagger.annotations.ApiParam;
 import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,9 +42,9 @@ public class PrintController extends AbstractController implements PrintBatchApi
   public ResponseEntity<Void> deleteBatch(
       @ApiParam(required = true) @PathVariable("batchName") String batchName) {
 
-    if(service.deleteBatch(batchName)){
+    if (service.deleteBatch(batchName)) {
       return ResponseEntity.ok().build();
-    }else{
+    } else {
       return ResponseEntity.notFound().build();
     }
   }
