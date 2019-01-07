@@ -19,6 +19,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 import uk.gov.dft.bluebadge.service.printservice.StorageService;
 import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.LocalAuthorityRefData;
@@ -55,7 +56,7 @@ public class ModelToXmlConverter {
       writer =
           factory.createXMLStreamWriter(new FileOutputStream(xmlFileName.toString()), "Cp1252");
 
-      writer.writeStartDocument();
+      writer.writeStartDocument("windows-1252", "1.0");
       writer.writeStartElement("BadgePrintExtract");
       writer.writeStartElement("Batch");
 
@@ -126,8 +127,9 @@ public class ModelToXmlConverter {
     writeAndCloseElement(writer, "FastTrackCode", mapFastTrackCode(badge.getDeliveryOptionCode()));
     writeAndCloseElement(writer, "PostageCode", mapPostageCode(badge.getDeliveryOptionCode()));
     writeAndClosePhotoElement(writer, badge);
-    writeAndCloseElement(writer, "BarCodeData", getBarCode(badge, getPrintedBadgeReference(badge)));
-    writeAndCloseNameElements(writer, getHolder(badge));
+    writeAndCloseElement(writer, "BarCodeData", getBarCode(badge));
+
+    writeAndCloseNameElement(writer, badge);
     writeAndCloseLetterAddressElement(writer, badge);
 
     writer.writeEndElement();
@@ -180,7 +182,7 @@ public class ModelToXmlConverter {
             .retrieveLocalAuthority(badge.getLocalAuthorityShortCode())
             .getLocalAuthorityMetaData();
 
-    writeAndCloseElement(writer, "NameLine1", getHolder(badge));
+    writeAndCloseElement(writer, "NameLine1", getHolderName(badge));
     writeAndCloseElement(writer, "AddressLine1", la.getAddressLine1());
     writeAndCloseElement(writer, "AddressLine2", la.getAddressLine2());
     writeAndCloseElement(writer, "Town", la.getTown());
@@ -200,19 +202,41 @@ public class ModelToXmlConverter {
     writeAndCloseElement(writer, "Postcode", contact.getPostCode());
   }
 
-  private void writeAndCloseNameElements(XMLStreamWriter writer, String holder)
+  private void writeAndCloseNameElement(XMLStreamWriter writer, Badge badge)
       throws XMLStreamException {
-    String name = holder;
-    String surname = "";
 
+    writer.writeStartElement("Name");
+    String name = getHolderName(badge);
+    if (isPerson(badge)) {
+      Pair<String, String> names = getSurnameForenamePair(name);
+      writeAndCloseElement(writer, "Surname", names.getLeft());
+      if (StringUtils.isNotEmpty(names.getRight())) {
+        writeAndCloseElement(writer, "Forename", names.getRight());
+      }
+    } else {
+      writeAndCloseElement(writer, "OrganisationName", name);
+    }
+    writer.writeEndElement(); // End Name
+  }
+
+  /**
+   * Splits name
+   *
+   * @param holder Name to split
+   * @return Pair with surname as left and forename as right
+   */
+  Pair<String, String> getSurnameForenamePair(String holder) {
+    String surname;
+    String forename = null;
     if (holder.length() > 28) {
       int idx = holder.indexOf(' ');
-      name = holder.substring(0, idx).trim();
+      forename = holder.substring(0, idx).trim();
       surname = holder.substring(idx).trim();
+    } else {
+      surname = holder;
     }
 
-    writeAndCloseElement(writer, "Name", name);
-    writeAndCloseElement(writer, "Surname", surname);
+    return Pair.of(surname, forename);
   }
 
   private void writeLocalAuthority(XMLStreamWriter writer, String laCode)
@@ -269,7 +293,7 @@ public class ModelToXmlConverter {
     return code.equalsIgnoreCase("FAST") ? "SD1" : "SC";
   }
 
-  private String getPrintedBadgeReference(Badge badge) {
+  String getPrintedBadgeReference(Badge badge) {
     String dob =
         isPerson(badge)
             ? badge.getParty().getPerson().getDob().format(DateTimeFormatter.ofPattern("MMyy"))
@@ -277,14 +301,18 @@ public class ModelToXmlConverter {
     String gender = isPerson(badge) ? mapGender(badge.getParty().getPerson().getGenderCode()) : "O";
     String expiry = badge.getExpiryDate().format(DateTimeFormatter.ofPattern("MMyy"));
 
-    return badge.getBadgeNumber() + " 9 " + dob + gender + expiry;
+    return badge.getBadgeNumber() + " 0 " + dob + gender + expiry;
   }
 
-  private String getBarCode(Badge badge, String reference) {
-    return isPerson(badge) ? StringUtils.right(reference, 7) : StringUtils.right(reference, 5);
+  String getBarCode(Badge badge) {
+    if (isPerson(badge)) {
+      return StringUtils.right(getPrintedBadgeReference(badge), 7);
+    } else {
+      return StringUtils.right(getPrintedBadgeReference(badge), 5);
+    }
   }
 
-  private String getHolder(Badge badge) {
+  private String getHolderName(Badge badge) {
 
     return isPerson(badge)
         ? badge.getParty().getPerson().getBadgeHolderName()
