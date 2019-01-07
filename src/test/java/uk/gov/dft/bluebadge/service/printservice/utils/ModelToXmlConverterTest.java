@@ -1,5 +1,6 @@
 package uk.gov.dft.bluebadge.service.printservice.utils;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Scanner;
 import javax.xml.parsers.DocumentBuilder;
@@ -26,6 +28,7 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +40,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import uk.gov.dft.bluebadge.service.printservice.StorageService;
 import uk.gov.dft.bluebadge.service.printservice.config.GeneralConfig;
+import uk.gov.dft.bluebadge.service.printservice.model.Badge;
+import uk.gov.dft.bluebadge.service.printservice.model.Party;
+import uk.gov.dft.bluebadge.service.printservice.model.Person;
 import uk.gov.dft.bluebadge.service.printservice.referencedata.ReferenceDataService;
 
 @Slf4j
@@ -78,6 +84,7 @@ class ModelToXmlConverterTest {
   @SneakyThrows
   @Test
   void convertStandardBatchAndSave() {
+
     Path xmlDir = Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_xml");
     File picture = new File(s3PictureFilePath);
     when(s3.downloadBadgeFile(any())).thenReturn(Optional.of(Files.readAllBytes(picture.toPath())));
@@ -87,6 +94,7 @@ class ModelToXmlConverterTest {
     String file = converter.toXml(standardBatchPayload(), xmlDir);
     boolean expected = Files.exists(Paths.get(file));
     assertTrue(expected);
+
     deleteXmlFile(file);
   }
 
@@ -243,7 +251,7 @@ class ModelToXmlConverterTest {
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/PrintedBadgeReference";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
-    assertEquals("AA12BB 9 0377X0121", node.getTextContent());
+    assertEquals("AA12BB 0 0377X0121", node.getTextContent());
     deleteXmlFile(xmlPath);
   }
 
@@ -263,7 +271,7 @@ class ModelToXmlConverterTest {
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='CC12DD']/PrintedBadgeReference";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
 
-    assertEquals("CC12DD 9 O0121", node.getTextContent());
+    assertEquals("CC12DD 0 O0121", node.getTextContent());
     deleteXmlFile(xmlPath);
   }
 
@@ -481,14 +489,20 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA34BB']/Name";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA34BB']/Name/Surname";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
     assertEquals("Jane Second", node.getTextContent());
 
     expression =
-        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA34BB']/Surname";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA34BB']/Name/Forename";
     node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
-    assertEquals("", node.getTextContent());
+    assertThat(node).isNull();
+
+    // Organisation
+    expression =
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='WALESO']/Name/OrganisationName";
+    node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
+    assertEquals("Organisation for disabled people", node.getTextContent());
 
     deleteXmlFile(xmlPath);
   }
@@ -507,12 +521,12 @@ class ModelToXmlConverterTest {
     XPath xpath = xpathfactory.newXPath();
 
     String expression =
-        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/Name";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/Name/Forename";
     Node node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
     assertEquals("Michelangelo", node.getTextContent());
 
     expression =
-        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/Surname";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/Name/Surname";
     node = (Node) xpath.compile(expression).evaluate(doc, XPathConstants.NODE);
     assertEquals("Lodovico Buonarroti Simoni", node.getTextContent());
 
@@ -572,5 +586,54 @@ class ModelToXmlConverterTest {
   @SneakyThrows
   private void deleteXmlFile(String xmlPath) {
     Files.delete(Paths.get(xmlPath));
+  }
+
+  @Test
+  void getSurnameForenamePair_Test() {
+    Pair<String, String> result;
+
+    result = converter.getSurnameForenamePair("Less than 28 chars");
+    assertThat(result.getLeft()).isEqualTo("Less than 28 chars");
+    assertThat(result.getRight()).isNull();
+
+    result = converter.getSurnameForenamePair("morethan28chars withasensiblespace");
+    assertThat(result.getLeft()).isEqualTo("withasensiblespace");
+    assertThat(result.getRight()).isEqualTo("morethan28chars");
+  }
+
+  @Test
+  void getPrintedBadgeReference_andBarcode_Test() {
+    Badge badge = new Badge();
+    // For a person badge....
+    badge.setBadgeNumber("ABCDEF");
+    badge.setExpiryDate(LocalDate.of(2050, 1, 1));
+    badge.setParty(new Party());
+    badge.getParty().setTypeCode("PERSON");
+    badge.getParty().setPerson(new Person());
+    badge.getParty().getPerson().setDob(LocalDate.of(1970, 12, 31));
+    badge.getParty().getPerson().setGenderCode("MALE");
+
+    String reference = converter.getPrintedBadgeReference(badge);
+    assertThat(reference).isEqualTo("ABCDEF 0 1270X0150");
+    assertThat(converter.getBarCode(badge)).isEqualTo("70X0150");
+
+    // If female...
+    badge.getParty().getPerson().setGenderCode("FEMALE");
+    reference = converter.getPrintedBadgeReference(badge);
+    assertThat(reference).isEqualTo("ABCDEF 0 1270Y0150");
+    assertThat(converter.getBarCode(badge)).isEqualTo("70Y0150");
+
+    // If gender unspecified
+    badge.getParty().getPerson().setGenderCode("UNSPECIFIE");
+    reference = converter.getPrintedBadgeReference(badge);
+    assertThat(reference).isEqualTo("ABCDEF 0 1270Z0150");
+    assertThat(converter.getBarCode(badge)).isEqualTo("70Z0150");
+
+    // If Organisation
+    badge.getParty().setPerson(null);
+    badge.getParty().setTypeCode("ORG");
+    reference = converter.getPrintedBadgeReference(badge);
+    assertThat(reference).isEqualTo("ABCDEF 0 O0150");
+    assertThat(converter.getBarCode(badge)).isEqualTo("O0150");
   }
 }
