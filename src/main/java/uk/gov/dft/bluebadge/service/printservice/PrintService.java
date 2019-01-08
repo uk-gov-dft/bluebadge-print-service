@@ -17,11 +17,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
+import uk.gov.dft.bluebadge.service.printservice.converters.PrintRequestToPrintXml;
+import uk.gov.dft.bluebadge.service.printservice.converters.PrintResultXmlConversionException;
+import uk.gov.dft.bluebadge.service.printservice.converters.PrintResultXmlToProcessedBatchResponse;
 import uk.gov.dft.bluebadge.service.printservice.model.Batch;
 import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBatch;
-import uk.gov.dft.bluebadge.service.printservice.utils.BatchConfirmationXmlException;
-import uk.gov.dft.bluebadge.service.printservice.utils.ModelToXmlConverter;
-import uk.gov.dft.bluebadge.service.printservice.utils.XmlToProcessedBatch;
 
 @Service
 @Slf4j
@@ -32,14 +32,14 @@ public class PrintService {
 
   private final StorageService s3;
   private final FTPService ftp;
-  private final ModelToXmlConverter xmlConverter;
-  private final XmlToProcessedBatch xmlToProcessedBatch;
+  private final PrintRequestToPrintXml xmlConverter;
+  private final PrintResultXmlToProcessedBatchResponse xmlToProcessedBatch;
 
   PrintService(
       StorageService s3,
       FTPService ftp,
-      ModelToXmlConverter xmlConverter,
-      XmlToProcessedBatch xmlToProcessedBatch) {
+      PrintRequestToPrintXml xmlConverter,
+      PrintResultXmlToProcessedBatchResponse xmlToProcessedBatch) {
     this.s3 = s3;
     this.ftp = ftp;
     this.xmlConverter = xmlConverter;
@@ -64,7 +64,7 @@ public class PrintService {
       try (InputStream is = s3.downloadS3File(s3.getInBucket(), file)) {
         processedBatches.add(xmlToProcessedBatch.readProcessedBatchFile(is, file));
         successCount++;
-      } catch (BatchConfirmationXmlException e) {
+      } catch (PrintResultXmlConversionException e) {
         processedBatches.add(
             ProcessedBatch.builder().filename(file).errorMessage(e.getDetailedError()).build());
       } catch (Exception e) {

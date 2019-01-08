@@ -121,8 +121,8 @@ public class TestDataFixtures {
         personParty(
             createContact("John First", "20", "Main str.", "London", "SW1 1AA", "john@email.com"),
             person1()));
-    details.setDeliverToCode("HOME");
-    details.setDeliveryOptionCode("STAND");
+    details.setDeliverToCode(Badge.DeliverToCode.HOME);
+    details.setDeliveryOptionCode(Badge.DeliveryOptionCode.STAND);
 
     return details;
   }
@@ -140,8 +140,8 @@ public class TestDataFixtures {
             createContact(
                 "Jane Second", "Council", "government road", "London", "EC1 2Z", "jane@email.com"),
             person2()));
-    details.setDeliverToCode("HOME");
-    details.setDeliveryOptionCode("FAST");
+    details.setDeliverToCode(Badge.DeliverToCode.HOME);
+    details.setDeliveryOptionCode(Badge.DeliveryOptionCode.FAST);
 
     return details;
   }
@@ -159,8 +159,8 @@ public class TestDataFixtures {
             createContact(
                 "XmlName Last", "88", "pleasant walk", "Manchester", "M4 3AS", "xml@email.com"),
             organisation()));
-    details.setDeliverToCode("COUNCIL");
-    details.setDeliveryOptionCode("STAND");
+    details.setDeliverToCode(Badge.DeliverToCode.COUNCIL);
+    details.setDeliveryOptionCode(Badge.DeliveryOptionCode.STAND);
 
     return details;
   }
@@ -183,8 +183,8 @@ public class TestDataFixtures {
                 "LS1 3XX",
                 "mike@email.com"),
             person3()));
-    details.setDeliverToCode("HOME");
-    details.setDeliveryOptionCode("STAND");
+    details.setDeliverToCode(Badge.DeliverToCode.HOME);
+    details.setDeliveryOptionCode(Badge.DeliveryOptionCode.STAND);
 
     return details;
   }
@@ -202,8 +202,8 @@ public class TestDataFixtures {
             createContact(
                 "XmlName Last", "88", "pleasant walk", "Manchester", "M4 3AS", "xml@email.com"),
             organisation()));
-    details.setDeliverToCode("COUNCIL");
-    details.setDeliveryOptionCode("STAND");
+    details.setDeliverToCode(Badge.DeliverToCode.COUNCIL);
+    details.setDeliveryOptionCode(Badge.DeliveryOptionCode.STAND);
 
     return details;
   }
@@ -212,7 +212,7 @@ public class TestDataFixtures {
     Party party = new Party();
     party.setContact(contact);
     party.setPerson(person);
-    party.setTypeCode("PERSON");
+    party.setTypeCode(Party.PartyType.PERSON);
 
     return party;
   }
@@ -221,7 +221,7 @@ public class TestDataFixtures {
     Party party = new Party();
     party.setContact(contact);
     party.setOrganisation(organisation);
-    party.setTypeCode("ORG");
+    party.setTypeCode(Party.PartyType.ORG);
     return party;
   }
 
@@ -236,7 +236,7 @@ public class TestDataFixtures {
     Person p = new Person();
     p.setBadgeHolderName("Michelangelo Lodovico Buonarroti Simoni");
     p.setDob(LocalDate.of(1977, 3, 4));
-    p.setGenderCode("MALE");
+    p.setGenderCode(Person.GenderCode.MALE);
     return p;
   }
 
@@ -244,7 +244,7 @@ public class TestDataFixtures {
     Person p = new Person();
     p.setBadgeHolderName("Jane Second");
     p.setDob(LocalDate.of(1987, 12, 8));
-    p.setGenderCode("FEMALE");
+    p.setGenderCode(Person.GenderCode.FEMALE);
     return p;
   }
 
@@ -252,7 +252,7 @@ public class TestDataFixtures {
     Person p = new Person();
     p.setBadgeHolderName("Michael Third");
     p.setDob(LocalDate.of(1934, 2, 5));
-    p.setGenderCode("MALE");
+    p.setGenderCode(Person.GenderCode.MALE);
     return p;
   }
 

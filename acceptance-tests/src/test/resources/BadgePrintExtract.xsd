@@ -1,209 +1,189 @@
 <?xml version="1.0" encoding="windows-1252"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
-  <xs:simpleType name="Varchar10">
+    <xs:simpleType name="Varchar10">
         <xs:restriction base="xs:string">
-          <xs:maxLength value="10"/>
+            <xs:maxLength value="10"/>
         </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="Varchar40">
+    </xs:simpleType>
+    <xs:simpleType name="Varchar40">
         <xs:restriction base="xs:string">
-          <xs:maxLength value="40"/>
+            <xs:maxLength value="40"/>
         </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="Varchar50">
+    </xs:simpleType>
+    <xs:simpleType name="Varchar50">
         <xs:restriction base="xs:string">
-          <xs:maxLength value="50"/>
+            <xs:maxLength value="50"/>
         </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="Varchar100">
+    </xs:simpleType>
+    <xs:simpleType name="Varchar100">
         <xs:restriction base="xs:string">
-          <xs:maxLength value="100"/>
+            <xs:maxLength value="100"/>
         </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="Varchar120">
+    </xs:simpleType>
+    <xs:simpleType name="Varchar120">
         <xs:restriction base="xs:string">
-          <xs:maxLength value="120"/>
+            <xs:maxLength value="120"/>
         </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="IssuingCountryType">
+    </xs:simpleType>
+    <xs:simpleType name="IssuingCountryType">
         <xs:restriction base="xs:string">
-          <xs:enumeration value="E"/>
-          <xs:enumeration value="S"/>
-          <xs:enumeration value="W"/>
-          <xs:enumeration value="N"/>
+            <xs:enumeration value="E"/>
+            <xs:enumeration value="S"/>
+            <xs:enumeration value="W"/>
+            <xs:enumeration value="N"/>
         </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="LanguageCodeType">
+    </xs:simpleType>
+    <xs:simpleType name="LanguageCodeType">
         <xs:restriction base="xs:string">
-          <xs:enumeration value="E"/>
-          <xs:enumeration value="EW"/>
+            <xs:enumeration value="E"/>
+            <xs:enumeration value="EW"/>
         </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="ClockTypeType">
+    </xs:simpleType>
+    <xs:simpleType name="ClockTypeType">
         <xs:restriction base="xs:string">
-          <xs:enumeration value="Standard"/>
-          <xs:enumeration value="Wallet"/>
+            <xs:enumeration value="Standard"/>
+            <xs:enumeration value="Wallet"/>
         </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="BadgeIdentifierType">
+    </xs:simpleType>
+    <xs:simpleType name="BadgeIdentifierType">
         <xs:restriction base="xs:string">
-          <xs:maxLength value="6"/>
+            <xs:maxLength value="6"/>
         </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="BadgeReferenceNumberType">
+    </xs:simpleType>
+    <xs:simpleType name="BadgeReferenceNumberType">
         <xs:restriction base="xs:string">
-          <xs:pattern value=".{6} 9 (O|(0[1-9]|1[012])\d{2}[XYZ]{1})(0[1-9]|1[012])\d{2}"/>
+            <xs:pattern value=".{6} [0-9] (O|(0[1-9]|1[012])\d{2}[XYZ]{1})(0[1-9]|1[012])\d{2}"/>
         </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="DateFormat">
+    </xs:simpleType>
+    <xs:simpleType name="DateFormat">
         <xs:restriction base="xs:string">
-          <xs:maxLength value="10"/>
-          <xs:pattern value="\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])"></xs:pattern>
+            <xs:maxLength value="10"/>
+            <xs:pattern value="\d{4}\-(0[1-9]|1[012])\-(0[1-9]|[12][0-9]|3[01])"/>
         </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="DispatchMethodCodeType">
+    </xs:simpleType>
+    <xs:simpleType name="DispatchMethodCodeType">
         <xs:restriction base="xs:string">
-          <xs:enumeration value="C"/>
-          <xs:enumeration value="M"/>
+            <xs:enumeration value="C"/>
+            <xs:enumeration value="M"/>
         </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="FastTrackCodeType">
+    </xs:simpleType>
+    <xs:simpleType name="FastTrackCodeType">
         <xs:restriction base="xs:string">
-          <xs:enumeration value="Y"/>
-          <xs:enumeration value="N"/>
+            <xs:enumeration value="Y"/>
+            <xs:enumeration value="N"/>
         </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="PostageCodeType">
+    </xs:simpleType>
+    <xs:simpleType name="PostageCodeType">
         <xs:restriction base="xs:string">
-          <xs:enumeration value="SC"/>
-          <xs:enumeration value="RD"/>
-          <xs:enumeration value="SD1"/>
-          <xs:enumeration value="SD9"/>
-          <xs:enumeration value="SDS"/>
+            <xs:enumeration value="SC"/>
+            <xs:enumeration value="RD"/>
+            <xs:enumeration value="SD1"/>
+            <xs:enumeration value="SD9"/>
+            <xs:enumeration value="SDS"/>
         </xs:restriction>
-  </xs:simpleType>
+    </xs:simpleType>
     <xs:simpleType name="BarCodeDataType">
         <xs:restriction base="xs:string">
-          <xs:maxLength value="7"/>
+            <xs:maxLength value="7"/>
         </xs:restriction>
-  </xs:simpleType>
+    </xs:simpleType>
 
+    <xs:element name="BadgePrintExtract">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Batch">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Filename" type="xs:string"/>
+                            <xs:element name="ReExtract" type="xs:string"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="LocalAuthorities">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element maxOccurs="unbounded" ref="LocalAuthority"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
 
-
-  <xs:element name="BadgePrintExtract">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element ref="Batch"/>
-        <xs:element ref="LocalAuthorities"/>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
-  <xs:element name="Batch">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element ref="Filename"/>
-        <xs:element ref="ReExtract"/>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
-  <xs:element name="Filename" type="xs:string"/>
-  <xs:element name="ReExtract" type="xs:string"/>
-  <xs:element name="LocalAuthorities">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element maxOccurs="unbounded" ref="LocalAuthority"/>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
-  <xs:element name="LocalAuthority">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element ref="LACode"/>
-        <xs:element ref="LAName"/>
-        <xs:element ref="IssuingCountry"/>
-        <xs:element ref="LanguageCode"/>
-        <xs:element ref="ClockType"/>
-        <xs:element ref="PhoneNumber" minOccurs="0"/>
-        <xs:element ref="EmailAddress" minOccurs="0"/>
-        <xs:element ref="Badges"/>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
-  <xs:element name="LACode" type="Varchar100"/>
-  <xs:element name="LAName" type="Varchar100"/>
-  <xs:element name="IssuingCountry" type="IssuingCountryType"/>
-  <xs:element name="LanguageCode" type="LanguageCodeType"/>
-  <xs:element name="ClockType" type="ClockTypeType"/>
-  <xs:element name="PhoneNumber" type="Varchar100"/>
-  <xs:element name="EmailAddress" type="Varchar100"/>
-  <xs:element name="Badges">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element maxOccurs="unbounded" ref="BadgeDetails"/>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
-  <xs:element name="BadgeDetails">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element ref="BadgeIdentifier"/>
-        <xs:element ref="PrintedBadgeReference"/>
-        <xs:element ref="StartDate"/>
-        <xs:element ref="ExpiryDate"/>
-        <xs:element ref="DispatchMethodCode"/>
-        <xs:element ref="FastTrackCode"/>
-        <xs:element ref="PostageCode"/>
-        <xs:element ref="Photo" minOccurs="0"/>
-        <xs:element ref="BarCodeData"/>
-        <xs:element ref="Name"/>
-        <xs:element ref="Surname" minOccurs="0"/>
-        <xs:element ref="LetterAddress"/>
-        <xs:element minOccurs="0" ref="CollectionAddress"/>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
-  <xs:element name="BadgeIdentifier" type="BadgeIdentifierType"/>
-  <xs:element name="PrintedBadgeReference" type="BadgeReferenceNumberType"/>
-  <xs:element name="StartDate" type="DateFormat"/>
-  <xs:element name="ExpiryDate" type="DateFormat"/>
-  <xs:element name="DispatchMethodCode" type="DispatchMethodCodeType"/>
-  <xs:element name="FastTrackCode" type="FastTrackCodeType"/>
-  <xs:element name="PostageCode" type="PostageCodeType"/>
-  <xs:element name="Photo" type="xs:base64Binary"/>
-  <xs:element name="BarCodeData" type="BarCodeDataType"/>
-  <xs:element name="Name" type="Varchar40"/>
-  <xs:element name="Surname" type="Varchar40"/>
-  <xs:element name="LetterAddress">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element ref="NameLine1" minOccurs="0"/>
-        <xs:element ref="AddressLine1" minOccurs="0"/>
-        <xs:element ref="AddressLine2" minOccurs="0"/>
-        <xs:element ref="Town" minOccurs="0"/>
-        <xs:element ref="Country"/>
-        <xs:element ref="Postcode"/>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
-  <xs:element name="NameLine1" type="Varchar120"/>
-  <xs:element name="AddressLine1" type="Varchar50"/>
-  <xs:element name="AddressLine2" type="Varchar40"/>
-  <xs:element name="Town" type="Varchar40"/>
-  <xs:element name="Country" type="Varchar100"/>
-  <xs:element name="Postcode" type="Varchar10"/>
-  <xs:element name="CollectionAddress">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element name="NameLine1" type="Varchar100" minOccurs="0"/>
-        <xs:element name="NameLine2" type="Varchar100"  minOccurs="0"/>
-        <xs:element name="AddressLine1" type="Varchar100" minOccurs="0"/>
-        <xs:element name="AddressLine2" type="Varchar100" minOccurs="0"/>
-        <xs:element name="AddressLine3" type="Varchar100" minOccurs="0"/>
-        <xs:element name="AddressLine4" type="Varchar100" minOccurs="0"/>
-        <xs:element name="Town" type="Varchar100" minOccurs="0"/>
-        <xs:element name="Country" type="Varchar100" minOccurs="0"/>
-        <xs:element name="Postcode" type="Varchar100" minOccurs="0"/>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
+    <xs:element name="LocalAuthority">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="LACode" type="Varchar100"/>
+                <xs:element name="LAName" type="Varchar100"/>
+                <xs:element name="IssuingCountry" type="IssuingCountryType"/>
+                <xs:element name="LanguageCode" type="LanguageCodeType"/>
+                <xs:element name="ClockType" type="ClockTypeType"/>
+                <xs:element name="PhoneNumber" type="Varchar100"/>
+                <xs:element name="EmailAddress" type="Varchar100"/>
+                <xs:element name="Badges">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element maxOccurs="unbounded" ref="BadgeDetails"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="BadgeDetails">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="BadgeIdentifier" type="BadgeIdentifierType"/>
+                <xs:element name="PrintedBadgeReference" type="BadgeReferenceNumberType"/>
+                <xs:element name="StartDate" type="DateFormat"/>
+                <xs:element name="ExpiryDate" type="DateFormat"/>
+                <xs:element name="DispatchMethodCode" type="DispatchMethodCodeType"/>
+                <xs:element name="FastTrackCode" type="FastTrackCodeType"/>
+                <xs:element name="PostageCode" type="PostageCodeType"/>
+                <xs:element name="Photo" type="xs:base64Binary" minOccurs="0"/>
+                <xs:element name="BarCodeData" type="BarCodeDataType"/>
+                <xs:element ref="Name"/>
+                <xs:element ref="LetterAddress"/>
+                <xs:element minOccurs="0" ref="CollectionAddress"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="Name">
+        <xs:complexType>
+            <xs:choice>
+                <xs:sequence>
+                    <xs:element name="Surname" type="Varchar40"/>
+                    <xs:element name="Forename" type="Varchar40" minOccurs="0"/>
+                </xs:sequence>
+                <xs:element name="OrganisationName" type="Varchar40"/>
+            </xs:choice>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="LetterAddress">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="NameLine1" type="Varchar120" minOccurs="0"/>
+                <xs:element name="AddressLine1" type="Varchar50" minOccurs="0"/>
+                <xs:element name="AddressLine2" type="Varchar40" minOccurs="0"/>
+                <xs:element name="Town" type="Varchar40" minOccurs="0"/>
+                <xs:element name="Country" type="Varchar100"/>
+                <xs:element name="Postcode" type="Varchar10"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="CollectionAddress">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="NameLine1" type="Varchar100" minOccurs="0"/>
+                <xs:element name="NameLine2" type="Varchar100" minOccurs="0"/>
+                <xs:element name="AddressLine1" type="Varchar100" minOccurs="0"/>
+                <xs:element name="AddressLine2" type="Varchar100" minOccurs="0"/>
+                <xs:element name="AddressLine3" type="Varchar100" minOccurs="0"/>
+                <xs:element name="AddressLine4" type="Varchar100" minOccurs="0"/>
+                <xs:element name="Town" type="Varchar100" minOccurs="0"/>
+                <xs:element name="Country" type="Varchar100" minOccurs="0"/>
+                <xs:element name="Postcode" type="Varchar100" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
 </xs:schema>

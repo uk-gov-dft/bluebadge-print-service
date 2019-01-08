@@ -1,4 +1,4 @@
-package uk.gov.dft.bluebadge.service.printservice.utils;
+package uk.gov.dft.bluebadge.service.printservice.converters;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
@@ -12,10 +12,11 @@ import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBatch;
 
 class XmlToProcessedBatchTest {
 
-  private XmlToProcessedBatch processor = new XmlToProcessedBatch();
+  private PrintResultXmlToProcessedBatchResponse processor =
+      new PrintResultXmlToProcessedBatchResponse();
 
   @Test
-  void processValidConfirmationFile() throws BatchConfirmationXmlException {
+  void processValidConfirmationFile() throws PrintResultXmlConversionException {
 
     InputStream is =
         getClass().getResourceAsStream("/processedBatchXml/ValidConfirmationMultipleBadges.xml");
@@ -53,7 +54,7 @@ class XmlToProcessedBatchTest {
   }
 
   @Test
-  void processValidRejectFile() throws BatchConfirmationXmlException {
+  void processValidRejectFile() throws PrintResultXmlConversionException {
     InputStream is =
         getClass().getResourceAsStream("/processedBatchXml/ValidRejectionMultipleBadges.xml");
     ProcessedBatch batch = processor.readProcessedBatchFile(is, "ValidRejectionMultipleBadges.xml");
@@ -95,8 +96,8 @@ class XmlToProcessedBatchTest {
             .getResourceAsStream("/processedBatchXml/InvalidConfirmationUnexpectedElement.xml");
     try {
       processor.readProcessedBatchFile(is, "InvalidConfirmationUnexpectedElement.xml");
-      failBecauseExceptionWasNotThrown(BatchConfirmationXmlException.class);
-    } catch (BatchConfirmationXmlException e) {
+      failBecauseExceptionWasNotThrown(PrintResultXmlConversionException.class);
+    } catch (PrintResultXmlConversionException e) {
       assertThat(e.getDetailedError()).contains("Unexpected xml element whilst parsing");
     }
   }
@@ -107,8 +108,8 @@ class XmlToProcessedBatchTest {
         getClass().getResourceAsStream("/processedBatchXml/InvalidRejectionUnexpectedElement.xml");
     try {
       processor.readProcessedBatchFile(is, "InvalidRejectionUnexpectedElement.xml");
-      failBecauseExceptionWasNotThrown(BatchConfirmationXmlException.class);
-    } catch (BatchConfirmationXmlException e) {
+      failBecauseExceptionWasNotThrown(PrintResultXmlConversionException.class);
+    } catch (PrintResultXmlConversionException e) {
       assertThat(e.getDetailedError()).contains("Unexpected xml element whilst parsing rejection");
     }
   }
@@ -119,8 +120,8 @@ class XmlToProcessedBatchTest {
         getClass().getResourceAsStream("/processedBatchXml/InvalidConfirmationMissingElement.xml");
     try {
       processor.readProcessedBatchFile(is, "InvalidConfirmationMissingElement.xml");
-      failBecauseExceptionWasNotThrown(BatchConfirmationXmlException.class);
-    } catch (BatchConfirmationXmlException e) {
+      failBecauseExceptionWasNotThrown(PrintResultXmlConversionException.class);
+    } catch (PrintResultXmlConversionException e) {
       assertThat(e.getDetailedError()).contains("Missing element processing confirmation");
     }
   }
@@ -131,8 +132,8 @@ class XmlToProcessedBatchTest {
         getClass().getResourceAsStream("/processedBatchXml/InvalidRejectionMissingElement.xml");
     try {
       processor.readProcessedBatchFile(is, "InvalidConfirmationMissingElement.xml");
-      failBecauseExceptionWasNotThrown(BatchConfirmationXmlException.class);
-    } catch (BatchConfirmationXmlException e) {
+      failBecauseExceptionWasNotThrown(PrintResultXmlConversionException.class);
+    } catch (PrintResultXmlConversionException e) {
       assertThat(e.getDetailedError()).contains("Missing element processing rejection");
     }
   }
@@ -142,8 +143,8 @@ class XmlToProcessedBatchTest {
     InputStream is = getClass().getResourceAsStream("/processedBatchXml/InvalidRootElement.xml");
     try {
       processor.readProcessedBatchFile(is, "InvalidRootElement.xml");
-      failBecauseExceptionWasNotThrown(BatchConfirmationXmlException.class);
-    } catch (BatchConfirmationXmlException e) {
+      failBecauseExceptionWasNotThrown(PrintResultXmlConversionException.class);
+    } catch (PrintResultXmlConversionException e) {
       assertThat(e.getDetailedError()).contains("Unexpected element:");
     }
   }
@@ -153,8 +154,8 @@ class XmlToProcessedBatchTest {
     InputStream is = getClass().getResourceAsStream("/processedBatchXml/InvalidBadgeElement.xml");
     try {
       processor.readProcessedBatchFile(is, "InvalidBadgeElement.xml");
-      failBecauseExceptionWasNotThrown(BatchConfirmationXmlException.class);
-    } catch (BatchConfirmationXmlException e) {
+      failBecauseExceptionWasNotThrown(PrintResultXmlConversionException.class);
+    } catch (PrintResultXmlConversionException e) {
       assertThat(e.getDetailedError()).contains("Unexpected element:");
     }
   }
@@ -164,8 +165,8 @@ class XmlToProcessedBatchTest {
     InputStream is = getClass().getResourceAsStream("/processedBatchXml/InvalidTruncatedFile.xml");
     try {
       processor.readProcessedBatchFile(is, "InvalidTruncatedFile.xml");
-      failBecauseExceptionWasNotThrown(BatchConfirmationXmlException.class);
-    } catch (BatchConfirmationXmlException e) {
+      failBecauseExceptionWasNotThrown(PrintResultXmlConversionException.class);
+    } catch (PrintResultXmlConversionException e) {
       assertThat(e.getDetailedError()).contains("XMLStreamException reading");
     }
   }

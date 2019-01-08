@@ -1,4 +1,4 @@
-package uk.gov.dft.bluebadge.service.printservice.utils;
+package uk.gov.dft.bluebadge.service.printservice.converters;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,7 +47,7 @@ import uk.gov.dft.bluebadge.service.printservice.model.Person;
 import uk.gov.dft.bluebadge.service.printservice.referencedata.ReferenceDataService;
 
 @Slf4j
-class ModelToXmlConverterTest {
+class PrintRequestToPrintXmlTest {
 
   private XPathFactory xpathfactory = XPathFactory.newInstance();
   private XPath xpath = xpathfactory.newXPath();
@@ -58,8 +58,8 @@ class ModelToXmlConverterTest {
   private static Document parsedStandardXmlFile;
   // Path to converted file.  File deleted at end of test class.
   private static String standardXmlFile;
-  private static ModelToXmlConverter converter =
-      new ModelToXmlConverter(s3, referenceData, mockGeneralConfig);
+  private static PrintRequestToPrintXml converter =
+      new PrintRequestToPrintXml(s3, referenceData, mockGeneralConfig);
 
   private String s3PictureFilePath = "/tmp/printbatch_pics/smile.jpg";
 
@@ -348,11 +348,11 @@ class ModelToXmlConverterTest {
 
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/Name/Forename";
-    assertEquals("Michelangelo", getNodeTextInStandardXmlFile(expression));
+    assertEquals("Michelangelo Lodovico Buonarroti", getNodeTextInStandardXmlFile(expression));
 
     expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/Name/Surname";
-    assertEquals("Lodovico Buonarroti Simoni", getNodeTextInStandardXmlFile(expression));
+    assertEquals("Simoni", getNodeTextInStandardXmlFile(expression));
   }
 
   @DisplayName("Should deliver to council address for BadgeIdentifier=CC12DD")
@@ -379,7 +379,7 @@ class ModelToXmlConverterTest {
         .thenReturn(
             Optional.of(
                 IOUtils.toByteArray(
-                    ModelToXmlConverterTest.class
+                    PrintRequestToPrintXmlTest.class
                         .getResourceAsStream("/tmp/printbatch_pics/smile_small.jpg"))));
 
     standardXmlFile = converter.toXml(standardBatchPayload(), xmlDir);
@@ -412,30 +412,30 @@ class ModelToXmlConverterTest {
     badge.setBadgeNumber("ABCDEF");
     badge.setExpiryDate(LocalDate.of(2050, 1, 1));
     badge.setParty(new Party());
-    badge.getParty().setTypeCode("PERSON");
+    badge.getParty().setTypeCode(Party.PartyType.PERSON);
     badge.getParty().setPerson(new Person());
     badge.getParty().getPerson().setDob(LocalDate.of(1970, 12, 31));
-    badge.getParty().getPerson().setGenderCode("MALE");
+    badge.getParty().getPerson().setGenderCode(Person.GenderCode.MALE);
 
     String reference = converter.getPrintedBadgeReference(badge);
     assertThat(reference).isEqualTo("ABCDEF 0 1270X0150");
     assertThat(converter.getBarCode(badge)).isEqualTo("70X0150");
 
     // If female...
-    badge.getParty().getPerson().setGenderCode("FEMALE");
+    badge.getParty().getPerson().setGenderCode(Person.GenderCode.FEMALE);
     reference = converter.getPrintedBadgeReference(badge);
     assertThat(reference).isEqualTo("ABCDEF 0 1270Y0150");
     assertThat(converter.getBarCode(badge)).isEqualTo("70Y0150");
 
     // If gender unspecified
-    badge.getParty().getPerson().setGenderCode("UNSPECIFIE");
+    badge.getParty().getPerson().setGenderCode(Person.GenderCode.UNSPECIFIE);
     reference = converter.getPrintedBadgeReference(badge);
     assertThat(reference).isEqualTo("ABCDEF 0 1270Z0150");
     assertThat(converter.getBarCode(badge)).isEqualTo("70Z0150");
 
     // If Organisation
     badge.getParty().setPerson(null);
-    badge.getParty().setTypeCode("ORG");
+    badge.getParty().setTypeCode(Party.PartyType.ORG);
     reference = converter.getPrintedBadgeReference(badge);
     assertThat(reference).isEqualTo("ABCDEF 0 O0150");
     assertThat(converter.getBarCode(badge)).isEqualTo("O0150");

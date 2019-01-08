@@ -10,7 +10,7 @@ import uk.gov.dft.bluebadge.common.api.model.CommonResponse;
 
 @Validated
 @Data
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 @Builder
 public class ProcessedBatchesResponse extends CommonResponse {
 

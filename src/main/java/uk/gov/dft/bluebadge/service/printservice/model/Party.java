@@ -3,9 +3,7 @@ package uk.gov.dft.bluebadge.service.printservice.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -17,15 +15,13 @@ import org.springframework.validation.annotation.Validated;
 @ToString
 @Data
 public class Party {
-  @JsonProperty("typeCode")
-  @ApiModelProperty(
-    example = "PERSON",
-    required = true,
-    value = "A short code from the PARTY group of reference data. e.g. PERSON or ORG."
-  )
-  @NotEmpty
-  @Size(max = 10)
-  private String typeCode = null;
+
+  public enum PartyType {
+    PERSON,
+    ORG
+  }
+
+  @NotNull private PartyType typeCode;
 
   @JsonProperty("contact")
   @ApiModelProperty(required = true, value = "")
