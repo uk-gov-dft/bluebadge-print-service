@@ -92,9 +92,9 @@ public class PrintRequestToPrintXml {
     Path xmlFileName = createXmlFile(batch.getBatchType().equals(FASTTRACK), xmlDir);
     XMLStreamWriter writer = null;
 
-    try {
+    try (FileOutputStream fos = new FileOutputStream(xmlFileName.toString())){
       writer =
-          factory.createXMLStreamWriter(new FileOutputStream(xmlFileName.toString()), "Cp1252");
+          factory.createXMLStreamWriter(fos, "Cp1252");
 
       writer.writeStartDocument(XML_ENCODING, XML_VERSION);
       writer.writeStartElement(ROOT);

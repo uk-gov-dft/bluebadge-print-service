@@ -4,12 +4,13 @@ import javax.xml.stream.XMLStreamReader;
 
 public class PrintResultXmlConversionException extends Exception {
 
-  private String detailedError;
+  private final String detailedError;
 
   PrintResultXmlConversionException(String message, XMLStreamReader reader, String fileName) {
     super(message);
+    String error;
     try {
-      detailedError =
+      error =
           message
               + " While processing file:"
               + fileName
@@ -18,8 +19,9 @@ public class PrintResultXmlConversionException extends Exception {
               + " Column-"
               + reader.getLocation().getColumnNumber();
     } catch (Exception e) {
-      detailedError = message;
+      error = message;
     }
+    detailedError = error;
   }
 
   public PrintResultXmlConversionException(String detailedError) {

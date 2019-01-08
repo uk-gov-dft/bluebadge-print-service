@@ -5,12 +5,16 @@ final class XmlSchemaConstants {
   private XmlSchemaConstants() {}
 
   static class Common {
+    private Common() {}
+
     static final String XML_VERSION = "1.0";
     static final String XML_ENCODING = "windows-1252";
     static final String DATE_PATTERN = "yyyy-MM-dd";
   }
 
   static class PrintRequestElements {
+    private PrintRequestElements() {}
+
     static final String ROOT = "BadgePrintExtract";
     static final String BATCH = "Batch";
     static final String FILENAME = "Filename";
