@@ -283,7 +283,7 @@ class PrintRequestToPrintXmlTest {
     assertEquals("SC", getNodeTextInStandardXmlFile(expression));
   }
 
-  @DisplayName("Should return PostageCode = `SD1` for BadgeIdentifier=AA34BB")
+  @DisplayName("Should return PostageCode = `RD` for BadgeIdentifier=AA34BB (FAST)")
   @SneakyThrows
   @Test
   void testPostageCodeSD1() {
@@ -291,7 +291,7 @@ class PrintRequestToPrintXmlTest {
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA34BB']/PostageCode";
 
-    assertEquals("SD1", getNodeTextInStandardXmlFile(expression));
+    assertEquals("RD", getNodeTextInStandardXmlFile(expression));
   }
 
   @DisplayName("Should return BarCodeData = `77X0121` for BadgeIdentifier=AA12BB")

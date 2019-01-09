@@ -76,7 +76,7 @@ public class Badge {
 
   @Getter
   public enum DeliveryOptionCode {
-    FAST("Y", "SD1"),
+    FAST("Y", "RD"),
     STAND("N", "SC");
 
     private final String xmlFasttrackCode;
