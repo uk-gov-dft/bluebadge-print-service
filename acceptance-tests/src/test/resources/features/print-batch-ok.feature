@@ -6,133 +6,117 @@ Feature: Verify Print batch ok
     * def result = callonce read('./oauth2.feature')
     * header Authorization = 'Bearer ' + result.accessToken
     * def S3Utils = Java.type('uk.gov.service.printservice.test.utils.S3Utils')
+    * def SFTPUtils = Java.type('uk.gov.service.printservice.test.utils.SFTPUtils')
     * def System = Java.type('java.lang.System')
-    * def s3 = new S3Utils()
     * def env = System.getenv('bb_env')
-    * def bucketName = 'uk-gov-dft-' + (env == '' ? 'ci' : env) +'-printer'
+    * def s3 = new S3Utils()
+    * def ftp = new SFTPUtils()
+    * def printerBucketName = 'uk-gov-dft-' + (env == null ? 'ci' : env) +'-printer'
+    * def badgeBucketName = 'uk-gov-dft-' + (env == null ? 'ci' : env) +'-badge'
 
   Scenario: Verify valid print batch
     * def batch =
     """
- {
-  "filename" : "filename1",
-  "batchType": "STANDARD",
-  "localAuthorities" : [ {
-    "laCode" : "ABERD",
-    "laName" : "Aberdinshire council",
-    "issuingCountry" : "S",
-    "languageCode" : "E",
-    "clockType" : "STANDARD",
-    "phoneNumber" : "07875506745",
-    "emailAddress" : "bluebadge@aberdine.gov.uk",
-    "badges" : [ {
-      "badgeIdentifier" : "AA12BB",
-      "printedBadgeReference" : "AA12BB 0 0580X0121",
-      "startDate" : "2019-01-02",
-      "expiryDate" : "2021-01-01",
-      "dispatchMethodCode" : "M",
-      "fastTrackCode" : "Y",
-      "postageCode" : "SC",
-      "photo" : "http://url_to_s3_bucket_photo1",
-      "barCodeData" : "80X1220",
-      "name" : {
-        "forename" : "John",
-        "surname" : "First"
-      },
-      "letterAddress" : {
-        "nameLine" : "John First",
-        "addressLine1" : "20",
-        "addressLine2" : "Main str.",
-        "town" : "London",
-        "country" : "United Kingdom",
-        "postcode" : "SW1 1AA"
-      }
-    }, {
-      "badgeIdentifier" : "AA34BB",
-      "printedBadgeReference" : "AA34BB 0 0199Y0121",
-      "startDate" : "2019-01-02",
-      "expiryDate" : "2021-01-01",
-      "dispatchMethodCode" : "C",
-      "fastTrackCode" : "N",
-      "postageCode" : "SC",
-      "photo" : "http://url_to_s3_bucket_photo2",
-      "barCodeData" : "Y1220",
-      "name" : {
-        "forename" : "Jane",
-        "surname" : "Second"
-      },
-      "letterAddress" : {
-        "nameLine" : "Jane Second",
-        "addressLine1" : "Council",
-        "addressLine2" : "government road",
-        "town" : "London",
-        "country" : "United Kingdom",
-        "postcode" : "EC1 2Z"
-      }
-    } ]
-  }, {
-    "laCode" : "ANGL",
-    "laName" : "Anglesey council",
-    "issuingCountry" : "W",
-    "languageCode" : "EW",
-    "clockType" : "WALET",
-    "phoneNumber" : "07875506746",
-    "emailAddress" : "bluebadge@anglesey.gov.uk",
-    "badges" : [ {
-      "badgeIdentifier" : "CC12DD",
-      "printedBadgeReference" : "CC12DD 0 0152Y0121",
-      "startDate" : "2019-01-02",
-      "expiryDate" : "2021-01-01",
-      "dispatchMethodCode" : "M",
-      "fastTrackCode" : "Y",
-      "postageCode" : "SD1",
-      "photo" : "http://url_to_s3_bucket_photo3",
-      "barCodeData" : "52Y1220",
-      "name" : {
-        "forename" : "Michael",
-        "surname" : "Third"
-      },
-      "letterAddress" : {
-        "nameLine" : "Michael Third",
-        "addressLine1" : "flat 5",
-        "addressLine2" : "century building",
-        "town" : "Leeds",
-        "country" : "United Kingdom",
-        "postcode" : "LS1 3XX"
-      }
-    }, {
-      "badgeIdentifier" : "CC34DD",
-      "printedBadgeReference" : "CC34DD 0 1228Z0121",
-      "startDate" : "2019-01-02",
-      "expiryDate" : "2021-01-01",
-      "dispatchMethodCode" : "M",
-      "fastTrackCode" : "Y",
-      "postageCode" : "SD1",
-      "photo" : "http://url_to_s3_bucket_photo4",
-      "barCodeData" : "Z0121",
-      "name" : {
-        "forename" : "Name",
-        "surname" : "Last"
-      },
-      "letterAddress" : {
-        "nameLine" : "Name Last",
-        "addressLine1" : "88",
-        "addressLine2" : "pleasant walk",
-        "town" : "Manchester",
-        "country" : "United Kingdom",
-        "postcode" : "M4 3AS"
-      }
-    } ]
-  } ]
-} 
-    """
+		{
+		  "filename" : "filename1",
+		  "batchType" : "STANDARD",
+		  "badges" : [ {
+		    "localAuthorityShortCode" : "ANGL",
+		    "badgeNumber" : "AA12BB",
+		    "party" : {
+		      "typeCode" : "PERSON",
+		      "contact" : {
+		        "fullName" : "John First",
+		        "buildingStreet" : "Main str.",
+		        "line2" : "20",
+		        "townCity" : "London",
+		        "postCode" : "SW1 1AA",
+		        "primaryPhoneNumber" : "",
+		        "secondaryPhoneNumber" : null,
+		        "emailAddress" : "john@email.com"
+		      },
+		      "person" : {
+		        "badgeHolderName" : "John First",
+		        "dob" : "1977-03-04",
+		        "genderCode" : "MALE"
+		       }
+		    },
+		    "startDate" : "2019-01-02",
+		    "expiryDate" : "2021-01-01",
+		    "deliverToCode" : "HOME",
+		    "deliveryOptionCode" : "STAND",
 
-#    * def beforeCount = s3.getNumberOfFilesInABucket(bucketName)
+		  }, {
+		    "localAuthorityShortCode" : "ANGL",
+		    "badgeNumber" : "AA34BB",
+		    "party" : {
+		      "typeCode" : "PERSON",
+		      "contact" : {
+		        "fullName" : "Jane Second",
+		        "buildingStreet" : "government road",
+		        "line2" : "Council",
+		        "townCity" : "London",
+		        "postCode" : "EC1 2Z",
+		        "primaryPhoneNumber" : "",
+		        "secondaryPhoneNumber" : null,
+		        "emailAddress" : "jane@email.com"
+		      },
+		      "person" : {
+		        "badgeHolderName" : "Jane Second",
+		        "dob" : "1987-12-08",
+		        "genderCode" : "FEMALE"
+		      }
+		    },
+		    "startDate" : "2019-01-02",
+		    "expiryDate" : "2021-01-01",
+		    "deliverToCode" : "HOME",
+		    "deliveryOptionCode" : "STAND",
+		  }, {
+		    "localAuthorityShortCode" : "GLOCC",
+		    "badgeNumber" : "CC12DD",
+		    "party" : {
+		      "typeCode" : "PERSON",
+		      "contact" : {
+		        "fullName" : "Michael Third",
+		        "buildingStreet" : "century building",
+		        "line2" : "flat 5",
+		        "townCity" : "Leeds",
+		        "postCode" : "LS1 3XX",
+		        "primaryPhoneNumber" : "",
+		        "secondaryPhoneNumber" : null,
+		        "emailAddress" : "mike@email.com"
+		      },
+		      "person" : {
+		        "badgeHolderName" : "Michael Third",
+		        "dob" : "1934-02-05",
+		        "genderCode" : "MALE"
+		      }
+		    },
+		    "startDate" : "2019-01-02",
+		    "expiryDate" : "2021-01-01",
+		    "deliverToCode" : "HOME",
+		    "deliveryOptionCode" : "STAND",
+		  } ]
+		}
+    """
+    * set batch.badges[0].imageLink = "/pictures/smile1.jpg"
+    * set batch.badges[1].imageLink = "/pictures/smile2.jpg"
+    * set batch.badges[2].imageLink = "/pictures/smile3.jpg"
+
+	* eval s3.putObject(badgeBucketName, '/pictures/smile1.jpg')
+    * eval s3.putObject(badgeBucketName, '/pictures/smile2.jpg')
+    * eval s3.putObject(badgeBucketName, '/pictures/smile3.jpg')
+	* eval ftp.clean()
+	* def ftpFileCountBefore = ftp.getFileCount()
+    * eval s3.cleanBucket(printerBucketName)
+	* def s3FileCountBefore = s3.getNumberOfFilesInABucket(printerBucketName)
     Given path 'printBatch'
     And request batch
     When method POST
     Then status 200
-#    * def afterCount = s3.getNumberOfFilesInABucket(bucketName)
-#    * assert afterCount > beforeCount
-#    * assert afterCount - 1 == beforeCount
-
+	* def ftpFileCountAfter = ftp.getFileCount()
+	* def s3FileCountAfter = s3.getNumberOfFilesInABucket(printerBucketName)
+    * print 'ftpbefore:' + ftpFileCountBefore + ',ftpAfterCount:' + ftpFileCountAfter
+    * print 's3before:' + s3FileCountBefore + ',s3AfterCount:' + s3FileCountAfter
+	* assert s3FileCountBefore == s3FileCountAfter
+	* assert ftpFileCountBefore + 1 == ftpFileCountAfter

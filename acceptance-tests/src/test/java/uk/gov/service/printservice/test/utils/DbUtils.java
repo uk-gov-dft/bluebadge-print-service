@@ -1,4 +1,4 @@
-package uk.gov.service.bluebadge.test.utils;
+package uk.gov.service.printservice.test.utils;
 
 import java.sql.SQLException;
 import java.util.List;

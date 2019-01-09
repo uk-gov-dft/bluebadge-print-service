@@ -2,7 +2,6 @@ def version = "${env.BUILD_NUMBER}"
 def REPONAME = "${scm.getUserRemoteConfigs()[0].getUrl()}"
 
 node {
-
     
     stage('clean workspace') {
         cleanWs()
@@ -18,15 +17,14 @@ node {
 
     stage ('Gradle build') {
         // Set Environment Vairable if the CI env variable is set.
-        //script {
-        //    env.SPRING_APPLICATION_JSON = '{"spring":{"datasource":{"url":"jdbc:postgresql://postgresql:5432/bb_dev?currentSchema=usermanagement"}}}'
-        //}
+
         try {
             sh './gradlew --no-daemon --profile --configure-on-demand clean build bootJar artifactoryPublish artifactoryDeploy'
             sh 'mv build/reports/profile/profile-*.html build/reports/profile/index.html'
         }
         finally {
             junit '**/TEST*.xml'
+
         }
         publishHTML (target: [
           allowMissing: false,
@@ -52,13 +50,12 @@ node {
     }
 
     stage('SonarQube analysis') {
-
         withSonarQubeEnv('sonarqube') {
             def ver = readFile('VERSION').trim()
             echo "Version: " + ver
             // requires SonarQube Scanner for Gradle 2.1+
             // It's important to add --info because of SONARJNKNS-281
-            sh "./gradlew --info sonarqube -Dsonar.projectName=authorisation-service -Dsonar.projectVersion=${ver} -Dsonar.branch=${BRANCH_NAME}"
+            sh "./gradlew --info sonarqube -Dsonar.projectName=print-service -Dsonar.projectVersion=${ver} -Dsonar.branch=${BRANCH_NAME}"
         }
     }
 
@@ -72,6 +69,7 @@ node {
     }
     stage("Acceptance Tests") {
         node('Functional') {
+
             git(
                url: "${REPONAME}",
                credentialsId: 'dft-buildbot-valtech',
@@ -80,9 +78,10 @@ node {
 
             timeout(time: 10, unit: 'MINUTES') {
                 try {
-                    sh 'bash -c "echo $PATH && cd acceptance-tests && ./run-regression.sh"'
+                    sh 'bash -c "echo $PATH && export SFTP_HOST=localhost && export SFTP_PORT=2222 && cd acceptance-tests && ./run-regression.sh"'
                 }
                 finally {
+                    archiveArtifacts allowEmptyArchive: true, artifacts: '**/docker.log'
                     junit '**/TEST*.xml'
                 }
             }

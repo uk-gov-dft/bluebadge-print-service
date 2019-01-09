@@ -1,164 +1,246 @@
 package uk.gov.dft.bluebadge.service.printservice;
 
+import java.time.LocalDate;
 import java.util.Arrays;
-import uk.gov.dft.bluebadge.service.printservice.model.xml.BadgeDetails;
-import uk.gov.dft.bluebadge.service.printservice.model.xml.Batch;
-import uk.gov.dft.bluebadge.service.printservice.model.xml.Batches;
-import uk.gov.dft.bluebadge.service.printservice.model.xml.LetterAddress;
-import uk.gov.dft.bluebadge.service.printservice.model.xml.LocalAuthority;
-import uk.gov.dft.bluebadge.service.printservice.model.xml.Name;
+import java.util.stream.Stream;
+import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.LocalAuthorityRefData;
+import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.LocalAuthorityRefData.LocalAuthorityMetaData;
+import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.Nation;
+import uk.gov.dft.bluebadge.service.printservice.model.Badge;
+import uk.gov.dft.bluebadge.service.printservice.model.Batch;
+import uk.gov.dft.bluebadge.service.printservice.model.Batches;
+import uk.gov.dft.bluebadge.service.printservice.model.Contact;
+import uk.gov.dft.bluebadge.service.printservice.model.Organisation;
+import uk.gov.dft.bluebadge.service.printservice.model.Party;
+import uk.gov.dft.bluebadge.service.printservice.model.Person;
 
 public class TestDataFixtures {
 
-  public static Batches batchesPayload() {
-    Batches batches = new Batches();
-    batches.add(batch1());
-    batches.add(batch2());
+  public static String testJson = "{\"filename\" : \"filename1\", \"batchType\" : \"STANDARD\"}";
 
-    return batches;
+  public static Batches batchesPayload() {
+    Batches xmlBatches = new Batches();
+    xmlBatches.add(batch1());
+    xmlBatches.add(batch2());
+
+    return xmlBatches;
   }
 
-  public static Batch batchPayload() {
+  public static Batch standardBatchPayload() {
     return batch1();
+  }
+
+  public static Batch fasttrackBatchPayload() {
+    return batch2();
+  }
+
+  public static Stream<Batch> payloads() {
+    return Stream.of(standardBatchPayload(), fasttrackBatchPayload());
+  }
+
+  public static LocalAuthorityRefData welshLocalAuthority() {
+    LocalAuthorityRefData la = new LocalAuthorityRefData();
+
+    la.setShortCode("ANGL");
+    la.setDescription("LA description");
+    la.setLocalAuthorityMetaData(laMetaData("ANGL", Nation.WLS));
+
+    return la;
+  }
+
+  public static LocalAuthorityRefData englishLocalAuthority() {
+    LocalAuthorityRefData la = new LocalAuthorityRefData();
+
+    la.setShortCode("GLOCC");
+    la.setDescription("LA description");
+    la.setLocalAuthorityMetaData(laMetaData("GLOCC", Nation.ENG));
+
+    return la;
+  }
+
+  private static LocalAuthorityMetaData laMetaData(String shortCode, Nation nation) {
+    LocalAuthorityMetaData meta = new LocalAuthorityMetaData();
+    meta.setIssuingAuthorityShortCode(shortCode);
+    meta.setIssuingAuthorityName("LA name");
+    meta.setNation(nation);
+    meta.setContactUrl("http://contact_url");
+    meta.setNameLine2("name line 2");
+    meta.setAddressLine1("address 1");
+    meta.setAddressLine2("address 2");
+    meta.setAddressLine3("address 3");
+    meta.setAddressLine4("address 4");
+    meta.setTown("town");
+    meta.setCounty("county");
+    meta.setCountry("United Kingdom");
+    meta.setPostcode("SW1A 1AA");
+    meta.setContactNumber("02070140800");
+    meta.setEmailAddress("email@mail.com");
+
+    return meta;
   }
 
   private static Batch batch1() {
     Batch batch = new Batch();
     batch.setFilename("filename1");
-    batch.batchType("STANDARD");
-    batch.setLocalAuthorities(Arrays.asList(authority1(), authority2()));
-
+    batch.setBatchType("STANDARD");
+    batch.setBadges(Arrays.asList(badge1(), badge2(), badge3()));
     return batch;
   }
 
   private static Batch batch2() {
     Batch batch = new Batch();
     batch.setFilename("filename2");
-    batch.batchType("FASTTRACK");
-    batch.setLocalAuthorities(Arrays.asList(authority1(), authority2()));
+    batch.setBatchType("FASTTRACK");
+    batch.setBadges(Arrays.asList(badge2(), badge3(), badge4()));
 
     return batch;
   }
 
-  private static LocalAuthority authority1() {
-    LocalAuthority authority = new LocalAuthority();
-    authority.setClockType("STANDARD");
-    authority.setLaCode("ABERD");
-    authority.setIssuingCountry("S");
-    authority.setLaName("Aberdinshire council");
-    authority.setLanguageCode("E");
-    authority.setEmailAddress("bluebadge@aberdine.gov.uk");
-    authority.setPhoneNumber("07875506745");
-    authority.setBadges(Arrays.asList(badge1(), badge2()));
-
-    return authority;
-  }
-
-  private static LocalAuthority authority2() {
-    LocalAuthority authority = new LocalAuthority();
-    authority.setClockType("WALET");
-    authority.setLaCode("ANGL");
-    authority.setIssuingCountry("W");
-    authority.setLaName("Anglesey council");
-    authority.setLanguageCode("EW");
-    authority.setEmailAddress("bluebadge@anglesey.gov.uk");
-    authority.setPhoneNumber("07875506746");
-    authority.setBadges(Arrays.asList(badge3(), badge4()));
-
-    return authority;
-  }
-
-  private static BadgeDetails badge1() {
-    BadgeDetails details = new BadgeDetails();
-
-    details.setBadgeIdentifier("AA12BB");
-    details.setPrintedBadgeReference("AA12BB 0 0580X0121");
-    details.setStartDate("2019-01-02");
-    details.setExpiryDate("2021-01-01");
-    details.setDispatchMethodCode("M");
-    details.setFastTrackCode("Y");
-    details.setPostageCode("SC");
-    details.setPhoto("http://url_to_s3_bucket_photo1");
-    details.setBarCodeData("80X1220");
-    details.setName(getName("John", "First"));
-    details.setLetterAddress(getAddress("John First", "20", "Main str.", "London", "SW1 1AA"));
+  private static Badge badge1() {
+    Badge details = new Badge();
+    details.setBadgeNumber("AA12BB");
+    details.setLocalAuthorityShortCode("ANGL");
+    details.setStartDate(LocalDate.of(2019, 01, 02));
+    details.setExpiryDate(LocalDate.of(2021, 1, 1));
+    details.setImageLink("http://url_to_s3_bucket_photo1");
+    details.setParty(
+        personParty(
+            createContact("John First", "20", "Main str.", "London", "SW1 1AA", "john@email.com"),
+            person1()));
+    details.setDeliverToCode("HOME");
+    details.setDeliveryOptionCode("STAND");
 
     return details;
   }
 
-  private static BadgeDetails badge2() {
-    BadgeDetails details = new BadgeDetails();
+  private static Badge badge2() {
 
-    details.setBadgeIdentifier("AA34BB");
-    details.setPrintedBadgeReference("AA34BB 0 0199Y0121");
-    details.setStartDate("2019-01-02");
-    details.setExpiryDate("2021-01-01");
-    details.setDispatchMethodCode("C");
-    details.setFastTrackCode("N");
-    details.setPostageCode("SC");
-    details.setPhoto("http://url_to_s3_bucket_photo2");
-    details.setBarCodeData("Y1220");
-    details.setName(getName("Jane", "Second"));
-    details.setLetterAddress(
-        getAddress("Jane Second", "Council", "government road", "London", "EC1 2Z"));
-
-    return details;
-  }
-
-  private static BadgeDetails badge3() {
-    BadgeDetails details = new BadgeDetails();
-
-    details.setBadgeIdentifier("CC12DD");
-    details.setPrintedBadgeReference("CC12DD 0 0152Y0121");
-    details.setStartDate("2019-01-02");
-    details.setExpiryDate("2021-01-01");
-    details.setDispatchMethodCode("M");
-    details.setFastTrackCode("Y");
-    details.setPostageCode("SD1");
-    details.setPhoto("http://url_to_s3_bucket_photo3");
-    details.setBarCodeData("52Y1220");
-    details.setName(getName("Michael", "Third"));
-    details.setLetterAddress(
-        getAddress("Michael Third", "flat 5", "century building", "Leeds", "LS1 3XX"));
+    Badge details = new Badge();
+    details.setBadgeNumber("AA34BB");
+    details.setLocalAuthorityShortCode("ANGL");
+    details.setStartDate(LocalDate.of(2019, 01, 02));
+    details.setExpiryDate(LocalDate.of(2021, 1, 1));
+    details.setImageLink("http://url_to_s3_bucket_photo2");
+    details.setParty(
+        personParty(
+            createContact(
+                "Jane Second", "Council", "government road", "London", "EC1 2Z", "jane@email.com"),
+            person2()));
+    details.setDeliverToCode("HOME");
+    details.setDeliveryOptionCode("FAST");
 
     return details;
   }
 
-  private static BadgeDetails badge4() {
-    BadgeDetails details = new BadgeDetails();
+  private static Badge badge3() {
 
-    details.setBadgeIdentifier("CC34DD");
-    details.setPrintedBadgeReference("CC34DD 0 1228Z0121");
-    details.setStartDate("2019-01-02");
-    details.setExpiryDate("2021-01-01");
-    details.setDispatchMethodCode("M");
-    details.setFastTrackCode("Y");
-    details.setPostageCode("SD1");
-    details.setPhoto("http://url_to_s3_bucket_photo4");
-    details.setBarCodeData("Z0121");
-    details.setName(getName("Name", "Last"));
-    details.setLetterAddress(
-        getAddress("Name Last", "88", "pleasant walk", "Manchester", "M4 3AS"));
+    Badge details = new Badge();
+    details.setBadgeNumber("CC12DD");
+    details.setLocalAuthorityShortCode("GLOCC");
+    details.setStartDate(LocalDate.of(2019, 01, 02));
+    details.setExpiryDate(LocalDate.of(2021, 1, 1));
+    details.setImageLink(null);
+    details.setParty(
+        organisationParty(
+            createContact(
+                "XmlName Last", "88", "pleasant walk", "Manchester", "M4 3AS", "xml@email.com"),
+            organisation()));
+    details.setDeliverToCode("COUNCIL");
+    details.setDeliveryOptionCode("STAND");
 
     return details;
   }
 
-  private static Name getName(String firstName, String lastName) {
-    Name name = new Name();
-    name.setForename(firstName);
-    name.setSurname(lastName);
-    return name;
+  private static Badge badge4() {
+
+    Badge details = new Badge();
+    details.setBadgeNumber("CC34DD");
+    details.setLocalAuthorityShortCode("GLOCC");
+    details.setStartDate(LocalDate.of(2019, 01, 02));
+    details.setExpiryDate(LocalDate.of(2021, 1, 1));
+    details.setImageLink("http://url_to_s3_bucket_photo4");
+    details.setParty(
+        personParty(
+            createContact(
+                "Michael Third",
+                "flat 5",
+                "century building",
+                "Leeds",
+                "LS1 3XX",
+                "mike@email.com"),
+            person3()));
+    details.setDeliverToCode("HOME");
+    details.setDeliveryOptionCode("STAND");
+
+    return details;
   }
 
-  private static LetterAddress getAddress(
-      String name, String address1, String address2, String town, String postcode) {
-    LetterAddress address = new LetterAddress();
-    address.setNameLine(name);
-    address.setAddressLine1(address1);
-    address.setAddressLine2(address2);
-    address.setCountry("United Kingdom");
-    address.setTown(town);
-    address.setPostcode(postcode);
+  private static Party personParty(Contact contact, Person person) {
+    Party party = new Party();
+    party.setContact(contact);
+    party.setPerson(person);
+    party.setTypeCode("PERSON");
+
+    return party;
+  }
+
+  private static Party organisationParty(Contact contact, Organisation organisation) {
+    Party party = new Party();
+    party.setContact(contact);
+    party.setOrganisation(organisation);
+    party.setTypeCode("ORG");
+    return party;
+  }
+
+  private static Organisation organisation() {
+    Organisation o = new Organisation();
+    o.setBadgeHolderName("Organisation for disabled people");
+
+    return o;
+  }
+
+  private static Person person1() {
+    Person p = new Person();
+    p.setBadgeHolderName("Michelangelo Lodovico Buonarroti Simoni");
+    p.setDob(LocalDate.of(1977, 3, 4));
+    p.setGenderCode("MALE");
+    return p;
+  }
+
+  private static Person person2() {
+    Person p = new Person();
+    p.setBadgeHolderName("Jane Second");
+    p.setDob(LocalDate.of(1987, 12, 8));
+    p.setGenderCode("FEMALE");
+    return p;
+  }
+
+  private static Person person3() {
+    Person p = new Person();
+    p.setBadgeHolderName("Michael Third");
+    p.setDob(LocalDate.of(1934, 2, 5));
+    p.setGenderCode("MALE");
+    return p;
+  }
+
+  private static Person person4() {
+    Person p = new Person();
+    p.setBadgeHolderName("XmlName Last");
+    p.setDob(LocalDate.of(1964, 12, 15));
+    p.setGenderCode("UNSPECIFIED");
+    return p;
+  }
+
+  private static Contact createContact(
+      String name, String address1, String address2, String town, String postcode, String email) {
+    Contact address = new Contact();
+    address.setFullName(name);
+    address.setLine2(address1);
+    address.setBuildingStreet(address2);
+    address.setTownCity(town);
+    address.setPostCode(postcode);
+    address.setPrimaryPhoneNumber(""); // Is this needed
+    address.setEmailAddress(email);
 
     return address;
   }

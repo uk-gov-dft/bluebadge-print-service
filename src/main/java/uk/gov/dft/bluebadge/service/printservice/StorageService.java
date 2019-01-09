@@ -1,21 +1,16 @@
 package uk.gov.dft.bluebadge.service.printservice;
 
-import com.amazonaws.HttpMethod;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.internal.Mimetypes;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.transfer.TransferManager;
-import com.amazonaws.services.s3.transfer.Upload;
-import com.amazonaws.services.s3.transfer.model.UploadResult;
-import java.io.File;
-import java.io.FileInputStream;
+import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.util.IOUtils;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
 import java.net.URLEncoder;
-import java.util.Date;
-import java.util.Objects;
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uk.gov.dft.bluebadge.service.printservice.config.S3Config;
@@ -24,58 +19,54 @@ import uk.gov.dft.bluebadge.service.printservice.config.S3Config;
 @Slf4j
 public class StorageService {
 
-  public static final String ENCODING_CHAR_SET = "UTF-8";
+  private static final String ENCODING_CHAR_SET = "UTF-8";
   private final AmazonS3 amazonS3;
   private final S3Config s3Config;
-  private final TransferManager transferManager;
 
-  public StorageService(S3Config s3Config, AmazonS3 amazonS3, TransferManager transferManager) {
+  StorageService(S3Config s3Config, AmazonS3 amazonS3) {
     this.amazonS3 = amazonS3;
     this.s3Config = s3Config;
-    this.transferManager = transferManager;
   }
 
-  public URL upload(File file) throws IOException, InterruptedException {
-    Objects.requireNonNull(file, "File is null");
-    if (file.length() == 0) {
-      throw new IllegalArgumentException("Upload failed. Batch file is empty");
-    }
+  boolean uploadToPrinterBucket(String src, String fileName) throws IOException {
 
-    log.info(
-        "Uploading document to S3 bucket{}. {}, size:{}",
-        s3Config.getS3Bucket(),
-        file.getName(),
-        file.length());
+    log.info("Uploading document to S3.  FileName:{}, Payload: {}", fileName, src);
 
-    String keyName = UUID.randomUUID().toString() + "-" + file.getCanonicalPath();
+    String keyName = UUID.randomUUID().toString() + "-" + fileName;
     keyName = URLEncoder.encode(keyName, ENCODING_CHAR_SET);
 
-    try (FileInputStream fis = new FileInputStream(file)) {
-      Upload upload =
-          transferManager.upload(s3Config.getS3Bucket(), keyName, fis, setMetaData(file));
-      UploadResult uploadResult = upload.waitForUploadResult();
-      //		URL url = amazonS3.getUrl(uploadResult.getBucketName(), uploadResult.getKey());
-      return generateSignedS3Url(uploadResult.getKey());
+    amazonS3.putObject(s3Config.getS3PrinterBucket(), keyName, src);
+
+    return amazonS3.doesObjectExist(s3Config.getS3PrinterBucket(), keyName);
+  }
+
+  List<String> listPrinterBucketFiles() {
+    ObjectListing result = amazonS3.listObjects(s3Config.getS3PrinterBucket());
+    List<S3ObjectSummary> summaries = result.getObjectSummaries();
+
+    return summaries
+        .stream()
+        .filter(f -> f.getKey().endsWith(".json"))
+        .map(S3ObjectSummary::getKey)
+        .collect(Collectors.toList());
+  }
+
+  Optional<String> downloadPrinterFileAsString(String key) {
+    if (amazonS3.doesObjectExist(s3Config.getS3PrinterBucket(), key)) {
+      log.debug("json file: {} exists in s3 bucket {}", key, s3Config.getS3PrinterBucket());
+      return Optional.of(amazonS3.getObjectAsString(s3Config.getS3PrinterBucket(), key));
+    }
+    return Optional.empty();
+  }
+
+  public Optional<byte[]> downloadBadgeFile(String key) throws IOException {
+
+    try (InputStream is = amazonS3.getObject(s3Config.getS3BadgeBucket(), key).getObjectContent()) {
+      return Optional.of(IOUtils.toByteArray(is));
     }
   }
 
-  private ObjectMetadata setMetaData(File file) {
-    ObjectMetadata meta = new ObjectMetadata();
-    meta.setContentLength(file.length());
-    String mimetype = Mimetypes.getInstance().getMimetype(file.getName());
-    meta.setContentType(mimetype);
-    return meta;
-  }
-
-  private URL generateSignedS3Url(String link) {
-    if (null == link) {
-      return null;
-    }
-    long expTimeMillis = System.currentTimeMillis() + s3Config.getSignedUrlDurationMs();
-    GeneratePresignedUrlRequest generatePresignedUrlRequest =
-        new GeneratePresignedUrlRequest(s3Config.getS3Bucket(), link)
-            .withMethod(HttpMethod.GET)
-            .withExpiration(new Date(expTimeMillis));
-    return amazonS3.generatePresignedUrl(generatePresignedUrlRequest);
+  void deletePrinterBucketFile(String key) {
+    amazonS3.deleteObject(s3Config.getS3PrinterBucket(), key);
   }
 }

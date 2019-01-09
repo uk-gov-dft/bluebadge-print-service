@@ -1,0 +1,8 @@
+sftp:
+    container_name: sftp-server
+    image: atmoz/sftp
+    ports:
+        - "2222:22"
+    command: foo: ***REMOVED***
+    volumes:
+      - "~/.ssh/id_rsa.pub:/home/foo/.ssh/keys/id_rsa.pub:ro"      
