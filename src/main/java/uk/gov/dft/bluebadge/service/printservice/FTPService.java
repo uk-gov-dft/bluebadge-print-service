@@ -43,8 +43,12 @@ public class FTPService {
       log.error("Error happened while sending file to sftp:" + e.getMessage(), e);
       return false;
     } finally {
-      sftpChannel.exit();
-      session.disconnect();
+      if (null != sftpChannel) {
+        sftpChannel.exit();
+      }
+      if (null != session) {
+        session.disconnect();
+      }
     }
 
     return true;

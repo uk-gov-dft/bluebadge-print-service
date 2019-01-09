@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<BadgePrintRejections xmlns="http://YourSite.com/BadgePrintRejections">
+    <Rejection>
+        <BadgeIdentifier>333333</BadgeIdentifier>
+        <ErrorMessage>: Photograph not found</ErrorMessage>
+    </Rejection>
+    <Rejection>
+        <BadgeIdentifier>333334</BadgeIdentifier>
+        <ErrorMessage>: Blah</ErrorMessage>
+    </Rejection>
+</BadgePrintRejections>

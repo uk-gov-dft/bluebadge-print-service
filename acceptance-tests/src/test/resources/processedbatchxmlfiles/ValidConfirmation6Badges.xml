@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<BadgePrintConfirmations xmlns="http://YourSite.com/BadgePrintConfirmations">
+    <Confirmation>
+        <BadgeIdentifier>AAAAAA</BadgeIdentifier>
+        <Cancellation>no</Cancellation>
+        <DispatchedDate>2018-02-02T14:24:34</DispatchedDate>
+    </Confirmation>
+    <Confirmation>
+        <BadgeIdentifier>AAAAAB</BadgeIdentifier>
+        <Cancellation>no</Cancellation>
+        <DispatchedDate>2018-08-04T10:15:49</DispatchedDate>
+    </Confirmation>
+    <Confirmation>
+        <BadgeIdentifier>AAAAAC</BadgeIdentifier>
+        <Cancellation>no</Cancellation>
+        <DispatchedDate>2018-08-04T10:17:08</DispatchedDate>
+    </Confirmation>
+    <Confirmation>
+        <BadgeIdentifier>AAAAAD</BadgeIdentifier>
+        <Cancellation>no</Cancellation>
+        <DispatchedDate>2018-08-04T10:21:24</DispatchedDate>
+    </Confirmation>
+    <Confirmation>
+        <BadgeIdentifier>AAAAAE</BadgeIdentifier>
+        <Cancellation>yes</Cancellation>
+        <DispatchedDate>2018-01-01T13:23:33</DispatchedDate>
+    </Confirmation>
+    <Confirmation>
+        <BadgeIdentifier>AAAAAF</BadgeIdentifier>
+        <Cancellation>yes</Cancellation>
+        <DispatchedDate>2018-08-04T10:15:54</DispatchedDate>
+    </Confirmation>
+</BadgePrintConfirmations>

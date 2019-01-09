@@ -51,6 +51,17 @@ public class StorageService {
         .collect(Collectors.toList());
   }
 
+  List<String> listInBucketXmlFiles() {
+    ObjectListing result = amazonS3.listObjects(s3Config.getS3InBucket());
+    List<S3ObjectSummary> summaries = result.getObjectSummaries();
+
+    return summaries
+        .stream()
+        .filter(f -> f.getKey().endsWith(".xml"))
+        .map(S3ObjectSummary::getKey)
+        .collect(Collectors.toList());
+  }
+
   Optional<String> downloadPrinterFileAsString(String key) {
     if (amazonS3.doesObjectExist(s3Config.getS3PrinterBucket(), key)) {
       log.debug("json file: {} exists in s3 bucket {}", key, s3Config.getS3PrinterBucket());
@@ -59,14 +70,26 @@ public class StorageService {
     return Optional.empty();
   }
 
+  InputStream downloadS3File(String bucket, String key) {
+    return amazonS3.getObject(bucket, key).getObjectContent();
+  }
+
   public Optional<byte[]> downloadBadgeFile(String key) throws IOException {
 
-    try (InputStream is = amazonS3.getObject(s3Config.getS3BadgeBucket(), key).getObjectContent()) {
+    try (InputStream is = downloadS3File(s3Config.getS3BadgeBucket(), key)) {
       return Optional.of(IOUtils.toByteArray(is));
     }
   }
 
   void deletePrinterBucketFile(String key) {
     amazonS3.deleteObject(s3Config.getS3PrinterBucket(), key);
+  }
+
+  public String getPrinterBucket() {
+    return s3Config.getS3PrinterBucket();
+  }
+
+  public String getInBucket() {
+    return s3Config.getS3InBucket();
   }
 }

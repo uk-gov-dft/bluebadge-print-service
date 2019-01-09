@@ -1,13 +1,13 @@
 package uk.gov.dft.bluebadge.service.printservice.utils;
 
 import static java.util.stream.Collectors.groupingBy;
+import static uk.gov.dft.bluebadge.service.printservice.model.Batch.BatchTypeEnum.FASTTRACK;
 
-import java.io.File;
+import com.amazonaws.util.IOUtils;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
@@ -19,10 +19,13 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
 import uk.gov.dft.bluebadge.service.printservice.StorageService;
 import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.LocalAuthorityRefData;
 import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.LocalAuthorityRefData.LocalAuthorityMetaData;
+import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.Nation;
+import uk.gov.dft.bluebadge.service.printservice.config.GeneralConfig;
 import uk.gov.dft.bluebadge.service.printservice.model.Badge;
 import uk.gov.dft.bluebadge.service.printservice.model.Batch;
 import uk.gov.dft.bluebadge.service.printservice.model.Contact;
@@ -34,54 +37,59 @@ public class ModelToXmlConverter {
   private static final String PERSON = "PERSON";
   private final StorageService s3;
   private final ReferenceDataService referenceData;
+  private GeneralConfig generalConfig;
 
-  ModelToXmlConverter(StorageService s3, ReferenceDataService referenceData) {
+  ModelToXmlConverter(
+      StorageService s3, ReferenceDataService referenceData, GeneralConfig generalConfig) {
     this.s3 = s3;
     this.referenceData = referenceData;
+    this.generalConfig = generalConfig;
   }
 
   public String toXml(Batch batch, Path xmlDir) throws XMLStreamException, IOException {
 
     XMLOutputFactory factory = XMLOutputFactory.newInstance();
+    Path xmlFileName = createXmlFile(batch.getBatchType().equals(FASTTRACK), xmlDir);
+    XMLStreamWriter writer = null;
 
-    Path xmlFileName = createXmlFile(batch.getBatchType().equals("FASTTRACK"), xmlDir);
+    try {
+      writer =
+          factory.createXMLStreamWriter(new FileOutputStream(xmlFileName.toString()), "Cp1252");
 
-    XMLStreamWriter writer =
-        factory.createXMLStreamWriter(new FileOutputStream(xmlFileName.toString()), "Cp1252");
+      writer.writeStartDocument("windows-1252", "1.0");
+      writer.writeStartElement("BadgePrintExtract");
+      writer.writeStartElement("Batch");
 
-    writer.writeStartDocument();
-    writer.writeStartElement("BadgePrintExtract");
-    writer.writeStartElement("Batch");
+      writeAndCloseElement(writer, "Filename", xmlFileName.getFileName().toString());
+      writeAndCloseElement(writer, "ReExtract", "no");
 
-    writer.writeStartElement("Filename");
-    writer.writeCharacters(xmlFileName.getFileName().toString());
-    writer.writeEndElement();
+      writer.writeEndElement(); // End Batch
 
-    writer.writeStartElement("ReExtract");
-    writer.writeCharacters("no");
-    writer.writeEndElement();
-    writer.writeEndElement();
+      Map<String, List<Badge>> ordered = groupByLA(batch);
 
-    Map<String, List<Badge>> ordered = groupByLA(batch);
+      writer.writeStartElement("LocalAuthorities");
+      for (Map.Entry<String, List<Badge>> entry : ordered.entrySet()) {
+        writer.writeStartElement("LocalAuthority");
+        writeLocalAuthority(writer, entry.getKey());
 
-    writer.writeStartElement("LocalAuthorities");
-    for (Map.Entry<String, List<Badge>> entry : ordered.entrySet()) {
-      writer.writeStartElement("LocalAuthority");
-      writeLocalAuthority(writer, entry.getKey());
-      writer.writeStartElement("Badges");
-      for (Badge badge : entry.getValue()) {
-        writeBadgeDetails(writer, badge, entry.getKey());
+        writer.writeStartElement("Badges");
+        for (Badge badge : entry.getValue()) {
+          writeAndCloseBadgeDetailsElement(writer, badge);
+        }
+        writer.writeEndElement(); // End Badges
+        writer.writeEndElement(); // End LocalAuthority
       }
-      writer.writeEndElement();
-      writer.writeEndElement();
+      writer.writeEndElement(); // End LocalAuthorities
+      writer.writeEndElement(); // End BadgePrintExtract
+      writer.writeEndDocument();
+
+      writer.flush();
+
+    } finally {
+      if (null != writer) {
+        writer.close();
+      }
     }
-    writer.writeEndElement();
-    writer.writeEndElement();
-    writer.writeEndDocument();
-
-    writer.flush();
-    writer.close();
-
     return xmlFileName.toString();
   }
 
@@ -100,199 +108,150 @@ public class ModelToXmlConverter {
     return xmlFile;
   }
 
-  private void writeBadgeDetails(XMLStreamWriter writer, Badge badge, String laCode)
+  private void writeAndCloseBadgeDetailsElement(XMLStreamWriter writer, Badge badge)
       throws XMLStreamException, IOException {
     writer.writeStartElement("BadgeDetails");
 
-    writer.writeStartElement("BadgeIdentifier");
-    writer.writeCharacters(badge.getBadgeNumber());
-    writer.writeEndElement();
+    writeAndCloseElement(writer, "BadgeIdentifier", badge.getBadgeNumber());
+    writeAndCloseElement(writer, "PrintedBadgeReference", getPrintedBadgeReference(badge));
+    writeAndCloseElement(
+        writer,
+        "StartDate",
+        badge.getStartDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+    writeAndCloseElement(
+        writer,
+        "ExpiryDate",
+        badge.getExpiryDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+    writeAndCloseElement(
+        writer, "DispatchMethodCode", mapDispatchMethodCode(badge.getDeliverToCode()));
+    writeAndCloseElement(writer, "FastTrackCode", mapFastTrackCode(badge.getDeliveryOptionCode()));
+    writeAndCloseElement(writer, "PostageCode", mapPostageCode(badge.getDeliveryOptionCode()));
+    writeAndClosePhotoElement(writer, badge);
+    writeAndCloseElement(writer, "BarCodeData", getBarCode(badge));
 
-    writer.writeStartElement("PrintedBadgeReference");
-    String reference = getPrintedBadgeReference(badge);
-    writer.writeCharacters(reference);
-    writer.writeEndElement();
-
-    writer.writeStartElement("StartDate");
-    writer.writeCharacters(badge.getStartDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-    writer.writeEndElement();
-
-    writer.writeStartElement("ExpiryDate");
-    writer.writeCharacters(badge.getExpiryDate().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
-    writer.writeEndElement();
-
-    writer.writeStartElement("DispatchMethodCode");
-    writer.writeCharacters(mapDispatchMethodCode(badge.getDeliverToCode()));
-    writer.writeEndElement();
-
-    writer.writeStartElement("FastTrackCode");
-    writer.writeCharacters(mapFastTrackCode(badge.getDeliveryOptionCode()));
-    writer.writeEndElement();
-
-    writer.writeStartElement("PostageCode");
-    writer.writeCharacters(mapPostageCode(badge.getDeliveryOptionCode()));
-    writer.writeEndElement();
-
-    writer.writeStartElement("Photo");
-    Optional<byte[]> imageFile = s3.downloadBadgeFile(badge.getImageLink());
-    if (imageFile.isPresent()) {
-      String image = toBase64(imageFile.get());
-      writer.writeCharacters(image);
-    } else {
-      boolean isOrganisation = badge.getParty().getTypeCode().equals("ORG");
-      if (isOrganisation) {
-        LocalAuthorityRefData la = referenceData.retrieveLocalAuthority(laCode);
-        String nation = la.getLocalAuthorityMetaData().getNation().getCode();
-        Path orgE = Paths.get("src", "main", "resources", "pictures", "org_E.jpg");
-        Path orgW = Paths.get("src", "main", "resources", "pictures", "org_W.jpg");
-        File orgImageFile = nation.equalsIgnoreCase("W") ? orgW.toFile() : orgE.toFile();
-        String image = toBase64(Files.readAllBytes(orgImageFile.toPath()));
-        writer.writeCharacters(image);
-      }
-    }
-    writer.writeEndElement();
-
-    writer.writeStartElement("BarCodeData");
-    writer.writeCharacters(getBarCode(badge, reference));
-    writer.writeEndElement();
-
-    writeName(writer, getHolder(badge));
-
-    writeLetterAddress(writer, badge, laCode);
+    writeAndCloseNameElement(writer, badge);
+    writeAndCloseLetterAddressElement(writer, badge);
 
     writer.writeEndElement();
   }
 
-  private void writeLetterAddress(XMLStreamWriter writer, Badge badge, String laCode)
+  private void writeAndClosePhotoElement(XMLStreamWriter writer, Badge badge)
+      throws XMLStreamException, IOException {
+    writer.writeStartElement("Photo");
+
+    if (isPerson(badge)) {
+      Optional<byte[]> imageFile = s3.downloadBadgeFile(badge.getImageLink());
+      if (imageFile.isPresent()) {
+        String image = toBase64(imageFile.get());
+        writer.writeCharacters(image);
+      }
+    } else {
+      LocalAuthorityRefData la =
+          referenceData.retrieveLocalAuthority(badge.getLocalAuthorityShortCode());
+
+      String imageFileName;
+      if (la.getLocalAuthorityMetaData().getNation() == Nation.WLS) {
+        imageFileName = generalConfig.getOrganisationPhotoUriWales();
+      } else {
+        imageFileName = generalConfig.getOrganisationPhotoUriEngland();
+      }
+      writer.writeCharacters(
+          toBase64(IOUtils.toByteArray(getClass().getResourceAsStream(imageFileName))));
+    }
+    writer.writeEndElement();
+  }
+
+  private void writeAndCloseLetterAddressElement(XMLStreamWriter writer, Badge badge)
       throws XMLStreamException {
     String deliverTo = badge.getDeliverToCode();
 
+    writer.writeStartElement("LetterAddress");
     if (deliverTo.equalsIgnoreCase("HOME")) {
-      writeHomeLetterAddress(writer, badge);
+      writeHomeLetterAddressElements(writer, badge);
 
     } else {
-      writeCouncilLetterAddress(writer, badge, laCode);
+      writeCouncilLetterAddressElements(writer, badge);
     }
+    writer.writeEndElement();
   }
 
-  private void writeCouncilLetterAddress(XMLStreamWriter writer, Badge badge, String laCode)
+  private void writeCouncilLetterAddressElements(XMLStreamWriter writer, Badge badge)
       throws XMLStreamException {
     LocalAuthorityMetaData la =
-        referenceData.retrieveLocalAuthority(laCode).getLocalAuthorityMetaData();
+        referenceData
+            .retrieveLocalAuthority(badge.getLocalAuthorityShortCode())
+            .getLocalAuthorityMetaData();
 
-    writer.writeStartElement("LetterAddress");
-
-    writer.writeStartElement("NameLine1");
-    writer.writeCharacters(getHolder(badge));
-    writer.writeEndElement();
-
-    writer.writeStartElement("AddressLine1");
-    writer.writeCharacters(la.getAddressLine1());
-    writer.writeEndElement();
-
-    writer.writeStartElement("AddressLine2");
-    writer.writeCharacters(la.getAddressLine2());
-    writer.writeEndElement();
-
-    writer.writeStartElement("Town");
-    writer.writeCharacters(la.getTown());
-    writer.writeEndElement();
-
-    writer.writeStartElement("Country");
-    writer.writeCharacters("United Kingdom");
-    writer.writeEndElement();
-
-    writer.writeStartElement("Postcode");
-    writer.writeCharacters(la.getPostcode());
-    writer.writeEndElement();
-
-    writer.writeEndElement();
+    writeAndCloseElement(writer, "NameLine1", getHolderName(badge));
+    writeAndCloseElement(writer, "AddressLine1", la.getAddressLine1());
+    writeAndCloseElement(writer, "AddressLine2", la.getAddressLine2());
+    writeAndCloseElement(writer, "Town", la.getTown());
+    writeAndCloseElement(writer, "Country", "United Kingdom");
+    writeAndCloseElement(writer, "Postcode", la.getPostcode());
   }
 
-  private void writeHomeLetterAddress(XMLStreamWriter writer, Badge badge)
+  private void writeHomeLetterAddressElements(XMLStreamWriter writer, Badge badge)
       throws XMLStreamException {
     Contact contact = badge.getParty().getContact();
-    writer.writeStartElement("LetterAddress");
 
-    writer.writeStartElement("NameLine1");
-    writer.writeCharacters(contact.getFullName());
-    writer.writeEndElement();
-
-    writer.writeStartElement("AddressLine1");
-    writer.writeCharacters(contact.getBuildingStreet());
-    writer.writeEndElement();
-
-    writer.writeStartElement("AddressLine2");
-    writer.writeCharacters(contact.getLine2());
-    writer.writeEndElement();
-
-    writer.writeStartElement("Town");
-    writer.writeCharacters(contact.getTownCity());
-    writer.writeEndElement();
-
-    writer.writeStartElement("Country");
-    writer.writeCharacters("United Kingdom");
-    writer.writeEndElement();
-
-    writer.writeStartElement("Postcode");
-    writer.writeCharacters(contact.getPostCode());
-    writer.writeEndElement();
-
-    writer.writeEndElement();
+    writeAndCloseElement(writer, "NameLine1", contact.getFullName());
+    writeAndCloseElement(writer, "AddressLine1", contact.getBuildingStreet());
+    writeAndCloseElement(writer, "AddressLine2", contact.getLine2());
+    writeAndCloseElement(writer, "Town", contact.getTownCity());
+    writeAndCloseElement(writer, "Country", "United Kingdom");
+    writeAndCloseElement(writer, "Postcode", contact.getPostCode());
   }
 
-  private void writeName(XMLStreamWriter writer, String holder) throws XMLStreamException {
-    String name = holder;
-    String surname = "";
+  private void writeAndCloseNameElement(XMLStreamWriter writer, Badge badge)
+      throws XMLStreamException {
 
+    writer.writeStartElement("Name");
+    String name = getHolderName(badge);
+    if (isPerson(badge)) {
+      Pair<String, String> names = getSurnameForenamePair(name);
+      writeAndCloseElement(writer, "Surname", names.getLeft());
+      if (StringUtils.isNotEmpty(names.getRight())) {
+        writeAndCloseElement(writer, "Forename", names.getRight());
+      }
+    } else {
+      writeAndCloseElement(writer, "OrganisationName", name);
+    }
+    writer.writeEndElement(); // End Name
+  }
+
+  /**
+   * Splits name
+   *
+   * @param holder Name to split
+   * @return Pair with surname as left and forename as right
+   */
+  Pair<String, String> getSurnameForenamePair(String holder) {
+    String surname;
+    String forename = null;
     if (holder.length() > 28) {
       int idx = holder.indexOf(' ');
-      name = holder.substring(0, idx).trim();
+      forename = holder.substring(0, idx).trim();
       surname = holder.substring(idx).trim();
+    } else {
+      surname = holder;
     }
-    writer.writeStartElement("Name");
-    writer.writeCharacters(name);
-    writer.writeEndElement();
 
-    writer.writeStartElement("Surname");
-    writer.writeCharacters(surname);
-    writer.writeEndElement();
+    return Pair.of(surname, forename);
   }
 
   private void writeLocalAuthority(XMLStreamWriter writer, String laCode)
       throws XMLStreamException {
     LocalAuthorityRefData la = referenceData.retrieveLocalAuthority(laCode);
 
-    writer.writeStartElement("LACode");
-    writer.writeCharacters(la.getShortCode());
-    writer.writeEndElement();
+    Nation nation = la.getLocalAuthorityMetaData().getNation();
 
-    writer.writeStartElement("LAName");
-    writer.writeCharacters(la.getDescription());
-    writer.writeEndElement();
-
-    writer.writeStartElement("IssuingCountry");
-    String nation = la.getLocalAuthorityMetaData().getNation().getCode();
-    writer.writeCharacters(nation);
-    writer.writeEndElement();
-
-    writer.writeStartElement("LanguageCode");
-    String language = nation.equalsIgnoreCase("W") ? "EW" : "E";
-    writer.writeCharacters(language);
-    writer.writeEndElement();
-
-    writer.writeStartElement("ClockType");
-    String clock = nation.equalsIgnoreCase("W") ? "Wallet" : "Standard";
-    writer.writeCharacters(clock);
-    writer.writeEndElement();
-
-    writer.writeStartElement("PhoneNumber");
-    writer.writeCharacters(la.getLocalAuthorityMetaData().getContactNumber());
-    writer.writeEndElement();
-
-    writer.writeStartElement("EmailAddress");
-    writer.writeCharacters(la.getLocalAuthorityMetaData().getEmailAddress());
-    writer.writeEndElement();
+    writeAndCloseElement(writer, "LACode", la.getShortCode());
+    writeAndCloseElement(writer, "LAName", la.getDescription());
+    writeAndCloseElement(writer, "IssuingCountry", nation.getXmlPrintFileCode());
+    writeAndCloseElement(writer, "LanguageCode", Nation.WLS == nation ? "EW" : "E");
+    writeAndCloseElement(writer, "ClockType", Nation.WLS == nation ? "Wallet" : "Standard");
+    writeAndCloseElement(writer, "PhoneNumber", la.getLocalAuthorityMetaData().getContactNumber());
+    writeAndCloseElement(writer, "EmailAddress", la.getLocalAuthorityMetaData().getEmailAddress());
   }
 
   private String toBase64(byte[] src) {
@@ -302,6 +261,13 @@ public class ModelToXmlConverter {
   private Map<String, List<Badge>> groupByLA(Batch batch) {
 
     return batch.getBadges().stream().collect(groupingBy(Badge::getLocalAuthorityShortCode));
+  }
+
+  private void writeAndCloseElement(XMLStreamWriter writer, String tag, String text)
+      throws XMLStreamException {
+    writer.writeStartElement(tag);
+    writer.writeCharacters(text);
+    writer.writeEndElement();
   }
 
   private String mapGender(String code) {
@@ -327,29 +293,33 @@ public class ModelToXmlConverter {
     return code.equalsIgnoreCase("FAST") ? "SD1" : "SC";
   }
 
-  private String getPrintedBadgeReference(Badge badge) {
-    boolean isPerson = badge.getParty().getTypeCode().equals(PERSON);
+  String getPrintedBadgeReference(Badge badge) {
     String dob =
-        isPerson
+        isPerson(badge)
             ? badge.getParty().getPerson().getDob().format(DateTimeFormatter.ofPattern("MMyy"))
             : "";
-    String gender = isPerson ? mapGender(badge.getParty().getPerson().getGenderCode()) : "O";
+    String gender = isPerson(badge) ? mapGender(badge.getParty().getPerson().getGenderCode()) : "O";
     String expiry = badge.getExpiryDate().format(DateTimeFormatter.ofPattern("MMyy"));
 
-    return badge.getBadgeNumber() + " 9 " + dob + gender + expiry;
+    return badge.getBadgeNumber() + " 0 " + dob + gender + expiry;
   }
 
-  private String getBarCode(Badge badge, String reference) {
-    boolean isPerson = badge.getParty().getTypeCode().equals(PERSON);
-
-    return isPerson ? StringUtils.right(reference, 7) : StringUtils.right(reference, 5);
+  String getBarCode(Badge badge) {
+    if (isPerson(badge)) {
+      return StringUtils.right(getPrintedBadgeReference(badge), 7);
+    } else {
+      return StringUtils.right(getPrintedBadgeReference(badge), 5);
+    }
   }
 
-  private String getHolder(Badge badge) {
-    boolean isPerson = badge.getParty().getTypeCode().equals(PERSON);
+  private String getHolderName(Badge badge) {
 
-    return isPerson
+    return isPerson(badge)
         ? badge.getParty().getPerson().getBadgeHolderName()
         : badge.getParty().getOrganisation().getBadgeHolderName();
+  }
+
+  private boolean isPerson(Badge badge) {
+    return badge.getParty().getTypeCode().equals(PERSON);
   }
 }
