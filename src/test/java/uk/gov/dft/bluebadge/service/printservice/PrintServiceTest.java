@@ -27,18 +27,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import uk.gov.dft.bluebadge.service.printservice.converters.PrintRequestToPrintXml;
+import uk.gov.dft.bluebadge.service.printservice.converters.PrintResultXmlConversionException;
+import uk.gov.dft.bluebadge.service.printservice.converters.PrintResultXmlToProcessedBatchResponse;
 import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBatch;
-import uk.gov.dft.bluebadge.service.printservice.utils.BatchConfirmationXmlException;
-import uk.gov.dft.bluebadge.service.printservice.utils.ModelToXmlConverter;
-import uk.gov.dft.bluebadge.service.printservice.utils.XmlToProcessedBatch;
 
 @Slf4j
 class PrintServiceTest {
 
   private StorageService mockS3 = mock(StorageService.class);
   private FTPService mockFtpService = mock(FTPService.class);
-  private ModelToXmlConverter mockXmlConverter = mock(ModelToXmlConverter.class);
-  private XmlToProcessedBatch mockXmlToProcessedBatch = mock(XmlToProcessedBatch.class);
+  private PrintRequestToPrintXml mockXmlConverter = mock(PrintRequestToPrintXml.class);
+  private PrintResultXmlToProcessedBatchResponse mockXmlToProcessedBatch =
+      mock(PrintResultXmlToProcessedBatchResponse.class);
 
   private PrintService service =
       new PrintService(mockS3, mockFtpService, mockXmlConverter, mockXmlToProcessedBatch);
@@ -177,7 +178,7 @@ class PrintServiceTest {
                 .getResourceAsStream(
                     "/processedBatchXml/InvalidConfirmationUnexpectedElement.xml"));
     when(mockXmlToProcessedBatch.readProcessedBatchFile(any(), eq("invalidProcessedBatch1.xml")))
-        .thenThrow(new BatchConfirmationXmlException("Unexpected"));
+        .thenThrow(new PrintResultXmlConversionException("Unexpected"));
     when(mockXmlToProcessedBatch.readProcessedBatchFile(any(), eq("validProcessedBatch1.xml")))
         .thenReturn(ProcessedBatch.builder().filename("validProcessedBatch1.xml").build());
     when(mockXmlToProcessedBatch.readProcessedBatchFile(any(), eq("validProcessedBatch2.xml")))

@@ -14,7 +14,7 @@ public class ProcessedBatch {
 
   public enum FileTypeEnum {
     CONFIRMATION,
-    REJECTION;
+    REJECTION
   }
 
   private String filename;

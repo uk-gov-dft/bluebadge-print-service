@@ -1,5 +1,6 @@
 package uk.gov.dft.bluebadge.service.printservice.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import java.time.LocalDate;
@@ -10,6 +11,7 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.ToString;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
@@ -52,27 +54,57 @@ public class Badge {
   @Valid
   private LocalDate expiryDate = null;
 
+  @Getter
+  public enum DeliverToCode {
+    HOME("M"),
+    COUNCIL("C");
+
+    private String xmlPrintFileCode;
+
+    DeliverToCode(String xmlPrintFileCode) {
+
+      this.xmlPrintFileCode = xmlPrintFileCode;
+    }
+  }
+
   @JsonProperty("deliverToCode")
   @ApiModelProperty(
     example = "HOME",
     value = "A short code from the DELIVER group of reference data."
   )
-  @Size(max = 10)
-  @NotEmpty
-  private String deliverToCode = null;
+  @NotNull
+  private DeliverToCode deliverToCode = null;
+
+  @Getter
+  public enum DeliveryOptionCode {
+    FAST("Y", "SD1"),
+    STAND("N", "SC");
+
+    private final String xmlFasttrackCode;
+    private final String xmlPostageCode;
+
+    DeliveryOptionCode(String xmlFasttrackCode, String xmlPostageCode) {
+      this.xmlFasttrackCode = xmlFasttrackCode;
+      this.xmlPostageCode = xmlPostageCode;
+    }
+  }
 
   @JsonProperty("deliveryOptionCode")
-  @NotEmpty
+  @NotNull
   @ApiModelProperty(
     example = "STAND",
     value = "A short code from the DELOP group of reference data. e.g. STAND or FAST"
   )
-  @Size(max = 10)
-  private String deliveryOptionCode = null;
+  private DeliveryOptionCode deliveryOptionCode = null;
 
   @JsonProperty("imageLink")
   @ApiModelProperty(example = "http://tiny.url?q=ab63fg", value = "A URL for the badge photo.")
   @Size(max = 255)
   @NotEmpty
   private String imageLink = null;
+
+  @JsonIgnore
+  public boolean isPersonBadge() {
+    return Party.PartyType.PERSON == getParty().getTypeCode();
+  }
 }

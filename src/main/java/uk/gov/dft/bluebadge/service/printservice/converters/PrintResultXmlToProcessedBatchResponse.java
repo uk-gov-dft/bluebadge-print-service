@@ -1,4 +1,4 @@
-package uk.gov.dft.bluebadge.service.printservice.utils;
+package uk.gov.dft.bluebadge.service.printservice.converters;
 
 import java.io.InputStream;
 import java.time.OffsetDateTime;
@@ -17,7 +17,7 @@ import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBatch;
 
 @Component
 @Slf4j
-public class XmlToProcessedBatch {
+public class PrintResultXmlToProcessedBatchResponse {
 
   private static final String BADGE_PRINT_CONFIRMATION = "BadgePrintConfirmations";
   private static final String BADGE_PRINT_REJECTIONS = "BadgePrintRejections";
@@ -34,10 +34,10 @@ public class XmlToProcessedBatch {
    * @param xmlStream InputStream for file.
    * @param filename File name for logging and populating.
    * @return Populated Batch results object.
-   * @throws BatchConfirmationXmlException Holds info on location in file where error occurred.
+   * @throws PrintResultXmlConversionException Holds info on location in file where error occurred.
    */
   public ProcessedBatch readProcessedBatchFile(InputStream xmlStream, String filename)
-      throws BatchConfirmationXmlException {
+      throws PrintResultXmlConversionException {
     ProcessedBatch.ProcessedBatchBuilder batchBuilder = ProcessedBatch.builder().filename(filename);
     List<ProcessedBadge> processedBadges = new ArrayList<>();
 
@@ -66,7 +66,7 @@ public class XmlToProcessedBatch {
       }
     } catch (XMLStreamException e) {
       log.error(e.getMessage(), e);
-      throw new BatchConfirmationXmlException(
+      throw new PrintResultXmlConversionException(
           "XMLStreamException reading " + filename + "." + e.getMessage());
     } finally {
       try {
@@ -81,7 +81,7 @@ public class XmlToProcessedBatch {
   }
 
   private ProcessedBadge readConfirmation(XMLStreamReader reader, String filename)
-      throws XMLStreamException, BatchConfirmationXmlException {
+      throws XMLStreamException, PrintResultXmlConversionException {
     ProcessedBadge.ProcessedBadgeBuilder badgeBuilder = ProcessedBadge.builder();
 
     while (reader.hasNext()) {
@@ -105,7 +105,7 @@ public class XmlToProcessedBatch {
   }
 
   private ProcessedBadge readRejection(XMLStreamReader reader, String filename)
-      throws XMLStreamException, BatchConfirmationXmlException {
+      throws XMLStreamException, PrintResultXmlConversionException {
     ProcessedBadge.ProcessedBadgeBuilder badgeBuilder = ProcessedBadge.builder();
 
     while (reader.hasNext()) {
@@ -128,7 +128,7 @@ public class XmlToProcessedBatch {
 
   private void parseConfirmationOrRejectionChildStartElement(
       ProcessedBadge.ProcessedBadgeBuilder badgeBuilder, XMLStreamReader reader, String filename)
-      throws BatchConfirmationXmlException, XMLStreamException {
+      throws PrintResultXmlConversionException, XMLStreamException {
     assert XMLStreamConstants.START_ELEMENT == reader.getEventType();
     String elementName = reader.getLocalName();
     if (BADGE_ID.equalsIgnoreCase(elementName)) {
@@ -159,9 +159,10 @@ public class XmlToProcessedBatch {
     return null;
   }
 
-  private BatchConfirmationXmlException buildAndLogException(
+  private PrintResultXmlConversionException buildAndLogException(
       String message, XMLStreamReader reader, String filename) {
-    BatchConfirmationXmlException e = new BatchConfirmationXmlException(message, reader, filename);
+    PrintResultXmlConversionException e =
+        new PrintResultXmlConversionException(message, reader, filename);
     log.error(e.getDetailedError());
     return e;
   }

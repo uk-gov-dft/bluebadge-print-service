@@ -82,4 +82,20 @@ class PrintControllerTest {
     mvc.perform(builder).andExpect(status().isOk());
     verify(service, times(1)).getProcessedBatches();
   }
+
+  @Test
+  @DisplayName("Delete batch returns 200 if ok and 404 if batch not exists.")
+  @SneakyThrows
+  void deleteBatch() {
+    RequestBuilder builder =
+        MockMvcRequestBuilders.delete("/processed-batches/{id}", "ABatchName")
+            .contentType(MediaType.APPLICATION_JSON);
+    when(service.deleteBatch(any())).thenReturn(true);
+    mvc.perform(builder).andExpect(status().isOk());
+    verify(service, times(1)).deleteBatch("ABatchName");
+
+    when(service.deleteBatch(any())).thenReturn(false);
+    mvc.perform(builder).andExpect(status().isNotFound());
+    verify(service, times(2)).deleteBatch("ABatchName");
+  }
 }

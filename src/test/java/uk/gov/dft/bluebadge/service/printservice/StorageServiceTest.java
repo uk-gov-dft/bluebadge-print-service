@@ -1,5 +1,6 @@
 package uk.gov.dft.bluebadge.service.printservice;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -113,5 +114,21 @@ class StorageServiceTest {
     service.listPrinterBucketFiles();
 
     verify(s3, times(1)).listObjects(any(String.class));
+  }
+
+  @Test
+  @SneakyThrows
+  void deleteS3FileByKey() {
+    doNothing().when(s3).deleteObject("myBucket", "myKey");
+
+    // When file did not exist then dont try to delete
+    when(s3.doesObjectExist("myBucket", "myKey")).thenReturn(Boolean.FALSE);
+    assertThat(service.deleteS3FileByKey("myBucket", "myKey")).isFalse();
+    verify(s3, times(0)).deleteObject("myBucket", "myKey");
+
+    // When file exists then try to delete, but return false if still present
+    when(s3.doesObjectExist("myBucket", "myKey")).thenReturn(Boolean.TRUE);
+    assertThat(service.deleteS3FileByKey("myBucket", "myKey")).isFalse();
+    verify(s3, times(1)).deleteObject("myBucket", "myKey");
   }
 }
