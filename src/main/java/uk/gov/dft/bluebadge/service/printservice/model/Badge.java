@@ -97,9 +97,8 @@ public class Badge {
   private DeliveryOptionCode deliveryOptionCode = null;
 
   @JsonProperty("imageLink")
-  @ApiModelProperty(example = "http://tiny.url?q=ab63fg", value = "A URL for the badge photo.")
+  @ApiModelProperty(example = "my/s3/key.jpg", value = "An S3 key for the badge photo.")
   @Size(max = 255)
-  @NotEmpty
   private String imageLink = null;
 
   @JsonIgnore
