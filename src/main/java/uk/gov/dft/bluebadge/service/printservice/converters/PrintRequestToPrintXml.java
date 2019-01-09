@@ -1,62 +1,6 @@
 package uk.gov.dft.bluebadge.service.printservice.converters;
 
-import static java.util.stream.Collectors.groupingBy;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.Common.DATE_PATTERN;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.Common.XML_ENCODING;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.Common.XML_VERSION;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.BADGES;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.BADGE_DETAIL;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.BADGE_IDENTIFIER;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.BADGE_REFERENCE;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.BAR_CODE;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.BATCH;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.CLOCK_TYPE;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.DISPATCH_METHOD;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.EXPIRY_DATE;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.FASTTRACK_CODE;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.FILENAME;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.FORENAME;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.ISSUING_COUNTRY;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.LANGUAGE_CODE;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.LA_CODE;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.LA_EMAIL;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.LA_NAME;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.LA_PHONE_NO;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.LETTER_ADDRESS;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.LETTER_ADDRESS_COUNTRY;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.LETTER_ADDRESS_COUNTRY_VALUE;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.LETTER_ADDRESS_LINE1;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.LETTER_ADDRESS_LINE2;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.LETTER_ADDRESS_NAME;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.LETTER_ADDRESS_POSTCODE;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.LETTER_ADDRESS_TOWN;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.LOCAL_AUTHORITIES;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.LOCAL_AUTHORITY;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.NAME;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.ORG_NAME;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.PHOTO;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.POSTAGE_CODE;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.RE_EXTRACT;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.RE_EXTRACT_VALUE;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.ROOT;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.START_DATE;
-import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.SURNAME;
-import static uk.gov.dft.bluebadge.service.printservice.model.Batch.BatchTypeEnum.FASTTRACK;
-
 import com.amazonaws.util.IOUtils;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -71,6 +15,67 @@ import uk.gov.dft.bluebadge.service.printservice.model.Badge;
 import uk.gov.dft.bluebadge.service.printservice.model.Batch;
 import uk.gov.dft.bluebadge.service.printservice.model.Contact;
 import uk.gov.dft.bluebadge.service.printservice.referencedata.ReferenceDataService;
+
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static java.util.stream.Collectors.groupingBy;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.Common.DATE_PATTERN;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.Common.XML_ENCODING;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.Common.XML_VERSION;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.ADDRESS_COUNTRY;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.ADDRESS_COUNTRY_VALUE;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.ADDRESS_LINE1;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.ADDRESS_LINE2;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.ADDRESS_LINE3;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.ADDRESS_LINE4;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.ADDRESS_NAME1;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.ADDRESS_NAME2;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.ADDRESS_POSTCODE;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.ADDRESS_TOWN;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.BADGES;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.BADGE_DETAIL;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.BADGE_IDENTIFIER;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.BADGE_REFERENCE;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.BAR_CODE;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.BATCH;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.CLOCK_TYPE;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.COLLECTION_ADDRESS;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.DISPATCH_METHOD;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.EXPIRY_DATE;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.FASTTRACK_CODE;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.FILENAME;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.FORENAME;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.ISSUING_COUNTRY;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.LANGUAGE_CODE;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.LA_CODE;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.LA_EMAIL;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.LA_NAME;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.LA_PHONE_NO;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.LETTER_ADDRESS;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.LOCAL_AUTHORITIES;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.LOCAL_AUTHORITY;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.NAME;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.ORG_NAME;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.PHOTO;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.POSTAGE_CODE;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.RE_EXTRACT;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.RE_EXTRACT_VALUE;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.ROOT;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.START_DATE;
+import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.SURNAME;
+import static uk.gov.dft.bluebadge.service.printservice.model.Batch.BatchTypeEnum.FASTTRACK;
 
 @Component
 @Slf4j
@@ -92,7 +97,7 @@ public class PrintRequestToPrintXml {
     Path xmlFileName = createXmlFile(batch.getBatchType().equals(FASTTRACK), xmlDir);
     XMLStreamWriter writer = null;
 
-    try (FileOutputStream fos = new FileOutputStream(xmlFileName.toString())){
+    try (FileOutputStream fos = new FileOutputStream(xmlFileName.toString())) {
       writer =
           factory.createXMLStreamWriter(fos, "Cp1252");
 
@@ -168,7 +173,10 @@ public class PrintRequestToPrintXml {
     writeAndCloseElement(writer, BAR_CODE, getBarCode(badge));
 
     writeAndCloseNameElement(writer, badge);
-    writeAndCloseLetterAddressElement(writer, badge);
+    writeLetterAddressElements(writer, badge);
+    if (Badge.DeliverToCode.COUNCIL == badge.getDeliverToCode()) {
+      writeCollectionAddressElements(writer, badge);
+    }
 
     writer.writeEndElement();
   }
@@ -177,7 +185,7 @@ public class PrintRequestToPrintXml {
       throws XMLStreamException, IOException {
     writer.writeStartElement(PHOTO);
 
-    if (badge.isPersonBadge()) {
+    if (badge.isPersonBadge() && StringUtils.isNotEmpty(badge.getImageLink())) {
       Optional<byte[]> imageFile = s3.downloadBadgeFile(badge.getImageLink());
       if (imageFile.isPresent()) {
         String image = toBase64(imageFile.get());
@@ -199,43 +207,37 @@ public class PrintRequestToPrintXml {
     writer.writeEndElement();
   }
 
-  private void writeAndCloseLetterAddressElement(XMLStreamWriter writer, Badge badge)
+  private void writeCollectionAddressElements(XMLStreamWriter writer, Badge badge)
       throws XMLStreamException {
 
-    writer.writeStartElement(LETTER_ADDRESS);
-    if (Badge.DeliverToCode.HOME == badge.getDeliverToCode()) {
-      writeHomeLetterAddressElements(writer, badge);
-    } else {
-      writeCouncilLetterAddressElements(writer, badge);
-    }
+    LocalAuthorityRefData la = referenceData.retrieveLocalAuthority(badge.getLocalAuthorityShortCode());
+    LocalAuthorityMetaData laMeta = la.getLocalAuthorityMetaData();
+
+    writer.writeStartElement(COLLECTION_ADDRESS);
+    writeAndCloseElement(writer, ADDRESS_NAME1, la.getDescription());
+    writeAndCloseElement(writer, ADDRESS_NAME2, laMeta.getNameLine2());
+    writeAndCloseElement(writer, ADDRESS_LINE1, laMeta.getAddressLine1());
+    writeAndCloseElement(writer, ADDRESS_LINE2, laMeta.getAddressLine2());
+    writeAndCloseElement(writer, ADDRESS_LINE3, laMeta.getAddressLine3());
+    writeAndCloseElement(writer, ADDRESS_LINE4, laMeta.getAddressLine4());
+    writeAndCloseElement(writer, ADDRESS_TOWN, laMeta.getTown());
+    writeAndCloseElement(writer, ADDRESS_COUNTRY, ADDRESS_COUNTRY_VALUE);
+    writeAndCloseElement(writer, ADDRESS_POSTCODE, laMeta.getPostcode());
     writer.writeEndElement();
   }
 
-  private void writeCouncilLetterAddressElements(XMLStreamWriter writer, Badge badge)
-      throws XMLStreamException {
-    LocalAuthorityMetaData la =
-        referenceData
-            .retrieveLocalAuthority(badge.getLocalAuthorityShortCode())
-            .getLocalAuthorityMetaData();
-
-    writeAndCloseElement(writer, LETTER_ADDRESS_NAME, getHolderName(badge));
-    writeAndCloseElement(writer, LETTER_ADDRESS_LINE1, la.getAddressLine1());
-    writeAndCloseElement(writer, LETTER_ADDRESS_LINE2, la.getAddressLine2());
-    writeAndCloseElement(writer, LETTER_ADDRESS_TOWN, la.getTown());
-    writeAndCloseElement(writer, LETTER_ADDRESS_COUNTRY, LETTER_ADDRESS_COUNTRY_VALUE);
-    writeAndCloseElement(writer, LETTER_ADDRESS_POSTCODE, la.getPostcode());
-  }
-
-  private void writeHomeLetterAddressElements(XMLStreamWriter writer, Badge badge)
+  private void writeLetterAddressElements(XMLStreamWriter writer, Badge badge)
       throws XMLStreamException {
     Contact contact = badge.getParty().getContact();
 
-    writeAndCloseElement(writer, LETTER_ADDRESS_NAME, contact.getFullName());
-    writeAndCloseElement(writer, LETTER_ADDRESS_LINE1, contact.getBuildingStreet());
-    writeAndCloseElement(writer, LETTER_ADDRESS_LINE2, contact.getLine2());
-    writeAndCloseElement(writer, LETTER_ADDRESS_TOWN, contact.getTownCity());
-    writeAndCloseElement(writer, LETTER_ADDRESS_COUNTRY, LETTER_ADDRESS_COUNTRY_VALUE);
-    writeAndCloseElement(writer, LETTER_ADDRESS_POSTCODE, contact.getPostCode());
+    writer.writeStartElement(LETTER_ADDRESS);
+    writeAndCloseElement(writer, ADDRESS_NAME1, contact.getFullName());
+    writeAndCloseElement(writer, ADDRESS_LINE1, contact.getBuildingStreet());
+    writeAndCloseElement(writer, ADDRESS_LINE2, contact.getLine2());
+    writeAndCloseElement(writer, ADDRESS_TOWN, contact.getTownCity());
+    writeAndCloseElement(writer, ADDRESS_COUNTRY, ADDRESS_COUNTRY_VALUE);
+    writeAndCloseElement(writer, ADDRESS_POSTCODE, contact.getPostCode());
+    writer.writeEndElement();
   }
 
   private void writeAndCloseNameElement(XMLStreamWriter writer, Badge badge)

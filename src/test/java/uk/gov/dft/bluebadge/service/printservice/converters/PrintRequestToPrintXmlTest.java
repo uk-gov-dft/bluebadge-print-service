@@ -358,20 +358,34 @@ class PrintRequestToPrintXmlTest {
   @DisplayName("Should deliver to council address for BadgeIdentifier=CC12DD")
   @SneakyThrows
   @Test
-  void testDeliveryToCouncilAddress() {
+  void testDeliveryToCouncilCollectionAddress() {
 
+    // When deliver to council
     String expression =
-        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='CC12DD']/LetterAddress";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='CC12DD']/CollectionAddress";
     Node node =
         (Node) xpath.compile(expression).evaluate(parsedStandardXmlFile, XPathConstants.NODE);
     NodeList addrLines = node.getChildNodes();
 
-    assertEquals("Organisation for disabled people", addrLines.item(0).getTextContent());
-    assertEquals("address 1", addrLines.item(1).getTextContent());
-    assertEquals("address 2", addrLines.item(2).getTextContent());
-    assertEquals("town", addrLines.item(3).getTextContent());
-    assertEquals("United Kingdom", addrLines.item(4).getTextContent());
-    assertEquals("SW1A 1AA", addrLines.item(5).getTextContent());
+    // Then collection address is populated
+    assertEquals("LA description", addrLines.item(0).getTextContent());
+    assertEquals("name line 2", addrLines.item(1).getTextContent());
+    assertEquals("address 1", addrLines.item(2).getTextContent());
+    assertEquals("address 2", addrLines.item(3).getTextContent());
+    assertEquals("address 3", addrLines.item(4).getTextContent());
+    assertEquals("address 4", addrLines.item(5).getTextContent());
+    assertEquals("town", addrLines.item(6).getTextContent());
+    assertEquals("United Kingdom", addrLines.item(7).getTextContent());
+    assertEquals("SW1A 1AA", addrLines.item(8).getTextContent());
+
+    // When deliver to is home
+    expression =
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/CollectionAddress";
+    node =
+        (Node) xpath.compile(expression).evaluate(parsedStandardXmlFile, XPathConstants.NODE);
+
+    // Then no collection address
+    assertThat(node).isNull();
   }
 
   private static void saveStandardXmlFile() throws IOException, XMLStreamException {
