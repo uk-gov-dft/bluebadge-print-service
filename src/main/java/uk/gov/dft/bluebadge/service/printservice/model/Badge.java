@@ -26,7 +26,6 @@ public class Badge {
   @ApiModelProperty(example = "ABERD", value = "Short code of local authority.")
   @Pattern(regexp = "^[A-Z]+$")
   @NotEmpty
-  @Valid
   private String localAuthorityShortCode = null;
 
   @JsonProperty("badgeNumber")

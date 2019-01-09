@@ -3,6 +3,8 @@ package uk.gov.dft.bluebadge.service.printservice.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.List;
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -23,6 +25,7 @@ public class Batch {
 
   @JsonProperty("filename")
   @ApiModelProperty()
+  @NotEmpty
   private String filename = null;
 
   @JsonProperty("batchType")
@@ -32,5 +35,6 @@ public class Batch {
 
   @JsonProperty("badges")
   @ApiModelProperty()
+  @Valid
   private List<Badge> badges = null;
 }

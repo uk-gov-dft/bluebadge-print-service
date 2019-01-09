@@ -129,7 +129,7 @@ public class PrintService {
       log.error("Error while processing badges:" + e.getMessage(), e);
       return false;
     }
-
+    log.info("Finished processing files, success:{}", success);
     return success;
   }
 

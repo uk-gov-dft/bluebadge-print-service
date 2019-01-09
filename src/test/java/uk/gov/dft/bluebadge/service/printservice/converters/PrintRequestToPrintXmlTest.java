@@ -381,8 +381,7 @@ class PrintRequestToPrintXmlTest {
     // When deliver to is home
     expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']/CollectionAddress";
-    node =
-        (Node) xpath.compile(expression).evaluate(parsedStandardXmlFile, XPathConstants.NODE);
+    node = (Node) xpath.compile(expression).evaluate(parsedStandardXmlFile, XPathConstants.NODE);
 
     // Then no collection address
     assertThat(node).isNull();

@@ -1,35 +1,5 @@
 package uk.gov.dft.bluebadge.service.printservice.converters;
 
-import com.amazonaws.util.IOUtils;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-import uk.gov.dft.bluebadge.service.printservice.StorageService;
-import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.LocalAuthorityRefData;
-import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.LocalAuthorityRefData.LocalAuthorityMetaData;
-import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.Nation;
-import uk.gov.dft.bluebadge.service.printservice.config.GeneralConfig;
-import uk.gov.dft.bluebadge.service.printservice.model.Badge;
-import uk.gov.dft.bluebadge.service.printservice.model.Batch;
-import uk.gov.dft.bluebadge.service.printservice.model.Contact;
-import uk.gov.dft.bluebadge.service.printservice.referencedata.ReferenceDataService;
-
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 import static java.util.stream.Collectors.groupingBy;
 import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.Common.DATE_PATTERN;
 import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.Common.XML_ENCODING;
@@ -77,6 +47,36 @@ import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaCons
 import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.SURNAME;
 import static uk.gov.dft.bluebadge.service.printservice.model.Batch.BatchTypeEnum.FASTTRACK;
 
+import com.amazonaws.services.s3.model.AmazonS3Exception;
+import com.amazonaws.util.IOUtils;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+import uk.gov.dft.bluebadge.service.printservice.StorageService;
+import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.LocalAuthorityRefData;
+import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.LocalAuthorityRefData.LocalAuthorityMetaData;
+import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.Nation;
+import uk.gov.dft.bluebadge.service.printservice.config.GeneralConfig;
+import uk.gov.dft.bluebadge.service.printservice.model.Badge;
+import uk.gov.dft.bluebadge.service.printservice.model.Batch;
+import uk.gov.dft.bluebadge.service.printservice.model.Contact;
+import uk.gov.dft.bluebadge.service.printservice.referencedata.ReferenceDataService;
+
 @Component
 @Slf4j
 public class PrintRequestToPrintXml {
@@ -98,8 +98,7 @@ public class PrintRequestToPrintXml {
     XMLStreamWriter writer = null;
 
     try (FileOutputStream fos = new FileOutputStream(xmlFileName.toString())) {
-      writer =
-          factory.createXMLStreamWriter(fos, "Cp1252");
+      writer = factory.createXMLStreamWriter(fos, "Cp1252");
 
       writer.writeStartDocument(XML_ENCODING, XML_VERSION);
       writer.writeStartElement(ROOT);
@@ -186,7 +185,12 @@ public class PrintRequestToPrintXml {
     writer.writeStartElement(PHOTO);
 
     if (badge.isPersonBadge() && StringUtils.isNotEmpty(badge.getImageLink())) {
-      Optional<byte[]> imageFile = s3.downloadBadgeFile(badge.getImageLink());
+      Optional<byte[]> imageFile = Optional.empty();
+      try {
+        imageFile = s3.downloadBadgeFile(badge.getImageLink());
+      } catch (AmazonS3Exception e) {
+        log.error("Could not find s3 object for key " + badge.getImageLink(), e);
+      }
       if (imageFile.isPresent()) {
         String image = toBase64(imageFile.get());
         writer.writeCharacters(image);
@@ -210,7 +214,8 @@ public class PrintRequestToPrintXml {
   private void writeCollectionAddressElements(XMLStreamWriter writer, Badge badge)
       throws XMLStreamException {
 
-    LocalAuthorityRefData la = referenceData.retrieveLocalAuthority(badge.getLocalAuthorityShortCode());
+    LocalAuthorityRefData la =
+        referenceData.retrieveLocalAuthority(badge.getLocalAuthorityShortCode());
     LocalAuthorityMetaData laMeta = la.getLocalAuthorityMetaData();
 
     writer.writeStartElement(COLLECTION_ADDRESS);
