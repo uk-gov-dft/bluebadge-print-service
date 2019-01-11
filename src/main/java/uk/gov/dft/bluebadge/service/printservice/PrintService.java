@@ -99,8 +99,6 @@ public class PrintService {
   }
 
   private boolean uploadToS3(Batch batch) throws IOException {
-    //   ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-    //   mapper.registerModule(new JavaTimeModule());
 
     String json = mapper.writeValueAsString(batch);
 
@@ -172,10 +170,7 @@ public class PrintService {
   private String prepareXml(String json) throws IOException, XMLStreamException {
     log.debug("Prepare xml file");
 
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.registerModule(new JavaTimeModule());
-
-    Batch batch = objectMapper.readValue(json, Batch.class);
+    Batch batch = mapper.readValue(json, Batch.class);
 
     return xmlConverter.toXml(batch, XML_DIR);
   }
