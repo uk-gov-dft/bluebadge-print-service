@@ -6,10 +6,8 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.amazonaws.util.IOUtils;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLEncoder;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,7 +17,6 @@ import uk.gov.dft.bluebadge.service.printservice.config.S3Config;
 @Slf4j
 public class StorageService {
 
-  private static final String ENCODING_CHAR_SET = "UTF-8";
   private final AmazonS3 amazonS3;
   private final S3Config s3Config;
 
@@ -28,16 +25,11 @@ public class StorageService {
     this.s3Config = s3Config;
   }
 
-  boolean uploadToPrinterBucket(String src, String fileName) throws IOException {
-
+  boolean uploadToPrinterBucket(String src, String fileName) {
     log.info("Uploading document to S3.  FileName:{}, Payload: {}", fileName, src);
+    amazonS3.putObject(s3Config.getS3PrinterBucket(), fileName, src);
 
-    String keyName = UUID.randomUUID().toString() + "-" + fileName;
-    keyName = URLEncoder.encode(keyName, ENCODING_CHAR_SET);
-
-    amazonS3.putObject(s3Config.getS3PrinterBucket(), keyName, src);
-
-    return amazonS3.doesObjectExist(s3Config.getS3PrinterBucket(), keyName);
+    return amazonS3.doesObjectExist(s3Config.getS3PrinterBucket(), fileName);
   }
 
   List<String> listPrinterBucketFiles() {

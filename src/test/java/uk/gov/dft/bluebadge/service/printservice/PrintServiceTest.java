@@ -14,6 +14,7 @@ import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.standar
 import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.successBatch;
 import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.testJson;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -42,7 +43,8 @@ class PrintServiceTest {
       mock(PrintResultXmlToProcessedBatchResponse.class);
 
   private PrintService service =
-      new PrintService(mockS3, mockFtpService, mockXmlConverter, mockXmlToProcessedBatch);
+      new PrintService(
+          mockS3, mockFtpService, mockXmlConverter, mockXmlToProcessedBatch, new ObjectMapper());
 
   private String originalTmpDir = System.getProperty("java.io.tmpdir");
 

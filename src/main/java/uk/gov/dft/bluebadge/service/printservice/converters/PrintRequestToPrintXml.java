@@ -45,7 +45,6 @@ import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaCons
 import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.ROOT;
 import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.START_DATE;
 import static uk.gov.dft.bluebadge.service.printservice.converters.XmlSchemaConstants.PrintRequestElements.SURNAME;
-import static uk.gov.dft.bluebadge.service.printservice.model.Batch.BatchTypeEnum.FASTTRACK;
 
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.util.IOUtils;
@@ -53,7 +52,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.List;
@@ -94,7 +92,7 @@ public class PrintRequestToPrintXml {
   public String toXml(Batch batch, Path xmlDir) throws XMLStreamException, IOException {
 
     XMLOutputFactory factory = XMLOutputFactory.newInstance();
-    Path xmlFileName = createXmlFile(batch.getBatchType().equals(FASTTRACK), xmlDir);
+    Path xmlFileName = createXmlFile(batch, xmlDir);
     XMLStreamWriter writer = null;
 
     try (FileOutputStream fos = new FileOutputStream(xmlFileName.toString())) {
@@ -137,16 +135,12 @@ public class PrintRequestToPrintXml {
     return xmlFileName.toString();
   }
 
-  private Path createXmlFile(boolean isFasttrack, Path xmlDir) throws IOException {
-    String suffix = isFasttrack ? "-FastTrack" : "";
-    Path xmlFile =
-        xmlDir.resolve(
-            "BADGEEXTRACT_"
-                + LocalDateTime.now().format(DateTimeFormatter.ofPattern("YYYYMMddHHmmss"))
-                + suffix
-                + ".xml");
+  private Path createXmlFile(Batch batch, Path xmlDir) throws IOException {
+
+    Path xmlFile = xmlDir.resolve(batch.getFilename() + ".xml");
 
     Files.createDirectories(xmlFile.getParent());
+    Files.deleteIfExists(xmlFile);
     Files.createFile(xmlFile);
 
     return xmlFile;

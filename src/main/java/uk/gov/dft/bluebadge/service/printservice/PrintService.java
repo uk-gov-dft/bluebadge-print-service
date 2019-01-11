@@ -1,14 +1,11 @@
 package uk.gov.dft.bluebadge.service.printservice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -34,16 +31,19 @@ public class PrintService {
   private final FTPService ftp;
   private final PrintRequestToPrintXml xmlConverter;
   private final PrintResultXmlToProcessedBatchResponse xmlToProcessedBatch;
+  private ObjectMapper mapper;
 
   PrintService(
       StorageService s3,
       FTPService ftp,
       PrintRequestToPrintXml xmlConverter,
-      PrintResultXmlToProcessedBatchResponse xmlToProcessedBatch) {
+      PrintResultXmlToProcessedBatchResponse xmlToProcessedBatch,
+      ObjectMapper mapper) {
     this.s3 = s3;
     this.ftp = ftp;
     this.xmlConverter = xmlConverter;
     this.xmlToProcessedBatch = xmlToProcessedBatch;
+    this.mapper = mapper;
   }
 
   /**
@@ -99,18 +99,12 @@ public class PrintService {
   }
 
   private boolean uploadToS3(Batch batch) throws IOException {
-    ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-    mapper.registerModule(new JavaTimeModule());
+    //   ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+    //   mapper.registerModule(new JavaTimeModule());
 
     String json = mapper.writeValueAsString(batch);
 
-    String filename =
-        batch.getBatchType()
-            + "_"
-            + LocalDateTime.now().format(DateTimeFormatter.ofPattern("YYYYMMddHHmmss"))
-            + ".json";
-
-    boolean uploaded = s3.uploadToPrinterBucket(json, filename);
+    boolean uploaded = s3.uploadToPrinterBucket(json, batch.getFilename() + ".json");
     log.debug("Json payload {} has been uploaded: {}", json, uploaded);
 
     return uploaded;

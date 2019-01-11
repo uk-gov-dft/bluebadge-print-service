@@ -61,8 +61,7 @@ public interface PrintBatchApi {
   )
   @GetMapping(
     value = "/processed-batches",
-    produces = {"application/json"},
-    consumes = {"application/json"}
+    produces = {"application/json"}
   )
   ResponseEntity<ProcessedBatchesResponse> processedBatches();
 }
