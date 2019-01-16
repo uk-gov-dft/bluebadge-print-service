@@ -1,24 +1,24 @@
 package uk.gov.dft.bluebadge.service.printservice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import javax.xml.stream.XMLStreamException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
-import uk.gov.dft.bluebadge.service.printservice.config.S3Config;
+import uk.gov.dft.bluebadge.service.printservice.converters.PrintRequestToPrintXml;
+import uk.gov.dft.bluebadge.service.printservice.converters.PrintResultXmlConversionException;
+import uk.gov.dft.bluebadge.service.printservice.converters.PrintResultXmlToProcessedBatchResponse;
 import uk.gov.dft.bluebadge.service.printservice.model.Batch;
-import uk.gov.dft.bluebadge.service.printservice.utils.ModelToXmlConverter;
+import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBatch;
 
 @Service
 @Slf4j
@@ -29,14 +29,58 @@ public class PrintService {
 
   private final StorageService s3;
   private final FTPService ftp;
-  private final ModelToXmlConverter xmlConverter;
+  private final PrintRequestToPrintXml xmlConverter;
+  private final PrintResultXmlToProcessedBatchResponse xmlToProcessedBatch;
+  private ObjectMapper mapper;
 
-  @Autowired private S3Config s3Config;
-
-  PrintService(StorageService s3, FTPService ftp, ModelToXmlConverter xmlConverter) {
+  PrintService(
+      StorageService s3,
+      FTPService ftp,
+      PrintRequestToPrintXml xmlConverter,
+      PrintResultXmlToProcessedBatchResponse xmlToProcessedBatch,
+      ObjectMapper mapper) {
     this.s3 = s3;
     this.ftp = ftp;
     this.xmlConverter = xmlConverter;
+    this.xmlToProcessedBatch = xmlToProcessedBatch;
+    this.mapper = mapper;
+  }
+
+  /**
+   * Returns printing results. Either successful, CONFIRMATION type batches or REJECTIONs. Results
+   * received as XML files from S3 and parsed into List of ProcessedBatch pojos.
+   *
+   * @return List of processing results (from printing company) for previously submitted print
+   *     requests.
+   */
+  List<ProcessedBatch> getProcessedBatches() {
+    log.info("Returning processed batches.");
+    List<ProcessedBatch> processedBatches = new ArrayList<>();
+    List<String> files = s3.listInBucketXmlFiles();
+    int successCount = 0;
+
+    for (String file : files) {
+      log.info("Parsing {}", file);
+      try (InputStream is = s3.downloadS3File(s3.getInBucket(), file)) {
+        processedBatches.add(xmlToProcessedBatch.readProcessedBatchFile(is, file));
+        successCount++;
+      } catch (PrintResultXmlConversionException e) {
+        processedBatches.add(
+            ProcessedBatch.builder().filename(file).errorMessage(e.getDetailedError()).build());
+      } catch (Exception e) {
+        // Catch, log and create a response for any unexpected exceptions and then carry on processing.
+        // Possible causes: Invalid date format, S3 problem.
+        log.error("Unexpected exception parsing file:" + file, e);
+        processedBatches.add(
+            ProcessedBatch.builder().filename(file).errorMessage(e.getMessage()).build());
+      }
+    }
+    log.info(
+        "Processed {} batch file(s), {} successful, {} failed.",
+        files.size(),
+        successCount,
+        files.size() - successCount);
+    return processedBatches;
   }
 
   public void print(Batch batch) {
@@ -55,18 +99,10 @@ public class PrintService {
   }
 
   private boolean uploadToS3(Batch batch) throws IOException {
-    ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-    mapper.registerModule(new JavaTimeModule());
 
     String json = mapper.writeValueAsString(batch);
 
-    String filename =
-        batch.getBatchType()
-            + "_"
-            + LocalDateTime.now().format(DateTimeFormatter.ofPattern("YYYYMMddHHmmss"))
-            + ".json";
-
-    boolean uploaded = s3.uploadToPrinterBucket(json, filename);
+    boolean uploaded = s3.uploadToPrinterBucket(json, batch.getFilename() + ".json");
     log.debug("Json payload {} has been uploaded: {}", json, uploaded);
 
     return uploaded;
@@ -85,7 +121,7 @@ public class PrintService {
       log.error("Error while processing badges:" + e.getMessage(), e);
       return false;
     }
-
+    log.info("Finished processing files, success:{}", success);
     return success;
   }
 
@@ -96,7 +132,7 @@ public class PrintService {
     try {
       json = s3.downloadPrinterFileAsString(key);
     } catch (Exception e) {
-      log.error("Can't download file: {} from s3 bucket: {}", key, s3Config.getS3PrinterBucket());
+      log.error("Can't download file: {} from s3 bucket: {}", key, s3.getPrinterBucket());
       log.error("Error while downloading: {}", e);
       return false;
     }
@@ -134,10 +170,7 @@ public class PrintService {
   private String prepareXml(String json) throws IOException, XMLStreamException {
     log.debug("Prepare xml file");
 
-    ObjectMapper objectMapper = new ObjectMapper();
-    objectMapper.registerModule(new JavaTimeModule());
-
-    Batch batch = objectMapper.readValue(json, Batch.class);
+    Batch batch = mapper.readValue(json, Batch.class);
 
     return xmlConverter.toXml(batch, XML_DIR);
   }
@@ -148,5 +181,9 @@ public class PrintService {
     } catch (IOException e) {
       log.error("Error while deleting local temporary resources: {}", e.getMessage());
     }
+  }
+
+  boolean deleteBatch(String batchName) {
+    return s3.deleteS3FileByKey(s3.getInBucket(), batchName);
   }
 }

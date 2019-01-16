@@ -45,6 +45,7 @@ springfox.documentation.swagger.v2.path: /api-docs
 amazon:
   bb-printer-bucket: uk-gov-dft-${blue-badge.env}-printer
   bb-badge-bucket: uk-gov-dft-${blue-badge.env}-badge
+  bb-processed-badge-bucket: uk-gov-dft-${blue-badge.env}-badge-in
   signed-url-duration-ms: 60000
    
 ftp:
@@ -55,4 +56,10 @@ ftp:
   dropbox: ${SFTP_FOLDER:/upload}
   knownhosts: ${SFTP_KNOWNHOSTS:~/.ssh/sftp_known_hosts} 
 
+general:
+  organisation:
+    photo:
+      resourceuri:
+        england: /pictures/org_E.jpg
+        wales: /pictures/org_W.jpg
 

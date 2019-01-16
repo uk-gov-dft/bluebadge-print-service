@@ -1,7 +1,6 @@
 package uk.gov.service.printservice.test.utils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Objects;
@@ -14,6 +13,7 @@ import org.xml.sax.SAXException;
 
 public class XMLValidator {
 
+  @SuppressWarnings("unused")
   public boolean validate(String xmlFile, String schemaFile) {
     SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
     try {
@@ -32,7 +32,7 @@ public class XMLValidator {
     }
   }
 
-  private String getResource(String filename) throws FileNotFoundException {
+  private String getResource(String filename) {
     URL resource = getClass().getClassLoader().getResource(filename);
     Objects.requireNonNull(resource);
     return resource.getFile();
