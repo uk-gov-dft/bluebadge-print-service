@@ -140,7 +140,8 @@ class PrintRequestToPrintXmlTest {
     assertEquals("EW", getNodeTextInStandardXmlFile(expression));
   }
 
-  @DisplayName("Should return ClockType = `Standard` for LACode=ANGL, different from default for Nation")
+  @DisplayName(
+      "Should return ClockType = `Standard` for LACode=ANGL, different from default for Nation")
   @SneakyThrows
   @Test
   void testOverriddenClockTypeWales() {

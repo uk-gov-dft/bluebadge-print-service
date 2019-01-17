@@ -100,7 +100,7 @@ public class TestDataFixtures {
     meta.setContactNumber("02070140800");
     meta.setEmailAddress("email@mail.com");
     meta.setClockType(clock);
-    
+
     return meta;
   }
 

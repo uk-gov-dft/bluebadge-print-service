@@ -132,7 +132,7 @@ public class PrintRequestToPrintXml {
         if (null != writer) {
           writer.close();
         }
-      }catch(Exception e){
+      } catch (Exception e) {
         // NO-op
       }
     }
@@ -290,7 +290,10 @@ public class PrintRequestToPrintXml {
     LocalAuthorityRefData la = referenceData.retrieveLocalAuthority(laCode);
 
     Nation nation = la.getLocalAuthorityMetaData().getNation();
-    String clockType = StringUtils.isBlank(la.getLocalAuthorityMetaData().getClockType()) ? nation.getXmlPrintFileClockType() : la.getLocalAuthorityMetaData().getClockType();
+    String clockType =
+        StringUtils.isBlank(la.getLocalAuthorityMetaData().getClockType())
+            ? nation.getXmlPrintFileClockType()
+            : la.getLocalAuthorityMetaData().getClockType();
 
     writeAndCloseElement(writer, LA_CODE, la.getShortCode());
     writeAndCloseElement(writer, LA_NAME, la.getDescription());
