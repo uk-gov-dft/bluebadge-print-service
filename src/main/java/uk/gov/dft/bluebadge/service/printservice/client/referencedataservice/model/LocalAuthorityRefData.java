@@ -30,5 +30,6 @@ public class LocalAuthorityRefData extends ReferenceData {
     private String postcode;
     private String contactNumber;
     private String emailAddress;
+    private String clockType;
   }
 }
