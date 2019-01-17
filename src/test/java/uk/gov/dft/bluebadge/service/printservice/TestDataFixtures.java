@@ -200,7 +200,7 @@ public class TestDataFixtures {
     details.setParty(
         organisationParty(
             createContact(
-                "XmlName Last", "88", "pleasant walk", "Manchester", "M4 3AS", "xml@email.com"),
+                "The contact name", null, "pleasant walk", "Manchester", "M4 3AS", "xml@email.com"),
             organisation()));
     details.setDeliverToCode(Badge.DeliverToCode.COUNCIL);
     details.setDeliveryOptionCode(Badge.DeliveryOptionCode.STAND);

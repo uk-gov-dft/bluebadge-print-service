@@ -316,8 +316,17 @@ class PrintRequestToPrintXmlTest {
     assertEquals("O0121", getNodeTextInStandardXmlFile(expression));
   }
 
-  @DisplayName(
-      "Should return populate only Name=`Jane Second` and leave Surname blank for BadgeIdentifier=AA34BB")
+  @Test
+  @SneakyThrows
+  void emptyElementTest() {
+    String expression =
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='WALESO']/LetterAddress/AddressLine2";
+
+    Node node =
+        (Node) xpath.compile(expression).evaluate(parsedStandardXmlFile, XPathConstants.NODE);
+    assertThat(node).isNull();
+  }
+
   @SneakyThrows
   @Test
   void testShortName() {
@@ -335,9 +344,14 @@ class PrintRequestToPrintXmlTest {
 
     // Organisation
     expression =
-        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='WALESO']/Name/OrganisationName";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='WALESO']/OrganisationName";
 
     assertEquals("Organisation for disabled people", getNodeTextInStandardXmlFile(expression));
+
+    // For org, the contact name should be in name.
+    expression =
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='WALESO']/Name/Surname";
+    assertEquals("The contact name", getNodeTextInStandardXmlFile(expression));
   }
 
   @DisplayName(
