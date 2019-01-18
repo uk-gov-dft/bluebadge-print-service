@@ -9,6 +9,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.ToString;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.validation.annotation.Validated;
@@ -27,17 +28,23 @@ public class Person {
 
   @JsonProperty("dob")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-  //  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
   @ApiModelProperty(example = "1972-09-13", value = "Date of birth YYYY-MM-DD")
   @NotNull
   @Valid
   private LocalDate dob = null;
 
-  @JsonProperty("genderCode")
-  @ApiModelProperty(
-    example = "MALE",
-    value =
-        "A short code from the GENDER group of reference data. e.g. MALE, FEMALE or UNSPECIFIED."
-  )
-  private String genderCode = null;
+  @Getter
+  public enum GenderCode {
+    MALE("X"),
+    FEMALE("Y"),
+    UNSPECIFIE("Z");
+
+    private String xmlPrintFileCode;
+
+    GenderCode(String xmlPrintFileCode) {
+      this.xmlPrintFileCode = xmlPrintFileCode;
+    }
+  }
+
+  @NotNull private GenderCode genderCode = null;
 }

@@ -23,6 +23,10 @@ public class S3Config {
   @NotNull
   private String s3BadgeBucket;
 
+  @Value("${amazon.bb-processed-badge-bucket}")
+  @NotNull
+  private String s3InBucket;
+
   @Value("${amazon.signed-url-duration-ms:5000}")
   @NotNull
   private Integer signedUrlDurationMs;

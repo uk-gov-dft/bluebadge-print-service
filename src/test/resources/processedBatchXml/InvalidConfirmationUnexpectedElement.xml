@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<BadgePrintConfirmations xmlns="http://YourSite.com/BadgePrintConfirmations">
+    <Confirmation>
+        <BadgeIdentifier>222229</BadgeIdentifier>
+        <Invalid></Invalid>
+        <Cancellation>no</Cancellation>
+        <DispatchedDate>2018-02-02T14:24:34</DispatchedDate>
+    </Confirmation>
+</BadgePrintConfirmations>
