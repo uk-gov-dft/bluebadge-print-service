@@ -290,16 +290,12 @@ public class PrintRequestToPrintXml {
     LocalAuthorityRefData la = referenceData.retrieveLocalAuthority(laCode);
 
     Nation nation = la.getLocalAuthorityMetaData().getNation();
-    String clockType =
-        StringUtils.isBlank(la.getLocalAuthorityMetaData().getClockType())
-            ? nation.getXmlPrintFileClockType()
-            : la.getLocalAuthorityMetaData().getClockType();
 
     writeAndCloseElement(writer, LA_CODE, la.getShortCode());
     writeAndCloseElement(writer, LA_NAME, la.getDescription());
     writeAndCloseElement(writer, ISSUING_COUNTRY, nation.getXmlPrintFileIssuingCountry());
     writeAndCloseElement(writer, LANGUAGE_CODE, nation.getXmlPrintFileLanguageCode());
-    writeAndCloseElement(writer, CLOCK_TYPE, clockType);
+    writeAndCloseElement(writer, CLOCK_TYPE, la.getLocalAuthorityMetaData().getClockType());
     writeAndCloseElement(writer, LA_PHONE_NO, la.getLocalAuthorityMetaData().getContactNumber());
     writeAndCloseElement(writer, LA_EMAIL, la.getLocalAuthorityMetaData().getEmailAddress());
   }

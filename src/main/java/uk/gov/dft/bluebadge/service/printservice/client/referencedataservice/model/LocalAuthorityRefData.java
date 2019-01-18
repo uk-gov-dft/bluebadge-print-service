@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import org.apache.commons.lang3.StringUtils;
 
 @Data
 @ToString(callSuper = true)
@@ -31,5 +32,11 @@ public class LocalAuthorityRefData extends ReferenceData {
     private String contactNumber;
     private String emailAddress;
     private String clockType;
+
+    public String getClockType() {
+      return StringUtils.isBlank(this.clockType)
+          ? nation.getXmlPrintFileClockType()
+          : this.clockType;
+    }
   }
 }
