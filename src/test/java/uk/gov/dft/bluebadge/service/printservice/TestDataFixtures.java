@@ -1,9 +1,11 @@
 package uk.gov.dft.bluebadge.service.printservice;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.List;
+import lombok.SneakyThrows;
 import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.LocalAuthorityRefData;
 import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.LocalAuthorityRefData.LocalAuthorityMetaData;
 import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.Nation;
@@ -46,6 +48,11 @@ public class TestDataFixtures {
 
   public static Batch standardBatchPayload() {
     return batch1();
+  }
+
+  @SneakyThrows
+  public static String standardBatchPayloadAsString() {
+    return new ObjectMapper().writeValueAsString(standardBatchPayload());
   }
 
   public static Batch fasttrackBatchPayload() {

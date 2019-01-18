@@ -1,16 +1,6 @@
 package uk.gov.dft.bluebadge.service.printservice;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.amazonaws.util.IOUtils;
-import java.util.ArrayList;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
@@ -23,6 +13,17 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.util.ArrayList;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Slf4j
 class PrintControllerTest {
@@ -52,9 +53,11 @@ class PrintControllerTest {
         MockMvcRequestBuilders.post("/printBatch")
             .content(body)
             .contentType(MediaType.APPLICATION_JSON);
-    doNothing().when(service).print(any());
+    doNothing().when(service).storePrintBatchInS3(any());
+    doNothing().when(service).processPrintBatches();
     mvc.perform(builder).andExpect(status().isOk());
-    verify(service, times(1)).print(any());
+    verify(service, times(1)).storePrintBatchInS3(any());
+    verify(service, times(1)).processPrintBatches();
   }
 
   @Test
@@ -67,9 +70,11 @@ class PrintControllerTest {
         MockMvcRequestBuilders.post("/printBatch")
             .content(body)
             .contentType(MediaType.APPLICATION_JSON);
-    doThrow(new RuntimeException("Some underlying problems")).when(service).print(any());
+    doThrow(new RuntimeException("Some underlying problems")).when(service).storePrintBatchInS3(any());
     mvc.perform(builder).andExpect(status().is5xxServerError());
-    verify(service, times(1)).print(any());
+    verify(service, times(1)).storePrintBatchInS3(any());
+    // And still process other batches.
+    verify(service, times(1)).processPrintBatches();
   }
 
   @Test
@@ -90,12 +95,12 @@ class PrintControllerTest {
     RequestBuilder builder =
         MockMvcRequestBuilders.delete("/processed-batches/{id}", "ABatchName")
             .contentType(MediaType.APPLICATION_JSON);
-    when(service.deleteBatch(any())).thenReturn(true);
+    when(service.deleteBatchConfirmation(any())).thenReturn(true);
     mvc.perform(builder).andExpect(status().isOk());
-    verify(service, times(1)).deleteBatch("ABatchName");
+    verify(service, times(1)).deleteBatchConfirmation("ABatchName");
 
-    when(service.deleteBatch(any())).thenReturn(false);
+    when(service.deleteBatchConfirmation(any())).thenReturn(false);
     mvc.perform(builder).andExpect(status().isNotFound());
-    verify(service, times(2)).deleteBatch("ABatchName");
+    verify(service, times(2)).deleteBatchConfirmation("ABatchName");
   }
 }

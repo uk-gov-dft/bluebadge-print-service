@@ -2,7 +2,7 @@ import groovy.json.JsonSlurper
 
 buildscript {
     ext {
-        springBootVersion = '2.1.0.RELEASE'
+        springBootVersion = '2.1.2.RELEASE'
     }
 
     repositories {

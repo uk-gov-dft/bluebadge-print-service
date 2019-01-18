@@ -8,7 +8,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import javax.xml.stream.XMLStreamException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -18,10 +17,11 @@ import uk.gov.dft.bluebadge.service.printservice.converters.PrintResultXmlConver
 import uk.gov.dft.bluebadge.service.printservice.converters.PrintResultXmlToProcessedBatchResponse;
 import uk.gov.dft.bluebadge.service.printservice.model.Batch;
 import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBatch;
+import uk.gov.dft.bluebadge.service.printservice.referencedata.ReferenceDataService;
 
 @Service
 @Slf4j
-public class PrintService {
+class PrintService {
 
   private static final Path XML_DIR =
       Paths.get(System.getProperty("java.io.tmpdir"), "printbatch_xml");
@@ -31,18 +31,21 @@ public class PrintService {
   private final PrintRequestToPrintXml xmlConverter;
   private final PrintResultXmlToProcessedBatchResponse xmlToProcessedBatch;
   private ObjectMapper mapper;
+  private ReferenceDataService referenceDataService;
 
   PrintService(
       StorageService s3,
       FTPService ftp,
       PrintRequestToPrintXml xmlConverter,
       PrintResultXmlToProcessedBatchResponse xmlToProcessedBatch,
-      ObjectMapper mapper) {
+      ObjectMapper mapper,
+      ReferenceDataService referenceDataService) {
     this.s3 = s3;
     this.ftp = ftp;
     this.xmlConverter = xmlConverter;
     this.xmlToProcessedBatch = xmlToProcessedBatch;
     this.mapper = mapper;
+    this.referenceDataService = referenceDataService;
   }
 
   /**
@@ -69,7 +72,7 @@ public class PrintService {
       } catch (Exception e) {
         // Catch, log and create a response for any unexpected exceptions and then carry on processing.
         // Possible causes: Invalid date format, S3 problem.
-        log.error("Unexpected exception parsing file:" + file, e);
+        log.error("Unexpected exception parsing file:" + file + ":" + e.getMessage(), e);
         processedBatches.add(
             ProcessedBatch.builder().filename(file).errorMessage(e.getMessage()).build());
       }
@@ -82,107 +85,98 @@ public class PrintService {
     return processedBatches;
   }
 
-  public void print(Batch batch) {
-
-    boolean uploaded = false;
-    try {
-      uploaded = uploadToS3(batch);
-    } catch (IOException e) {
-      log.error("Can't upload file to s3", e);
-    }
-
-    if (uploaded) {
-      log.info("Batch uploaded to S3, processing.");
-      processBatches();
-    }
-  }
-
-  private boolean uploadToS3(Batch batch) throws IOException {
+  void storePrintBatchInS3(Batch batch) throws IOException {
     String json = mapper.writeValueAsString(batch);
 
     boolean uploaded = s3.uploadToPrinterBucket(json, batch.getFilename() + ".json");
-    log.debug("Json payload {} has been uploaded: {}", json, uploaded);
-
-    return uploaded;
-  }
-
-  private boolean processBatches() {
-    boolean success = true;
-    try {
-      List<String> files = s3.listPrinterBucketFiles();
-      log.info("Processing {} files", files.size());
-      for (String file : files) {
-        log.debug("Downloading file: {} from s3 printer bucket", file);
-        success &= processBatch(file);
-      }
-    } catch (Exception e) {
-      log.error("Error while processing badges:" + e.getMessage(), e);
-      return false;
-    }
-    log.info("Finished processing files, success:{}", success);
-    return success;
+    log.debug("Json payload for batch {}, has been uploaded: {}", batch.getFilename(), uploaded);
   }
 
   @Async("batchExecutor")
-  private boolean processBatch(String key) {
+  synchronized void processPrintBatches() {
+    // Get list of batches to process.
+    List<String> s3Keys;
+    try {
+      s3Keys = s3.listPrinterBucketFiles();
+    } catch (Exception e) {
+      // Can't continue processing.
+      log.error("Failed listing s3 files while processing print batchs ", e);
+      return;
+    }
 
+    // Process each batch, if 1 fails, continue with the rest.
+    log.info("Processing {} batches", s3Keys.size());
+    for (String file : s3Keys) {
+      try {
+        processPrintBatch(file);
+      } catch (Exception e) {
+        // Any exception, carry on and try next batch.
+        log.error("Failed processing " + file, e);
+      }
+    }
+  }
+
+  private void processPrintBatch(String key) {
+
+    log.info("Processing print batch {}", key);
     Optional<String> json;
     try {
       json = s3.downloadPrinterFileAsString(key);
+      if (!json.isPresent()) {
+        log.error("Can't download file: {} from s3", key);
+        return;
+      }
     } catch (Exception e) {
-      log.error("Can't download file: {} from s3 bucket: {}", key, s3.getPrinterBucket());
-      log.error("Error while downloading: {}", e);
-      return false;
+      log.error("Error while downloading from s3 for: " + key, e);
+      return;
     }
 
     String xmlFileName;
-    if (json.isPresent()) {
-      try {
-        xmlFileName = prepareXml(json.get());
-      } catch (IOException | XMLStreamException e) {
-        log.error("Can't process json string: {} into valid xml", json.get());
-        log.error("Error while converting into xml", e);
-        return false;
-      }
-    } else {
-      log.error("Can't download file: {} from s3", key);
-      return false;
-    }
-
-    boolean transferred = false;
     try {
-      transferred = ftp.send(xmlFileName);
+      Batch batch = mapper.readValue(json.get(), Batch.class);
+      xmlFileName = xmlConverter.toXml(batch, XML_DIR, referenceDataService);
     } catch (Exception e) {
-      log.error("Can't send file: {} ftp", xmlFileName);
-      log.error("Error while sending file to ftp: {}", e.getMessage());
+      log.error("Error while converting into xml:" + e.getMessage() + ", File:" + key, e);
+      return;
     }
+    log.info("Xml created for {}, beginning sftp.", xmlFileName);
 
-    if (transferred) {
-      s3.deletePrinterBucketFile(key);
+    if (ftp.send(xmlFileName)) {
+      try {
+        log.info("Sftp complete for {}, removing batch from S3.", xmlFileName);
+        s3.deletePrinterBucketFile(key);
+        log.info("Processing of batch {} completed successfully.", key);
+      } catch (Exception e) {
+        // File sent to printers, but batch not deleted.
+        // This could result in it being resent.
+        log.error(
+            "File "
+                + xmlFileName
+                + " successfully sftp'd to printer, but removal from s3 of "
+                + key
+                + " failed. This could result in the file being resent to printer.");
+      }
     }
     cleanTempResources();
-
-    return transferred;
-  }
-
-  private String prepareXml(String json) throws IOException, XMLStreamException {
-    log.debug("Prepare xml file");
-
-    Batch batch = mapper.readValue(json, Batch.class);
-
-    return xmlConverter.toXml(batch, XML_DIR);
   }
 
   private void cleanTempResources() {
     try {
       FileSystemUtils.deleteRecursively(XML_DIR);
     } catch (IOException e) {
-      log.error("Error while deleting local temporary resources: {}", e.getMessage());
+      log.warn("Error while deleting local temporary resources: {}", e.getMessage());
     }
   }
 
-  boolean deleteBatch(String batchName) {
+  boolean deleteBatchConfirmation(String batchName) {
     log.info("Deleting batch {}", batchName);
     return s3.deleteS3FileByKey(s3.getInBucket(), batchName);
+  }
+
+  void initReferenceData() {
+    // Get a populated reference data instance whilst request is active and auth token available.
+    // Required for async processing, where no request.
+    // Also refresh the ref data.
+    referenceDataService.init(true);
   }
 }

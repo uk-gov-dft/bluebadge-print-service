@@ -13,6 +13,16 @@ Feature: Verify Print batch ok
     * def ftp = new SFTPUtils()
     * def printerBucketName = 'uk-gov-dft-' + (env == null ? 'ci' : env) +'-printer'
     * def badgeBucketName = 'uk-gov-dft-' + (env == null ? 'ci' : env) +'-badge'
+    * def sleep =
+      """
+      function(seconds){
+        for(i = 0; i <= seconds; i++)
+        {
+          java.lang.Thread.sleep(1*1000);
+          karate.log(i);
+        }
+      }
+      """
 
   Scenario: Verify valid print batch
     * def batch =
@@ -135,9 +145,13 @@ Feature: Verify Print batch ok
     And request batch
     When method POST
     Then status 200
+    # Processing is async
+    * eval sleep(10)
     * def ftpFileCountAfter = ftp.getFileCount()
     * def s3FileCountAfter = s3.getNumberOfFilesInABucket(printerBucketName)
     * print 'ftpbefore:' + ftpFileCountBefore + ',ftpAfterCount:' + ftpFileCountAfter
     * print 's3before:' + s3FileCountBefore + ',s3AfterCount:' + s3FileCountAfter
+    # If successful, any new file in s3 should have been cleaned up
     * assert s3FileCountBefore == s3FileCountAfter
+    # and 1 file should have been sent by sftp
     * assert ftpFileCountBefore + 1 == ftpFileCountAfter
