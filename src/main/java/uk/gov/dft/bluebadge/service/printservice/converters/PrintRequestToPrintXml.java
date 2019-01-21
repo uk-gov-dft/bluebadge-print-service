@@ -132,7 +132,7 @@ public class PrintRequestToPrintXml {
         if (null != writer) {
           writer.close();
         }
-      }catch(Exception e){
+      } catch (Exception e) {
         // NO-op
       }
     }
@@ -295,7 +295,7 @@ public class PrintRequestToPrintXml {
     writeAndCloseElement(writer, LA_NAME, la.getDescription());
     writeAndCloseElement(writer, ISSUING_COUNTRY, nation.getXmlPrintFileIssuingCountry());
     writeAndCloseElement(writer, LANGUAGE_CODE, nation.getXmlPrintFileLanguageCode());
-    writeAndCloseElement(writer, CLOCK_TYPE, nation.getXmlPrintFileClockType());
+    writeAndCloseElement(writer, CLOCK_TYPE, la.getLocalAuthorityMetaData().getClockType());
     writeAndCloseElement(writer, LA_PHONE_NO, la.getLocalAuthorityMetaData().getContactNumber());
     writeAndCloseElement(writer, LA_EMAIL, la.getLocalAuthorityMetaData().getEmailAddress());
   }
