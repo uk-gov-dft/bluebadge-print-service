@@ -99,7 +99,6 @@ public class PrintService {
   }
 
   private boolean uploadToS3(Batch batch) throws IOException {
-
     String json = mapper.writeValueAsString(batch);
 
     boolean uploaded = s3.uploadToPrinterBucket(json, batch.getFilename() + ".json");
@@ -184,6 +183,7 @@ public class PrintService {
   }
 
   boolean deleteBatch(String batchName) {
+    log.info("Deleting batch {}", batchName);
     return s3.deleteS3FileByKey(s3.getInBucket(), batchName);
   }
 }

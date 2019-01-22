@@ -38,16 +38,15 @@ public interface PrintBatchApi {
     consumes = {"application/json"}
   )
   ResponseEntity<Void> printBatch(
-      @ApiParam(value = "Batch badges to be send for printing") @Valid @RequestBody Batch batch);
+      @ApiParam(value = "Batch badges to be sent for printing") @Valid @RequestBody Batch batch);
 
   @ApiOperation(value = "", nickname = "processedBatchesBatchNameDelete")
   @ApiResponses(value = {@ApiResponse(code = 200, message = "OK.")})
   @DeleteMapping(
     value = "/processed-batches/{batchName}",
-    produces = {"application/json"},
-    consumes = {"application/json"}
+    produces = {"application/json"}
   )
-  ResponseEntity<Void> deleteBatch(
+  ResponseEntity<Void> deleteBatchConfirmation(
       @ApiParam(required = true) @PathVariable("batchName") String batchName);
 
   @ApiOperation(
