@@ -64,7 +64,17 @@ public class TestDataFixtures {
 
     la.setShortCode("ANGL");
     la.setDescription("LA description");
-    la.setLocalAuthorityMetaData(laMetaData("ANGL", Nation.WLS));
+    la.setLocalAuthorityMetaData(laMetaData("ANGL", Nation.WLS, "Standard"));
+
+    return la;
+  }
+
+  public static LocalAuthorityRefData welshSwanseaLocalAuthority() {
+    LocalAuthorityRefData la = new LocalAuthorityRefData();
+
+    la.setShortCode("SWAN");
+    la.setDescription("LA description");
+    la.setLocalAuthorityMetaData(laMetaData("SWAN", Nation.WLS, ""));
 
     return la;
   }
@@ -74,12 +84,12 @@ public class TestDataFixtures {
 
     la.setShortCode("GLOCC");
     la.setDescription("LA description");
-    la.setLocalAuthorityMetaData(laMetaData("GLOCC", Nation.ENG));
+    la.setLocalAuthorityMetaData(laMetaData("GLOCC", Nation.ENG, ""));
 
     return la;
   }
 
-  private static LocalAuthorityMetaData laMetaData(String shortCode, Nation nation) {
+  private static LocalAuthorityMetaData laMetaData(String shortCode, Nation nation, String clock) {
     LocalAuthorityMetaData meta = new LocalAuthorityMetaData();
     meta.setIssuingAuthorityShortCode(shortCode);
     meta.setIssuingAuthorityName("LA name");
@@ -96,6 +106,7 @@ public class TestDataFixtures {
     meta.setPostcode("SW1A 1AA");
     meta.setContactNumber("02070140800");
     meta.setEmailAddress("email@mail.com");
+    meta.setClockType(clock);
 
     return meta;
   }
@@ -200,7 +211,7 @@ public class TestDataFixtures {
 
     Badge details = new Badge();
     details.setBadgeNumber("WALESO");
-    details.setLocalAuthorityShortCode("ANGL");
+    details.setLocalAuthorityShortCode("SWAN");
     details.setStartDate(LocalDate.of(2019, 1, 2));
     details.setExpiryDate(LocalDate.of(2021, 1, 1));
     details.setImageLink(null);

@@ -1,3 +1,17 @@
+blue-badge:
+  auth-server:
+    url: https://authorisation-service.${bb_env}.${url}/bb_auth
+    client-id: bb_user_management_id
+     ***REMOVED***
+  referencedataservice:
+    servicehost:
+      host: reference-service.${bb_env}.${url}
+      port: 443
+      scheme: https
+      connectiontimeout: 6000
+      requesttimeout: 6000
+      contextpath: /uk-gov-dft/reference-data-service/1.0.0
+
 management:
   server:
     port: ${bb_health:8081}
@@ -8,12 +22,6 @@ management:
       exposure:
         include: '*'
 
-blue-badge:
-  auth-server:
-    url: https://authorisation-service.${bb_env}.${url}/bb_auth
-    client-id: bb_user_management_id
-     ***REMOVED***
-
 server:
   port: ${bb_port:-8080}
   servlet:
@@ -23,3 +31,6 @@ amazon:
   bb-printer-bucket: uk-gov-dft-${bb_env}-printer
   bb-badge-bucket: uk-gov-dft-${bb_env}-badge
 
+spring:
+  main:
+    banner-mode: "off"

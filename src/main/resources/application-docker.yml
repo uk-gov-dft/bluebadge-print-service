@@ -16,3 +16,7 @@ ftp:
    ***REMOVED***
   dropbox: /upload
   knownhosts: ~/.ssh/sftp_known_hosts
+
+spring:
+  main:
+    banner-mode: "off"
