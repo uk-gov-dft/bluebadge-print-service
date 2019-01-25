@@ -10,6 +10,7 @@ import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.english
 import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.fasttrackBatchPayload;
 import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.standardBatchPayload;
 import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.welshLocalAuthority;
+import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.welshSwanseaLocalAuthority;
 
 import com.amazonaws.util.IOUtils;
 import java.io.IOException;
@@ -69,6 +70,7 @@ class PrintRequestToPrintXmlTest {
     when(mockGeneralConfig.getOrganisationPhotoUriEngland()).thenReturn("/pictures/org_E.jpg");
     when(mockGeneralConfig.getOrganisationPhotoUriWales()).thenReturn("/pictures/org_W.jpg");
     when(referenceData.retrieveLocalAuthority("ANGL")).thenReturn(welshLocalAuthority());
+    when(referenceData.retrieveLocalAuthority("SWAN")).thenReturn(welshSwanseaLocalAuthority());
     when(referenceData.retrieveLocalAuthority("GLOCC")).thenReturn(englishLocalAuthority());
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     factory.setNamespaceAware(true); // never forget this!
@@ -138,13 +140,25 @@ class PrintRequestToPrintXmlTest {
     assertEquals("EW", getNodeTextInStandardXmlFile(expression));
   }
 
-  @DisplayName("Should return ClockType = `Wallet` for LACode=ANGL")
+  @DisplayName(
+      "Should return ClockType = `Standard` for LACode=ANGL, different from default for Nation")
+  @SneakyThrows
+  @Test
+  void testOverriddenClockTypeWales() {
+
+    String expression =
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority[LACode='ANGL']/ClockType";
+
+    assertEquals("Standard", getNodeTextInStandardXmlFile(expression));
+  }
+
+  @DisplayName("Should return ClockType = `Wallet` for LACode=SWAN")
   @SneakyThrows
   @Test
   void testClockTypeWales() {
 
     String expression =
-        "/BadgePrintExtract/LocalAuthorities/LocalAuthority[LACode='ANGL']/ClockType";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority[LACode='SWAN']/ClockType";
 
     assertEquals("Wallet", getNodeTextInStandardXmlFile(expression));
   }
@@ -316,8 +330,17 @@ class PrintRequestToPrintXmlTest {
     assertEquals("O0121", getNodeTextInStandardXmlFile(expression));
   }
 
-  @DisplayName(
-      "Should return populate only Name=`Jane Second` and leave Surname blank for BadgeIdentifier=AA34BB")
+  @Test
+  @SneakyThrows
+  void emptyElementTest() {
+    String expression =
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='WALESO']/LetterAddress/AddressLine2";
+
+    Node node =
+        (Node) xpath.compile(expression).evaluate(parsedStandardXmlFile, XPathConstants.NODE);
+    assertThat(node).isNull();
+  }
+
   @SneakyThrows
   @Test
   void testShortName() {
@@ -335,9 +358,14 @@ class PrintRequestToPrintXmlTest {
 
     // Organisation
     expression =
-        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='WALESO']/Name/OrganisationName";
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='WALESO']/OrganisationName";
 
     assertEquals("Organisation for disabled people", getNodeTextInStandardXmlFile(expression));
+
+    // For org, the contact name should be in name.
+    expression =
+        "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='WALESO']/Name/Surname";
+    assertEquals("The contact name", getNodeTextInStandardXmlFile(expression));
   }
 
   @DisplayName(

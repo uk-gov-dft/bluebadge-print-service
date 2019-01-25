@@ -105,4 +105,9 @@ public class Badge {
   public boolean isPersonBadge() {
     return Party.PartyType.PERSON == getParty().getTypeCode();
   }
+
+  @JsonIgnore
+  public boolean isOrganisationBadge() {
+    return !isPersonBadge();
+  }
 }

@@ -128,8 +128,12 @@ public class PrintRequestToPrintXml {
       writer.flush();
 
     } finally {
-      if (null != writer) {
-        writer.close();
+      try {
+        if (null != writer) {
+          writer.close();
+        }
+      } catch (Exception e) {
+        // NO-op
       }
     }
     return xmlFileName.toString();
@@ -165,6 +169,13 @@ public class PrintRequestToPrintXml {
     writeAndClosePhotoElement(writer, badge);
     writeAndCloseElement(writer, BAR_CODE, getBarCode(badge));
 
+    if (badge.isOrganisationBadge()) {
+      Assert.notNull(
+          badge.getParty().getOrganisation(),
+          "Organisation badge with no organisation:" + badge.getBadgeNumber());
+      writeAndCloseElement(
+          writer, ORG_NAME, badge.getParty().getOrganisation().getBadgeHolderName());
+    }
     writeAndCloseNameElement(writer, badge);
     writeLetterAddressElements(writer, badge);
     if (Badge.DeliverToCode.COUNCIL == badge.getDeliverToCode()) {
@@ -243,16 +254,14 @@ public class PrintRequestToPrintXml {
       throws XMLStreamException {
 
     writer.writeStartElement(NAME);
-    String name = getHolderName(badge);
-    if (badge.isPersonBadge()) {
-      Pair<String, String> names = getSurnameForenamePair(name);
-      writeAndCloseElement(writer, SURNAME, names.getLeft());
-      if (StringUtils.isNotEmpty(names.getRight())) {
-        writeAndCloseElement(writer, FORENAME, names.getRight());
-      }
-    } else {
-      writeAndCloseElement(writer, ORG_NAME, name);
+    String name = getNameForNameElement(badge);
+
+    Pair<String, String> names = getSurnameForenamePair(name);
+    writeAndCloseElement(writer, SURNAME, names.getLeft());
+    if (StringUtils.isNotEmpty(names.getRight())) {
+      writeAndCloseElement(writer, FORENAME, names.getRight());
     }
+
     writer.writeEndElement(); // End Name
   }
 
@@ -286,7 +295,7 @@ public class PrintRequestToPrintXml {
     writeAndCloseElement(writer, LA_NAME, la.getDescription());
     writeAndCloseElement(writer, ISSUING_COUNTRY, nation.getXmlPrintFileIssuingCountry());
     writeAndCloseElement(writer, LANGUAGE_CODE, nation.getXmlPrintFileLanguageCode());
-    writeAndCloseElement(writer, CLOCK_TYPE, nation.getXmlPrintFileClockType());
+    writeAndCloseElement(writer, CLOCK_TYPE, la.getLocalAuthorityMetaData().getClockType());
     writeAndCloseElement(writer, LA_PHONE_NO, la.getLocalAuthorityMetaData().getContactNumber());
     writeAndCloseElement(writer, LA_EMAIL, la.getLocalAuthorityMetaData().getEmailAddress());
   }
@@ -302,9 +311,11 @@ public class PrintRequestToPrintXml {
 
   private void writeAndCloseElement(XMLStreamWriter writer, String tag, String text)
       throws XMLStreamException {
-    writer.writeStartElement(tag);
-    writer.writeCharacters(text);
-    writer.writeEndElement();
+    if (StringUtils.isNotEmpty(text)) {
+      writer.writeStartElement(tag);
+      writer.writeCharacters(text);
+      writer.writeEndElement();
+    }
   }
 
   String getPrintedBadgeReference(Badge badge) {
@@ -334,11 +345,11 @@ public class PrintRequestToPrintXml {
     }
   }
 
-  private String getHolderName(Badge badge) {
+  private String getNameForNameElement(Badge badge) {
     if (badge.isPersonBadge()) {
       return badge.getParty().getPerson().getBadgeHolderName();
     } else {
-      return badge.getParty().getOrganisation().getBadgeHolderName();
+      return badge.getParty().getContact().getFullName();
     }
   }
 }

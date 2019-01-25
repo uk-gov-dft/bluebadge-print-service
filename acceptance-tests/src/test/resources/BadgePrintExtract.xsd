@@ -142,6 +142,7 @@
                 <xs:element name="PostageCode" type="PostageCodeType"/>
                 <xs:element name="Photo" type="xs:base64Binary" minOccurs="0"/>
                 <xs:element name="BarCodeData" type="BarCodeDataType"/>
+                <xs:element name="OrganisationName" type="Varchar40" minOccurs="0"/>
                 <xs:element ref="Name"/>
                 <xs:element ref="LetterAddress"/>
                 <xs:element minOccurs="0" ref="CollectionAddress"/>
@@ -150,13 +151,10 @@
     </xs:element>
     <xs:element name="Name">
         <xs:complexType>
-            <xs:choice>
-                <xs:sequence>
-                    <xs:element name="Surname" type="Varchar40"/>
-                    <xs:element name="Forename" type="Varchar40" minOccurs="0"/>
-                </xs:sequence>
-                <xs:element name="OrganisationName" type="Varchar40"/>
-            </xs:choice>
+            <xs:sequence>
+                <xs:element name="Surname" type="Varchar40"/>
+                <xs:element name="Forename" type="Varchar40" minOccurs="0"/>
+            </xs:sequence>
         </xs:complexType>
     </xs:element>
     <xs:element name="LetterAddress">

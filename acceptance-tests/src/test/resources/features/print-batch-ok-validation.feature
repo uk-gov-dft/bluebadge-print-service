@@ -70,7 +70,7 @@ Feature: Verify Print batch ok validation
     And match validFileActualResult == true
     And def invalidFileActualResult = validateXmlPrintBatchRequest('invalid-languageCode-in-output-actual-print-batch-output.xml')
     And match invalidFileActualResult == false
-    # 'Value P is not facet-valid with respect to enumeration - This error expected to be logged in this test!!'
+    # 'Value P is not facet-valid with respect to enumeration... - This error expected to be logged in this test!!'
 
 
   # Examples of using XML

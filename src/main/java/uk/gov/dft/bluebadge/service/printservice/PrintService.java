@@ -1,7 +1,6 @@
 package uk.gov.dft.bluebadge.service.printservice;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -142,7 +141,7 @@ public class PrintService {
         xmlFileName = prepareXml(json.get());
       } catch (IOException | XMLStreamException e) {
         log.error("Can't process json string: {} into valid xml", json.get());
-        log.error("Error while converting into xml: {}", e);
+        log.error("Error while converting into xml", e);
         return false;
       }
     } else {
