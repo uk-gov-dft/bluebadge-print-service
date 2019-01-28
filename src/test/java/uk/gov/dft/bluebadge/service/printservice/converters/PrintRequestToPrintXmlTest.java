@@ -60,7 +60,7 @@ class PrintRequestToPrintXmlTest {
   // Path to converted file.  File deleted at end of test class.
   private static String standardXmlFile;
   private static PrintRequestToPrintXml converter =
-      new PrintRequestToPrintXml(s3, referenceData, mockGeneralConfig);
+      new PrintRequestToPrintXml(s3, mockGeneralConfig);
 
   private String s3PictureFilePath = "/tmp/printbatch_pics/smile.jpg";
 
@@ -113,7 +113,7 @@ class PrintRequestToPrintXmlTest {
         .thenReturn(
             Optional.of(IOUtils.toByteArray(getClass().getResourceAsStream(s3PictureFilePath))));
 
-    String file = converter.toXml(fasttrackBatchPayload(), xmlDir);
+    String file = converter.toXml(fasttrackBatchPayload(), xmlDir, referenceData);
     boolean expected = Files.exists(Paths.get(file));
     assertTrue(expected);
     deleteXmlFile(file);
@@ -423,7 +423,7 @@ class PrintRequestToPrintXmlTest {
                     PrintRequestToPrintXmlTest.class
                         .getResourceAsStream("/tmp/printbatch_pics/smile_small.jpg"))));
 
-    standardXmlFile = converter.toXml(standardBatchPayload(), xmlDir);
+    standardXmlFile = converter.toXml(standardBatchPayload(), xmlDir, referenceData);
     boolean expected = Files.exists(Paths.get(standardXmlFile));
     assertTrue(expected);
   }

@@ -26,7 +26,7 @@ public class StorageService {
   }
 
   boolean uploadToPrinterBucket(String src, String fileName) {
-    log.info("Uploading document to S3.  FileName:{}, Payload: {}", fileName, src);
+    log.info("Uploading document to S3.  FileName:{}", fileName);
     amazonS3.putObject(s3Config.getS3PrinterBucket(), fileName, src);
 
     return amazonS3.doesObjectExist(s3Config.getS3PrinterBucket(), fileName);

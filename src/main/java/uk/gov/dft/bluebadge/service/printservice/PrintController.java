@@ -27,14 +27,20 @@ public class PrintController extends AbstractController implements PrintBatchApi
   @Override
   public ResponseEntity<Void> printBatch(@ApiParam() @Valid @RequestBody Batch batch) {
     try {
-      log.info("Beginning print batch.");
-      service.print(batch);
+      // Get reference data while request is active.
+      service.initReferenceData();
+      log.info("Received new print batch: {}", batch.getFilename());
+      service.storePrintBatchInS3(batch);
+
     } catch (Exception e) {
       log.error(e.getMessage(), e);
       Error error = new Error();
       error.setMessage(e.getMessage());
       throw new InternalServerException(error);
+    } finally {
+      service.processPrintBatches();
     }
+
     return ResponseEntity.ok().build();
   }
 
@@ -42,7 +48,7 @@ public class PrintController extends AbstractController implements PrintBatchApi
   public ResponseEntity<Void> deleteBatchConfirmation(
       @ApiParam(required = true) @PathVariable("batchName") String batchName) {
 
-    if (service.deleteBatch(batchName)) {
+    if (service.deleteBatchConfirmation(batchName)) {
       return ResponseEntity.ok().build();
     } else {
       return ResponseEntity.notFound().build();
