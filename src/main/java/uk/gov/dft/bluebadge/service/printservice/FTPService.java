@@ -7,6 +7,7 @@ import com.jcraft.jsch.Session;
 import java.io.File;
 import java.io.FileInputStream;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import uk.gov.dft.bluebadge.service.printservice.config.FTPClientConfig;
 
@@ -35,6 +36,11 @@ public class FTPService {
       Channel channel = session.openChannel("sftp");
       channel.connect();
       sftpChannel = (ChannelSftp) channel;
+
+
+      if (StringUtils.isNotBlank(ftpConfig.getDropbox()) && !"/".equals(ftpConfig.getDropbox())) {
+        sftpChannel.cd(ftpConfig.getDropbox());
+      }
 
       sftpChannel.put(fileInputStream, file.getName(), ChannelSftp.OVERWRITE);
 
