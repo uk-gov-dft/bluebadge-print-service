@@ -35,7 +35,6 @@ public class FTPService {
       Channel channel = session.openChannel("sftp");
       channel.connect();
       sftpChannel = (ChannelSftp) channel;
-      //sftpChannel.cd(ftpConfig.getDropbox());
 
       sftpChannel.put(fileInputStream, file.getName(), ChannelSftp.OVERWRITE);
 
