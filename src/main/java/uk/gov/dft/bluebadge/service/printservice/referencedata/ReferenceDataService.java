@@ -7,16 +7,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.WebApplicationContext;
 import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.ReferenceDataApiClient;
 import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.LocalAuthorityRefData;
 import uk.gov.dft.bluebadge.service.printservice.client.referencedataservice.model.ReferenceData;
 
 @Service
-@Scope(value = WebApplicationContext.SCOPE_REQUEST, proxyMode = ScopedProxyMode.TARGET_CLASS)
+// Do not request scope this (like other services).  used after request finished.
 public class ReferenceDataService {
 
   private final Set<String> validGroupKeys = new HashSet<>();
@@ -33,8 +30,8 @@ public class ReferenceDataService {
    * Load the ref data first time required. Chose not to do PostConstruct so that can start service
    * if ref data service is still starting.
    */
-  private void init() {
-    if (!isLoaded.getAndSet(true)) {
+  public void init(boolean force) {
+    if (!isLoaded.getAndSet(true) || force) {
       List<ReferenceData> referenceDataList = referenceDataApiClient.retrieveReferenceData();
       for (ReferenceData item : referenceDataList) {
         String key = item.getGroupShortCode() + "_" + item.getShortCode();
@@ -48,6 +45,10 @@ public class ReferenceDataService {
         isLoaded.set(false);
       }
     }
+  }
+
+  public void init() {
+    init(false);
   }
 
   /**

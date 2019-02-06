@@ -79,23 +79,23 @@ import uk.gov.dft.bluebadge.service.printservice.referencedata.ReferenceDataServ
 @Slf4j
 public class PrintRequestToPrintXml {
   private final StorageService s3;
-  private final ReferenceDataService referenceData;
+  private ReferenceDataService referenceData;
   private GeneralConfig generalConfig;
 
-  PrintRequestToPrintXml(
-      StorageService s3, ReferenceDataService referenceData, GeneralConfig generalConfig) {
+  PrintRequestToPrintXml(StorageService s3, GeneralConfig generalConfig) {
     this.s3 = s3;
-    this.referenceData = referenceData;
     this.generalConfig = generalConfig;
   }
 
-  public String toXml(Batch batch, Path xmlDir) throws XMLStreamException, IOException {
-
+  public String toXml(Batch batch, Path xmlDir, ReferenceDataService referenceData)
+      throws XMLStreamException, IOException {
+    this.referenceData = referenceData;
     XMLOutputFactory factory = XMLOutputFactory.newInstance();
     Path xmlFileName = createXmlFile(batch, xmlDir);
-    XMLStreamWriter writer = null;
+    XMLStreamWriter writer;
 
     try (FileOutputStream fos = new FileOutputStream(xmlFileName.toString())) {
+      log.info("Beginning xml write {}", batch.getFilename());
       writer = factory.createXMLStreamWriter(fos, "Cp1252");
 
       writer.writeStartDocument(XML_ENCODING, XML_VERSION);
@@ -111,30 +111,32 @@ public class PrintRequestToPrintXml {
 
       writer.writeStartElement(LOCAL_AUTHORITIES);
       for (Map.Entry<String, List<Badge>> entry : ordered.entrySet()) {
+        log.info("Writing badge xml for la: {}, count:{}", entry.getKey(), entry.getValue().size());
         writer.writeStartElement(LOCAL_AUTHORITY);
         writeLocalAuthority(writer, entry.getKey());
-
+        int count = 0;
         writer.writeStartElement(BADGES);
         for (Badge badge : entry.getValue()) {
           writeAndCloseBadgeDetailsElement(writer, badge);
+          count++;
+          if (count % 100 == 0) {
+            log.debug("Written {} badge xml records for {}...", count, entry.getKey());
+          }
         }
         writer.writeEndElement(); // End Badges
         writer.writeEndElement(); // End LocalAuthority
+        log.info("Finished writing xml for {}", entry.getKey());
       }
       writer.writeEndElement(); // End LocalAuthorities
       writer.writeEndElement(); // End BadgePrintExtract (ROOT)
       writer.writeEndDocument();
 
       writer.flush();
-
-    } finally {
-      try {
-        if (null != writer) {
-          writer.close();
-        }
-      } catch (Exception e) {
-        // NO-op
-      }
+      // Not in finally block as underlying stream gets closed (closable) before finally.
+      // In the case of an exception, stream is closed and writer.close will again
+      // attempt to close the stream and throw an exception (even though it is
+      // documented not to do this).
+      writer.close();
     }
     return xmlFileName.toString();
   }
