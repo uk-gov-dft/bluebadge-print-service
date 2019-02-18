@@ -127,7 +127,7 @@ configurations.all {
 }
 
 dependencies {
-    compile('uk.gov.dft.bluebadge:bluebadge-common:0.6.8-SNAPSHOT')
+    compile('uk.gov.dft.bluebadge:bluebadge-common:0.6.14-SNAPSHOT')
     compile('com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.5')
     compile('org.springframework.boot:spring-boot-starter-web')
     compile('org.springframework.boot:spring-boot-starter-security')

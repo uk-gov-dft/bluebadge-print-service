@@ -1,6 +1,16 @@
 package uk.gov.dft.bluebadge.service.printservice;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.amazonaws.util.IOUtils;
+import java.util.ArrayList;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
@@ -13,17 +23,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import java.util.ArrayList;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Slf4j
 class PrintControllerTest {
@@ -70,7 +69,9 @@ class PrintControllerTest {
         MockMvcRequestBuilders.post("/printBatch")
             .content(body)
             .contentType(MediaType.APPLICATION_JSON);
-    doThrow(new RuntimeException("Some underlying problems")).when(service).storePrintBatchInS3(any());
+    doThrow(new RuntimeException("Some underlying problems"))
+        .when(service)
+        .storePrintBatchInS3(any());
     mvc.perform(builder).andExpect(status().is5xxServerError());
     verify(service, times(1)).storePrintBatchInS3(any());
     // And still process other batches.
