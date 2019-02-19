@@ -31,7 +31,6 @@ public class PrintController extends AbstractController implements PrintBatchApi
       service.initReferenceData();
       log.info("Received new print batch: {}", batch.getFilename());
       service.storePrintBatchInS3(batch);
-
     } catch (Exception e) {
       log.error(e.getMessage(), e);
       Error error = new Error();

@@ -50,6 +50,10 @@ public class TestDataFixtures {
     return batch1();
   }
 
+  public static Batch standardDodgyBatchPayLoad() {
+    return batch1WithDodgyBadges();
+  }
+
   @SneakyThrows
   public static String standardBatchPayloadAsString() {
     return new ObjectMapper().writeValueAsString(standardBatchPayload());
@@ -119,6 +123,14 @@ public class TestDataFixtures {
     return batch;
   }
 
+  private static Batch batch1WithDodgyBadges() {
+    Batch batch = new Batch();
+    batch.setFilename("filename1WithDodgyBadges");
+    batch.setBatchType(Batch.BatchTypeEnum.STANDARD);
+    batch.setBadges(Arrays.asList(dodgyBadge1(), badge2(), dodgyBadge3(), badgeWelshOrg()));
+    return batch;
+  }
+
   private static Batch batch2() {
     Batch batch = new Batch();
     batch.setFilename("filename2");
@@ -141,6 +153,13 @@ public class TestDataFixtures {
             person1()));
     details.setDeliverToCode(Badge.DeliverToCode.HOME);
     details.setDeliveryOptionCode(Badge.DeliveryOptionCode.STAND);
+
+    return details;
+  }
+
+  private static Badge dodgyBadge1() {
+    Badge details = badge1();
+    details.setDeliverToCode(null);
 
     return details;
   }
@@ -180,6 +199,12 @@ public class TestDataFixtures {
     details.setDeliverToCode(Badge.DeliverToCode.COUNCIL);
     details.setDeliveryOptionCode(Badge.DeliveryOptionCode.STAND);
 
+    return details;
+  }
+
+  private static Badge dodgyBadge3() {
+    Badge details = badge3();
+    details.setParty(null);
     return details;
   }
 

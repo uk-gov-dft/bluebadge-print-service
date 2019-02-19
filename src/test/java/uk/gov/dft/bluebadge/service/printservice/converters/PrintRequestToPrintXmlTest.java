@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.englishLocalAuthority;
 import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.fasttrackBatchPayload;
 import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.standardBatchPayload;
+import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.standardDodgyBatchPayLoad;
 import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.welshLocalAuthority;
 import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.welshSwanseaLocalAuthority;
 
@@ -116,6 +117,50 @@ class PrintRequestToPrintXmlTest {
     String file = converter.toXml(fasttrackBatchPayload(), xmlDir, referenceData);
     boolean expected = Files.exists(Paths.get(file));
     assertTrue(expected);
+    deleteXmlFile(file);
+  }
+
+  @DisplayName(
+      "Should convert model and save Standard xml file without dodgy badges in temp folder")
+  @SneakyThrows
+  @Test
+  void convertStandardWithDodgyBadgesBatchAndSave() {
+    when(s3.downloadBadgeFile(any()))
+        .thenReturn(
+            Optional.of(IOUtils.toByteArray(getClass().getResourceAsStream(s3PictureFilePath))));
+
+    String file = converter.toXml(standardDodgyBatchPayLoad(), xmlDir, referenceData);
+    boolean expected = Files.exists(Paths.get(file));
+    assertTrue(expected);
+
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true); // never forget this!
+    Document parseDodgyStandardXmlFile = factory.newDocumentBuilder().parse(file);
+
+    Node nodeDodgyBadge1 =
+        getNodeTextInXmlFile(
+            parseDodgyStandardXmlFile,
+            "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']");
+    assertThat(nodeDodgyBadge1).isNull();
+
+    Node nodeBadge2 =
+        getNodeTextInXmlFile(
+            parseDodgyStandardXmlFile,
+            "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA34BB']");
+    assertThat(nodeBadge2).isNotNull();
+
+    Node nodeDodgyBadge3 =
+        getNodeTextInXmlFile(
+            parseDodgyStandardXmlFile,
+            "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='CC12DD']");
+    assertThat(nodeDodgyBadge3).isNull();
+
+    Node nodeBadgeWales =
+        getNodeTextInXmlFile(
+            parseDodgyStandardXmlFile,
+            "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='WALESO']");
+    assertThat(nodeBadgeWales).isNotNull();
+
     deleteXmlFile(file);
   }
 
@@ -336,9 +381,8 @@ class PrintRequestToPrintXmlTest {
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='WALESO']/LetterAddress/AddressLine2";
 
-    Node node =
-        (Node) xpath.compile(expression).evaluate(parsedStandardXmlFile, XPathConstants.NODE);
-    assertThat(node).isNull();
+    assertThat(xpath.compile(expression).evaluate(parsedStandardXmlFile, XPathConstants.NODE))
+        .isNull();
   }
 
   @SneakyThrows
@@ -480,6 +524,12 @@ class PrintRequestToPrintXmlTest {
     reference = converter.getPrintedBadgeReference(badge);
     assertThat(reference).isEqualTo("ABCDEF 0 O0150");
     assertThat(converter.getBarCode(badge)).isEqualTo("O0150");
+  }
+
+  @SneakyThrows
+  private Node getNodeTextInXmlFile(Document doc, String xPathExpression) {
+    Node node = (Node) xpath.compile(xPathExpression).evaluate(doc, XPathConstants.NODE);
+    return node;
   }
 
   @SneakyThrows
