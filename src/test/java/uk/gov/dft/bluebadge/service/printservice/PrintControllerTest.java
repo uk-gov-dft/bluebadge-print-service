@@ -34,7 +34,7 @@ class PrintControllerTest {
 
   @BeforeEach
   void beforeEachTest(TestInfo testInfo) {
-    mvc = MockMvcBuilders.standaloneSetup(new PrintController(service)).build();
+    mvc = MockMvcBuilders.standaloneSetup(new PrintController(service)).setControllerAdvice(new CommonResponseControllerAdvice()).build();
     log.info(String.format("About to execute [%s]", testInfo.getDisplayName()));
   }
 
