@@ -170,51 +170,23 @@ public class PrintRequestToPrintXml {
     return xmlFile;
   }
 
-  private void writeAndClosePhotoElement(XMLStreamWriter writer, Badge badge)
-      throws XMLStreamException, IOException {
-    writer.writeStartElement(PHOTO);
-
-    if (badge.isPersonBadge() && StringUtils.isNotEmpty(badge.getImageLink())) {
-      Optional<byte[]> imageFile = Optional.empty();
-      try {
-        imageFile = s3.downloadBadgeFile(badge.getImageLink());
-      } catch (AmazonS3Exception e) {
-        log.error("Could not find s3 object for key " + badge.getImageLink(), e);
-      }
-      if (imageFile.isPresent()) {
-        String image = toBase64(imageFile.get());
-        writer.writeCharacters(image);
-      }
-    } else {
-      LocalAuthorityRefData la =
-          referenceData.retrieveLocalAuthority(badge.getLocalAuthorityShortCode());
-
-      String imageFileName;
-      if (la.getLocalAuthorityMetaData().getNation() == Nation.WLS) {
-        imageFileName = generalConfig.getOrganisationPhotoUriWales();
-      } else {
-        imageFileName = generalConfig.getOrganisationPhotoUriEngland();
-      }
-      writer.writeCharacters(
-          toBase64(IOUtils.toByteArray(getClass().getResourceAsStream(imageFileName))));
-    }
-    writer.writeEndElement();
-  }
-
   private String getPhotoElementXmlString(Badge badge) throws IOException {
     StringBuilder xmlString = new StringBuilder();
     xmlString.append(String.format("<%s>", PHOTO));
-
     if (badge.isPersonBadge() && StringUtils.isNotEmpty(badge.getImageLink())) {
       Optional<byte[]> imageFile = Optional.empty();
       try {
         imageFile = s3.downloadBadgeFile(badge.getImageLink());
       } catch (AmazonS3Exception e) {
         log.error("Could not find s3 object for key " + badge.getImageLink(), e);
+        throw new IOException("Could not find image for key " + badge.getImageLink());
       }
       if (imageFile.isPresent()) {
         String image = toBase64(imageFile.get());
         xmlString.append(image);
+      } else {
+        log.error("Could not find image for key [{}]" + badge.getImageLink());
+        throw new IOException("Could not find image for key " + badge.getImageLink());
       }
     } else {
       LocalAuthorityRefData la =
@@ -229,7 +201,6 @@ public class PrintRequestToPrintXml {
       xmlString.append(
           toBase64(IOUtils.toByteArray(getClass().getResourceAsStream(imageFileName))));
     }
-
     xmlString.append(String.format("</%s>", PHOTO));
 
     return xmlString.toString();

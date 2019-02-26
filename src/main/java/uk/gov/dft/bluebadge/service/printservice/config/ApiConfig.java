@@ -46,5 +46,4 @@ public class ApiConfig {
   LoggingAspect getControllerLoggingAspect() {
     return new LoggingAspect();
   }
-
 }

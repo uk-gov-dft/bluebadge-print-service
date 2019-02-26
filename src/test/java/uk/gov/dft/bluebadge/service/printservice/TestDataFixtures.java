@@ -21,6 +21,7 @@ import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBatch;
 
 public class TestDataFixtures {
 
+  public static final String DODGY_IMAGE_LINK = "FAIL";
   static String testJson = "{\"filename\" : \"filename1\", \"batchType\" : \"STANDARD\"}";
 
   static ProcessedBatch successBatch =
@@ -127,7 +128,9 @@ public class TestDataFixtures {
     Batch batch = new Batch();
     batch.setFilename("filename1WithDodgyBadges");
     batch.setBatchType(Batch.BatchTypeEnum.STANDARD);
-    batch.setBadges(Arrays.asList(dodgyBadge1(), badge2(), dodgyBadge3(), badgeWelshOrg()));
+    batch.setBadges(
+        Arrays.asList(
+            dodgyBadge1(), badge2(), badge3(), dodgyBadge6(), badgeWelshOrg(), dodgyBadge5()));
     return batch;
   }
 
@@ -165,7 +168,6 @@ public class TestDataFixtures {
   }
 
   private static Badge badge2() {
-
     Badge details = new Badge();
     details.setBadgeNumber("AA34BB");
     details.setLocalAuthorityShortCode("ANGL");
@@ -184,7 +186,6 @@ public class TestDataFixtures {
   }
 
   private static Badge badge3() {
-
     Badge details = new Badge();
     details.setBadgeNumber("CC12DD");
     details.setLocalAuthorityShortCode("GLOCC");
@@ -202,14 +203,7 @@ public class TestDataFixtures {
     return details;
   }
 
-  private static Badge dodgyBadge3() {
-    Badge details = badge3();
-    details.setParty(null);
-    return details;
-  }
-
   private static Badge badge4() {
-
     Badge details = new Badge();
     details.setBadgeNumber("CC34DD");
     details.setLocalAuthorityShortCode("GLOCC");
@@ -248,6 +242,20 @@ public class TestDataFixtures {
     details.setDeliverToCode(Badge.DeliverToCode.COUNCIL);
     details.setDeliveryOptionCode(Badge.DeliveryOptionCode.STAND);
 
+    return details;
+  }
+
+  private static Badge dodgyBadge5() {
+    Badge details = badge1();
+    details.setBadgeNumber("AA12BF");
+    details.setImageLink(DODGY_IMAGE_LINK);
+    return details;
+  }
+
+  private static Badge dodgyBadge6() {
+    Badge details = badge3();
+    details.setBadgeNumber("CC12DM");
+    details.setParty(null);
     return details;
   }
 
