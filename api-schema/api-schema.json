@@ -1,0 +1,142 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "title" : "MessageService API",
+    "description" : "Manage messages",
+    "version" : "1.0.0"
+  },
+  "schemes" : [ "https", "http" ],
+  "produces" : [ "application/json" ],
+  "consumes" : [ "application/json" ],
+  "paths" : {
+    "/messages" : {
+      "post" : {
+        "operationId" : "sendMessage",
+        "summary" : "Sends an email to a user",
+        "description" : "Sends an email of a specific template to the specified user",
+        "tags" : [ "Messages" ],
+        "parameters" : [ {
+          "name" : "messageDetails",
+          "in" : "body",
+          "required" : true,
+          "description" : "The template, email address and message attributes",
+          "schema" : {
+            "$ref" : "#/definitions/MessageDetails"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "Success - A message has been created and sent.",
+            "schema" : {
+              "$ref" : "#/definitions/UuidResponse"
+            }
+          },
+          "400" : {
+            "description" : "Bad request"
+          }
+        }
+      }
+    }
+  },
+  "definitions" : {
+    "MessageDetails" : {
+      "type" : "object",
+      "required" : [ "template", "emailAddress" ],
+      "properties" : {
+        "template" : {
+          "type" : "string",
+          "description" : "Message template name",
+          "example" : "RESET_PASSWORD"
+        },
+        "emailAddress" : {
+          "type" : "string",
+          "format" : "email",
+          "description" : "email address.",
+          "example" : "rob.worthington@norealserver.com"
+        },
+        "attributes" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "type" : "string"
+          },
+          "example" : {
+            "name" : "Bob"
+          }
+        }
+      }
+    },
+    "UuidResponse" : {
+      "type" : "object",
+      "allOf" : [ {
+        "$ref" : "#/definitions/CommonResponse"
+      }, {
+        "type" : "object",
+        "properties" : {
+          "data" : {
+            "properties" : {
+              "uuid" : {
+                "type" : "string"
+              }
+            }
+          }
+        }
+      } ]
+    },
+    "CommonResponse" : {
+      "type" : "object",
+      "properties" : {
+        "apiVersion" : {
+          "type" : "string"
+        },
+        "context" : {
+          "type" : "string"
+        },
+        "id" : {
+          "type" : "string"
+        },
+        "method" : {
+          "type" : "string"
+        },
+        "error" : {
+          "$ref" : "#/definitions/Error"
+        }
+      }
+    },
+    "Error" : {
+      "type" : "object",
+      "properties" : {
+        "code" : {
+          "type" : "integer"
+        },
+        "message" : {
+          "type" : "string"
+        },
+        "errors" : {
+          "type" : "array",
+          "items" : {
+            "type" : "object",
+            "properties" : {
+              "field" : {
+                "type" : "string"
+              },
+              "reason" : {
+                "type" : "string"
+              },
+              "message" : {
+                "type" : "string"
+              },
+              "location" : {
+                "type" : "string"
+              },
+              "locationType" : {
+                "type" : "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "host" : "virtserver.swaggerhub.com",
+  "basePath" : "/uk-gov-dft/MessageService/1.0.0"
+}
