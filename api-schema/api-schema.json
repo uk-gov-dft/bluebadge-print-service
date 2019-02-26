@@ -1,71 +1,76 @@
 {
   "swagger" : "2.0",
   "info" : {
-    "title" : "MessageService API",
-    "description" : "Manage messages",
-    "version" : "1.0.0"
+    "version" : "1.0.0",
+    "title" : "Print service API"
   },
-  "schemes" : [ "https", "http" ],
-  "produces" : [ "application/json" ],
-  "consumes" : [ "application/json" ],
+  "host" : "virtserver.swaggerhub.com",
+  "schemes" : [ "https" ],
   "paths" : {
-    "/messages" : {
-      "post" : {
-        "operationId" : "sendMessage",
-        "summary" : "Sends an email to a user",
-        "description" : "Sends an email of a specific template to the specified user",
-        "tags" : [ "Messages" ],
+    "/processed-batches" : {
+      "get" : {
+        "tags" : [ "print batch" ],
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "responses" : {
+          "200" : {
+            "description" : "OK.",
+            "schema" : {
+              "$ref" : "#/definitions/ProcessedBatchesResponse"
+            }
+          }
+        }
+      }
+    },
+    "/processed-batches/{batchName}" : {
+      "delete" : {
+        "tags" : [ "print batch" ],
         "parameters" : [ {
-          "name" : "messageDetails",
+          "in" : "path",
+          "name" : "batchName",
+          "type" : "string",
+          "required" : true
+        } ],
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "responses" : {
+          "200" : {
+            "description" : "OK."
+          }
+        }
+      }
+    },
+    "/print-batch" : {
+      "post" : {
+        "tags" : [ "print batch" ],
+        "summary" : "Sends the batch of badges to the printer",
+        "consumes" : [ "application/json" ],
+        "produces" : [ "application/json" ],
+        "parameters" : [ {
           "in" : "body",
-          "required" : true,
-          "description" : "The template, email address and message attributes",
+          "name" : "batch",
+          "description" : "Batch badges to be send for printing",
+          "required" : false,
           "schema" : {
-            "$ref" : "#/definitions/MessageDetails"
+            "$ref" : "#/definitions/Batch"
           }
         } ],
         "responses" : {
           "200" : {
-            "description" : "Success - A message has been created and sent.",
-            "schema" : {
-              "$ref" : "#/definitions/UuidResponse"
-            }
+            "description" : "OK."
           },
           "400" : {
-            "description" : "Bad request"
+            "description" : "Invalid request",
+            "schema" : {
+              "$ref" : "#/definitions/CommonResponse"
+            }
           }
         }
       }
     }
   },
   "definitions" : {
-    "MessageDetails" : {
-      "type" : "object",
-      "required" : [ "template", "emailAddress" ],
-      "properties" : {
-        "template" : {
-          "type" : "string",
-          "description" : "Message template name",
-          "example" : "RESET_PASSWORD"
-        },
-        "emailAddress" : {
-          "type" : "string",
-          "format" : "email",
-          "description" : "email address.",
-          "example" : "rob.worthington@norealserver.com"
-        },
-        "attributes" : {
-          "type" : "object",
-          "additionalProperties" : {
-            "type" : "string"
-          },
-          "example" : {
-            "name" : "Bob"
-          }
-        }
-      }
-    },
-    "UuidResponse" : {
+    "ProcessedBatchesResponse" : {
       "type" : "object",
       "allOf" : [ {
         "$ref" : "#/definitions/CommonResponse"
@@ -73,14 +78,232 @@
         "type" : "object",
         "properties" : {
           "data" : {
-            "properties" : {
-              "uuid" : {
-                "type" : "string"
-              }
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/definitions/ProcessedBatch"
             }
           }
         }
       } ]
+    },
+    "ProcessedBatch" : {
+      "type" : "object",
+      "properties" : {
+        "filename" : {
+          "type" : "string"
+        },
+        "errorMessage" : {
+          "type" : "string",
+          "description" : "Details of error, if any, parsing file."
+        },
+        "fileType" : {
+          "type" : "string",
+          "enum" : [ "CONFIRMATION", "REJECTION" ]
+        },
+        "processedBadges" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/ProcessedBadge"
+          }
+        }
+      }
+    },
+    "ProcessedBadge" : {
+      "type" : "object",
+      "properties" : {
+        "badgeNumber" : {
+          "type" : "string"
+        },
+        "cancellation" : {
+          "type" : "string",
+          "enum" : [ "NO", "YES" ]
+        },
+        "dispatchedDate" : {
+          "type" : "string",
+          "format" : "date-time",
+          "example" : "2018-12-25T12:30:45",
+          "description" : "UTC date time badge sent."
+        },
+        "errorMessage" : {
+          "type" : "string",
+          "example" : "No badge photo found"
+        }
+      }
+    },
+    "Batch" : {
+      "type" : "object",
+      "properties" : {
+        "filename" : {
+          "type" : "string"
+        },
+        "batchType" : {
+          "type" : "string",
+          "enum" : [ "FASTTRACK", "STANDARD", "LA" ]
+        },
+        "Badges" : {
+          "type" : "array",
+          "items" : {
+            "$ref" : "#/definitions/Badge"
+          }
+        }
+      }
+    },
+    "Badge" : {
+      "type" : "object",
+      "properties" : {
+        "localAuthorityShortCode" : {
+          "type" : "string",
+          "example" : "ABERD",
+          "description" : "Short code of local authority.",
+          "pattern" : "^[A-Z]+$"
+        },
+        "badgeNumber" : {
+          "type" : "string",
+          "example" : "091215",
+          "description" : "The unique badge number for this badge."
+        },
+        "party" : {
+          "$ref" : "#/definitions/Party"
+        },
+        "startDate" : {
+          "type" : "string",
+          "format" : "date",
+          "example" : "2018-07-07",
+          "description" : "The date that the badge comes into effect."
+        },
+        "expiryDate" : {
+          "type" : "string",
+          "format" : "date",
+          "example" : "2019-06-31",
+          "description" : "The date the badge expires."
+        },
+        "deliverToCode" : {
+          "type" : "string",
+          "example" : "HOME",
+          "description" : "A short code from the DELIVER group of reference data.",
+          "maxLength" : 10
+        },
+        "deliveryOptionCode" : {
+          "type" : "string",
+          "example" : "STAND",
+          "description" : "A short code from the DELOP group of reference data. e.g. STAND or FAST",
+          "maxLength" : 10
+        },
+        "imageLink" : {
+          "type" : "string",
+          "example" : "http://tiny.url?q=ab63fg",
+          "description" : "A URL for the badge photo.",
+          "maxLength" : 255
+        }
+      }
+    },
+    "Party" : {
+      "type" : "object",
+      "required" : [ "contact", "typeCode" ],
+      "properties" : {
+        "typeCode" : {
+          "type" : "string",
+          "example" : "PERSON",
+          "description" : "A short code from the PARTY group of reference data. e.g. PERSON or ORG.",
+          "maxLength" : 10
+        },
+        "contact" : {
+          "$ref" : "#/definitions/Contact"
+        },
+        "person" : {
+          "$ref" : "#/definitions/Person"
+        },
+        "organisation" : {
+          "$ref" : "#/definitions/Organisation"
+        }
+      }
+    },
+    "Person" : {
+      "type" : "object",
+      "required" : [ "badgeHolderName" ],
+      "properties" : {
+        "badgeHolderName" : {
+          "type" : "string",
+          "example" : "Dwight Appleman",
+          "maxLength" : 100
+        },
+        "dob" : {
+          "type" : "string",
+          "format" : "date",
+          "example" : "1972-09-13",
+          "description" : "Date of birth YYYY-MM-DD"
+        },
+        "genderCode" : {
+          "type" : "string",
+          "example" : "MALE",
+          "description" : "A short code from the GENDER group of reference data. e.g. MALE, FEMALE or UNSPECIFIED."
+        }
+      },
+      "example" : {
+        "badgeHolderName" : "Fred Bloggs",
+        "dob" : "1972-09-12",
+        "genderCode" : "MALE"
+      }
+    },
+    "Organisation" : {
+      "type" : "object",
+      "required" : [ "badgeHolderName" ],
+      "properties" : {
+        "badgeHolderName" : {
+          "type" : "string"
+        }
+      },
+      "example" : {
+        "badgeHolderName" : "The Monroe Institute"
+      }
+    },
+    "Contact" : {
+      "type" : "object",
+      "required" : [ "buildingStreet", "postCode", "primaryPhoneNumber", "townCity" ],
+      "properties" : {
+        "fullName" : {
+          "type" : "string",
+          "example" : "June Whitfield",
+          "description" : "The administrative contact for the badge(s).",
+          "maxLength" : 100
+        },
+        "buildingStreet" : {
+          "type" : "string",
+          "example" : "65 Basil Chambers",
+          "maxLength" : 100
+        },
+        "line2" : {
+          "type" : "string",
+          "example" : "Northern Quarter",
+          "maxLength" : 100
+        },
+        "townCity" : {
+          "type" : "string",
+          "example" : "Manchester",
+          "maxLength" : 100
+        },
+        "postCode" : {
+          "type" : "string",
+          "example" : "SK6 8GH",
+          "pattern" : "^[A-Za-z]{1,2}[0-9][0-9A-Za-z]?\\s?[0-9][A-Za-z]{2}$"
+        },
+        "primaryPhoneNumber" : {
+          "type" : "string",
+          "example" : "01616548765",
+          "maxLength" : 20
+        },
+        "secondaryPhoneNumber" : {
+          "type" : "string",
+          "example" : "01616548765",
+          "maxLength" : 20
+        },
+        "emailAddress" : {
+          "type" : "string",
+          "example" : "june@bigbrainknitting.com",
+          "maxLength" : 100,
+          "pattern" : "^\\S+\\@\\S+"
+        }
+      }
     },
     "CommonResponse" : {
       "type" : "object",
@@ -114,29 +337,30 @@
         "errors" : {
           "type" : "array",
           "items" : {
-            "type" : "object",
-            "properties" : {
-              "field" : {
-                "type" : "string"
-              },
-              "reason" : {
-                "type" : "string"
-              },
-              "message" : {
-                "type" : "string"
-              },
-              "location" : {
-                "type" : "string"
-              },
-              "locationType" : {
-                "type" : "string"
-              }
-            }
+            "$ref" : "#/definitions/Error_errors"
           }
+        }
+      }
+    },
+    "Error_errors" : {
+      "properties" : {
+        "field" : {
+          "type" : "string"
+        },
+        "reason" : {
+          "type" : "string"
+        },
+        "message" : {
+          "type" : "string"
+        },
+        "location" : {
+          "type" : "string"
+        },
+        "locationType" : {
+          "type" : "string"
         }
       }
     }
   },
-  "host" : "virtserver.swaggerhub.com",
-  "basePath" : "/uk-gov-dft/MessageService/1.0.0"
+  "basePath" : "/uk-gov-dft/print-service/1.0.0"
 }
