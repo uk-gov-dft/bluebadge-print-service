@@ -105,7 +105,7 @@ Feature: Verify Print batch ok
 		        "emailAddress" : "mike@email.com"
 		      },
 		      organisation: {
-                  badgeHolderName: 'Scottish Test Org Ltd.'
+                  badgeHolderName: 'Scottish Test Org Ltd & Co'
                }
 		    },
 		    "startDate" : "2019-01-02",
@@ -128,7 +128,7 @@ Feature: Verify Print batch ok
 		        "emailAddress" : "mike@email.com"
 		      },
 		      organisation: {
-                  badgeHolderName: 'Welsh Test Org Ltd.'
+                  badgeHolderName: 'Welsh Test Org Ltd & co > < & > <'
                }
 		    },
 		    "startDate" : "2019-01-02",

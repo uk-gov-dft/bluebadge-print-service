@@ -388,14 +388,10 @@ public class PrintRequestToPrintXml {
     return "";
   }
 
-  private String escapeContent(String raw) {
+  protected String escapeContent(String raw) {
     if (raw == null) {
       return "";
     }
-    String escaped = new String(raw);
-    escaped.replace("<", "&lt;");
-    escaped.replace(">", "&gt;");
-    escaped.replace("&", "&amp;");
-    return escaped;
+    return raw.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
   }
 }

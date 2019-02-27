@@ -545,6 +545,18 @@ class PrintRequestToPrintXmlTest {
     assertThat(converter.getBarCode(badge)).isEqualTo("O0150");
   }
 
+  @Test
+  public void escapeContent_shouldWork() {
+    assertThat(converter.escapeContent("hello & bye")).isEqualTo("hello &amp; bye");
+    assertThat(converter.escapeContent("hello > bye")).isEqualTo("hello &gt; bye");
+    assertThat(converter.escapeContent("hello < bye")).isEqualTo("hello &lt; bye");
+    assertThat(converter.escapeContent("hello & < > bye")).isEqualTo("hello &amp; &lt; &gt; bye");
+    assertThat(converter.escapeContent("hello && << >> bye"))
+        .isEqualTo("hello &amp;&amp; &lt;&lt; &gt;&gt; bye");
+    assertThat(converter.escapeContent("hello && << >> >&< bye"))
+        .isEqualTo("hello &amp;&amp; &lt;&lt; &gt;&gt; &gt;&amp;&lt; bye");
+  }
+
   @SneakyThrows
   private Node getNodeTextInXmlFile(Document doc, String xPathExpression) {
     Node node = (Node) xpath.compile(xPathExpression).evaluate(doc, XPathConstants.NODE);
