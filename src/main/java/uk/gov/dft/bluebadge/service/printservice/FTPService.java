@@ -37,7 +37,6 @@ public class FTPService {
       channel.connect();
       sftpChannel = (ChannelSftp) channel;
 
-
       if (StringUtils.isNotBlank(ftpConfig.getDropbox()) && !"/".equals(ftpConfig.getDropbox())) {
         sftpChannel.cd(ftpConfig.getDropbox());
       }
