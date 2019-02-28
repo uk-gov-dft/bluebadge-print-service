@@ -6,12 +6,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.DODGY_IMAGE_LINK;
 import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.englishLocalAuthority;
 import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.fasttrackBatchPayload;
 import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.standardBatchPayload;
+import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.standardDodgyBatchPayLoad;
 import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.welshLocalAuthority;
 import static uk.gov.dft.bluebadge.service.printservice.TestDataFixtures.welshSwanseaLocalAuthority;
 
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.util.IOUtils;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -53,25 +56,25 @@ class PrintRequestToPrintXmlTest {
   private XPathFactory xpathfactory = XPathFactory.newInstance();
   private XPath xpath = xpathfactory.newXPath();
   private static Path xmlDir = Paths.get("src", "test", "resources", "tmp", "printbatch_xml");
-  private static StorageService s3 = mock(StorageService.class);
-  private static final ReferenceDataService referenceData = mock(ReferenceDataService.class);
-  private static final GeneralConfig mockGeneralConfig = mock(GeneralConfig.class);
+  private static StorageService s3Mock = mock(StorageService.class);
+  private static final ReferenceDataService referenceDataMock = mock(ReferenceDataService.class);
+  private static final GeneralConfig generalConfigMock = mock(GeneralConfig.class);
   private static Document parsedStandardXmlFile;
   // Path to converted file.  File deleted at end of test class.
   private static String standardXmlFile;
   private static PrintRequestToPrintXml converter =
-      new PrintRequestToPrintXml(s3, mockGeneralConfig);
+      new PrintRequestToPrintXml(s3Mock, generalConfigMock);
 
   private String s3PictureFilePath = "/tmp/printbatch_pics/smile.jpg";
 
   @BeforeAll
   static void before()
       throws IOException, XMLStreamException, ParserConfigurationException, SAXException {
-    when(mockGeneralConfig.getOrganisationPhotoUriEngland()).thenReturn("/pictures/org_E.jpg");
-    when(mockGeneralConfig.getOrganisationPhotoUriWales()).thenReturn("/pictures/org_W.jpg");
-    when(referenceData.retrieveLocalAuthority("ANGL")).thenReturn(welshLocalAuthority());
-    when(referenceData.retrieveLocalAuthority("SWAN")).thenReturn(welshSwanseaLocalAuthority());
-    when(referenceData.retrieveLocalAuthority("GLOCC")).thenReturn(englishLocalAuthority());
+    when(generalConfigMock.getOrganisationPhotoUriEngland()).thenReturn("/pictures/org_E.jpg");
+    when(generalConfigMock.getOrganisationPhotoUriWales()).thenReturn("/pictures/org_W.jpg");
+    when(referenceDataMock.retrieveLocalAuthority("ANGL")).thenReturn(welshLocalAuthority());
+    when(referenceDataMock.retrieveLocalAuthority("SWAN")).thenReturn(welshSwanseaLocalAuthority());
+    when(referenceDataMock.retrieveLocalAuthority("GLOCC")).thenReturn(englishLocalAuthority());
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     factory.setNamespaceAware(true); // never forget this!
 
@@ -98,7 +101,7 @@ class PrintRequestToPrintXmlTest {
   @SneakyThrows
   @Test
   void convertStandardBatchAndSave() {
-    when(s3.downloadBadgeFile(any()))
+    when(s3Mock.downloadBadgeFile(any()))
         .thenReturn(
             Optional.of(IOUtils.toByteArray(getClass().getResourceAsStream(s3PictureFilePath))));
 
@@ -109,13 +112,74 @@ class PrintRequestToPrintXmlTest {
   @SneakyThrows
   @Test
   void convertFastTrackBatchAndSave() {
-    when(s3.downloadBadgeFile(any()))
+    when(s3Mock.downloadBadgeFile(any()))
         .thenReturn(
             Optional.of(IOUtils.toByteArray(getClass().getResourceAsStream(s3PictureFilePath))));
 
-    String file = converter.toXml(fasttrackBatchPayload(), xmlDir, referenceData);
+    String file = converter.toXml(fasttrackBatchPayload(), xmlDir, referenceDataMock);
     boolean expected = Files.exists(Paths.get(file));
     assertTrue(expected);
+    deleteXmlFile(file);
+  }
+
+  @DisplayName(
+      "Should convert model and save Standard xml file without dodgy badges in temp folder")
+  @SneakyThrows
+  @Test
+  void convertStandardWithDodgyBadgesBatchAndSave() {
+    when(s3Mock.downloadBadgeFile("http://url_to_s3_bucket_photo1"))
+        .thenReturn(
+            Optional.of(IOUtils.toByteArray(getClass().getResourceAsStream(s3PictureFilePath))));
+    when(s3Mock.downloadBadgeFile("http://url_to_s3_bucket_photo2"))
+        .thenReturn(
+            Optional.of(IOUtils.toByteArray(getClass().getResourceAsStream(s3PictureFilePath))));
+    when(s3Mock.downloadBadgeFile(DODGY_IMAGE_LINK)).thenThrow(new AmazonS3Exception("fail"));
+    when(generalConfigMock.getOrganisationPhotoUriEngland()).thenReturn(null);
+
+    String file = converter.toXml(standardDodgyBatchPayLoad(), xmlDir, referenceDataMock);
+    boolean expected = Files.exists(Paths.get(file));
+    assertTrue(expected);
+
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    factory.setNamespaceAware(true); // never forget this!
+    Document parseDodgyStandardXmlFile = factory.newDocumentBuilder().parse(file);
+
+    Node nodeDodgyBadge1 =
+        getNodeTextInXmlFile(
+            parseDodgyStandardXmlFile,
+            "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BB']");
+    assertThat(nodeDodgyBadge1).isNull();
+
+    Node nodeBadge2 =
+        getNodeTextInXmlFile(
+            parseDodgyStandardXmlFile,
+            "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA34BB']");
+    assertThat(nodeBadge2).isNotNull();
+
+    Node nodeBadge3 =
+        getNodeTextInXmlFile(
+            parseDodgyStandardXmlFile,
+            "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='CC12DD']");
+    assertThat(nodeBadge3).isNull();
+
+    Node nodeBadgeWales =
+        getNodeTextInXmlFile(
+            parseDodgyStandardXmlFile,
+            "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='WALESO']");
+    assertThat(nodeBadgeWales).isNotNull();
+
+    Node nodeDodgyBadge5 =
+        getNodeTextInXmlFile(
+            parseDodgyStandardXmlFile,
+            "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='AA12BF']");
+    assertThat(nodeDodgyBadge5).isNull();
+
+    Node nodeDodgyBadge6 =
+        getNodeTextInXmlFile(
+            parseDodgyStandardXmlFile,
+            "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='CC12DM']");
+    assertThat(nodeDodgyBadge6).isNull();
+
     deleteXmlFile(file);
   }
 
@@ -223,7 +287,7 @@ class PrintRequestToPrintXmlTest {
   @SneakyThrows
   @Test
   void testStockPhotoForOrganisation() {
-    when(s3.downloadBadgeFile(any())).thenReturn(Optional.empty());
+    when(s3Mock.downloadBadgeFile(any())).thenReturn(Optional.empty());
 
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='CC12DD']/Photo";
@@ -336,9 +400,8 @@ class PrintRequestToPrintXmlTest {
     String expression =
         "/BadgePrintExtract/LocalAuthorities/LocalAuthority/Badges/BadgeDetails[BadgeIdentifier='WALESO']/LetterAddress/AddressLine2";
 
-    Node node =
-        (Node) xpath.compile(expression).evaluate(parsedStandardXmlFile, XPathConstants.NODE);
-    assertThat(node).isNull();
+    assertThat(xpath.compile(expression).evaluate(parsedStandardXmlFile, XPathConstants.NODE))
+        .isNull();
   }
 
   @SneakyThrows
@@ -416,14 +479,14 @@ class PrintRequestToPrintXmlTest {
   }
 
   private static void saveStandardXmlFile() throws IOException, XMLStreamException {
-    when(s3.downloadBadgeFile(any()))
+    when(s3Mock.downloadBadgeFile(any()))
         .thenReturn(
             Optional.of(
                 IOUtils.toByteArray(
                     PrintRequestToPrintXmlTest.class
                         .getResourceAsStream("/tmp/printbatch_pics/smile_small.jpg"))));
 
-    standardXmlFile = converter.toXml(standardBatchPayload(), xmlDir, referenceData);
+    standardXmlFile = converter.toXml(standardBatchPayload(), xmlDir, referenceDataMock);
     boolean expected = Files.exists(Paths.get(standardXmlFile));
     assertTrue(expected);
   }
@@ -480,6 +543,24 @@ class PrintRequestToPrintXmlTest {
     reference = converter.getPrintedBadgeReference(badge);
     assertThat(reference).isEqualTo("ABCDEF 0 O0150");
     assertThat(converter.getBarCode(badge)).isEqualTo("O0150");
+  }
+
+  @Test
+  public void escapeContent_shouldWork() {
+    assertThat(converter.escapeContent("hello & bye")).isEqualTo("hello &amp; bye");
+    assertThat(converter.escapeContent("hello > bye")).isEqualTo("hello &gt; bye");
+    assertThat(converter.escapeContent("hello < bye")).isEqualTo("hello &lt; bye");
+    assertThat(converter.escapeContent("hello & < > bye")).isEqualTo("hello &amp; &lt; &gt; bye");
+    assertThat(converter.escapeContent("hello && << >> bye"))
+        .isEqualTo("hello &amp;&amp; &lt;&lt; &gt;&gt; bye");
+    assertThat(converter.escapeContent("hello && << >> >&< bye"))
+        .isEqualTo("hello &amp;&amp; &lt;&lt; &gt;&gt; &gt;&amp;&lt; bye");
+  }
+
+  @SneakyThrows
+  private Node getNodeTextInXmlFile(Document doc, String xPathExpression) {
+    Node node = (Node) xpath.compile(xPathExpression).evaluate(doc, XPathConstants.NODE);
+    return node;
   }
 
   @SneakyThrows
