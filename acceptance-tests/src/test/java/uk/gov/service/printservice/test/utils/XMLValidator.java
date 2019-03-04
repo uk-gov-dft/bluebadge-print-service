@@ -12,6 +12,7 @@ import javax.xml.validation.Validator;
 import org.xml.sax.SAXException;
 
 public class XMLValidator {
+  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(XMLValidator.class);
 
   @SuppressWarnings("unused")
   public boolean validate(String xmlFile, String schemaFile) {
@@ -22,12 +23,15 @@ public class XMLValidator {
       Validator validator = schema.newValidator();
       validator.validate(new StreamSource(new File(getResource(xmlFile))));
       return true;
-    } catch (SAXException | IOException e) {
-      System.err.println(
-          "--------------------------------------- error ---------------------------------------");
-      System.err.println(e.getMessage());
-      System.err.println(
-          "-------------------------------------------------------------------------------------");
+    } catch (SAXException | IOException ex) {
+      File directory = new File("./");
+      log.error(
+          "Error validating file [{}] with schema [{}] on directory [{}], exception message: [{}], exception: [{}]",
+          xmlFile,
+          schemaFile,
+          directory.getAbsolutePath(),
+          ex.getMessage(),
+          ex);
       return false;
     }
   }

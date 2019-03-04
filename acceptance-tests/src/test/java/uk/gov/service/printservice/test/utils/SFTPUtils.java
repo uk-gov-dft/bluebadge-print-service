@@ -11,6 +11,7 @@ import java.io.FileInputStream;
 import java.util.Vector;
 
 public class SFTPUtils {
+  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(SFTPUtils.class);
 
   private String host =
       System.getenv("sftp_host") == null ? "localhost" : System.getenv("sftp_host");
@@ -80,6 +81,23 @@ public class SFTPUtils {
     }
 
     return count;
+  }
+
+  public boolean getFile(String resourcePath) {
+    try (SftpChannelManager channelManager = new SftpChannelManager()) {
+      // It is needed to change the local directory, to make the file available for further steps in karate tests.
+      channelManager.channel.lcd("build/resources/test");
+      channelManager.channel.cd(dropbox);
+      channelManager.channel.get(resourcePath, resourcePath);
+      return true;
+    } catch (Exception ex) {
+      log.error(
+          "Error on getFile with file [{}], exception message: [{}], stacktrace: [{}]",
+          resourcePath,
+          ex.getMessage(),
+          ex);
+      return false;
+    }
   }
 
   public boolean putFile(String resourcePath) {

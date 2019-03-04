@@ -21,6 +21,7 @@ import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBatch;
 
 public class TestDataFixtures {
 
+  public static final String DODGY_IMAGE_LINK = "FAIL";
   static String testJson = "{\"filename\" : \"filename1\", \"batchType\" : \"STANDARD\"}";
 
   static ProcessedBatch successBatch =
@@ -48,6 +49,10 @@ public class TestDataFixtures {
 
   public static Batch standardBatchPayload() {
     return batch1();
+  }
+
+  public static Batch standardDodgyBatchPayLoad() {
+    return batch1WithDodgyBadges();
   }
 
   @SneakyThrows
@@ -119,6 +124,16 @@ public class TestDataFixtures {
     return batch;
   }
 
+  private static Batch batch1WithDodgyBadges() {
+    Batch batch = new Batch();
+    batch.setFilename("filename1WithDodgyBadges");
+    batch.setBatchType(Batch.BatchTypeEnum.STANDARD);
+    batch.setBadges(
+        Arrays.asList(
+            dodgyBadge1(), badge2(), badge3(), dodgyBadge6(), badgeWelshOrg(), dodgyBadge5()));
+    return batch;
+  }
+
   private static Batch batch2() {
     Batch batch = new Batch();
     batch.setFilename("filename2");
@@ -145,8 +160,14 @@ public class TestDataFixtures {
     return details;
   }
 
-  private static Badge badge2() {
+  private static Badge dodgyBadge1() {
+    Badge details = badge1();
+    details.setDeliverToCode(null);
 
+    return details;
+  }
+
+  private static Badge badge2() {
     Badge details = new Badge();
     details.setBadgeNumber("AA34BB");
     details.setLocalAuthorityShortCode("ANGL");
@@ -165,7 +186,6 @@ public class TestDataFixtures {
   }
 
   private static Badge badge3() {
-
     Badge details = new Badge();
     details.setBadgeNumber("CC12DD");
     details.setLocalAuthorityShortCode("GLOCC");
@@ -184,7 +204,6 @@ public class TestDataFixtures {
   }
 
   private static Badge badge4() {
-
     Badge details = new Badge();
     details.setBadgeNumber("CC34DD");
     details.setLocalAuthorityShortCode("GLOCC");
@@ -223,6 +242,20 @@ public class TestDataFixtures {
     details.setDeliverToCode(Badge.DeliverToCode.COUNCIL);
     details.setDeliveryOptionCode(Badge.DeliveryOptionCode.STAND);
 
+    return details;
+  }
+
+  private static Badge dodgyBadge5() {
+    Badge details = badge1();
+    details.setBadgeNumber("AA12BF");
+    details.setImageLink(DODGY_IMAGE_LINK);
+    return details;
+  }
+
+  private static Badge dodgyBadge6() {
+    Badge details = badge3();
+    details.setBadgeNumber("CC12DM");
+    details.setParty(null);
     return details;
   }
 
