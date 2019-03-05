@@ -23,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import uk.gov.dft.bluebadge.service.printservice.controller.CommonResponseControllerAdvice;
 
 @Slf4j
 class PrintControllerTest {
@@ -33,7 +34,7 @@ class PrintControllerTest {
 
   @BeforeEach
   void beforeEachTest(TestInfo testInfo) {
-    mvc = MockMvcBuilders.standaloneSetup(new PrintController(service)).build();
+    mvc = MockMvcBuilders.standaloneSetup(new PrintController(service)).setControllerAdvice(new CommonResponseControllerAdvice()).build();
     log.info(String.format("About to execute [%s]", testInfo.getDisplayName()));
   }
 
