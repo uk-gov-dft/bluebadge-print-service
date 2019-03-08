@@ -1,22 +1,22 @@
 package uk.gov.dft.bluebadge.service.printservice;
 
 import io.swagger.annotations.ApiParam;
-import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.dft.bluebadge.common.api.model.Error;
-import uk.gov.dft.bluebadge.common.controller.AbstractController;
 import uk.gov.dft.bluebadge.common.service.exception.InternalServerException;
 import uk.gov.dft.bluebadge.service.printservice.api.PrintBatchApi;
 import uk.gov.dft.bluebadge.service.printservice.model.Batch;
 import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBatchesResponse;
 
+import javax.validation.Valid;
+
 @RestController
 @Slf4j
-public class PrintController extends AbstractController implements PrintBatchApi {
+public class PrintController implements PrintBatchApi {
 
   private PrintService service;
 
@@ -31,7 +31,6 @@ public class PrintController extends AbstractController implements PrintBatchApi
       service.initReferenceData();
       log.info("Received new print batch: {}", batch.getFilename());
       service.storePrintBatchInS3(batch);
-
     } catch (Exception e) {
       log.error(e.getMessage(), e);
       Error error = new Error();

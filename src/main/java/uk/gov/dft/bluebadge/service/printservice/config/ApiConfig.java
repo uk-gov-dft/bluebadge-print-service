@@ -10,6 +10,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import uk.gov.dft.bluebadge.common.api.common.ServiceConfiguration;
+import uk.gov.dft.bluebadge.common.logging.LoggingAspect;
 import uk.gov.dft.bluebadge.common.security.TokenForwardingClientContext;
 
 @Configuration
@@ -39,5 +40,10 @@ public class ApiConfig {
     result.setUriTemplateHandler(
         new DefaultUriBuilderFactory(referenceDataServiceConfiguration.getUrlPrefix()));
     return result;
+  }
+
+  @Bean
+  LoggingAspect getControllerLoggingAspect() {
+    return new LoggingAspect();
   }
 }
