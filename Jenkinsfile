@@ -100,12 +100,22 @@ node {
             )
 
             timeout(time: 10, unit: 'MINUTES') {
-                try {
-                    sh 'bash -c "echo $PATH && export SFTP_HOST=localhost && export SFTP_PORT=2222 && cd acceptance-tests && ./run-regression.sh"'
-                }
-                finally {
-                    archiveArtifacts allowEmptyArchive: true, artifacts: '**/docker.log'
-                    junit '**/TEST*.xml'
+                withEnv(["SFTP_PORT=2222","SFTP_HOST=localhost"]) {
+                  withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GITHUB_TOKEN')]) {
+                    try {
+                        sh '''
+                          cd acceptance-tests
+                          curl -s -o run-regression-script.sh -H "Authorization: token ${GITHUB_TOKEN}" -H 'Accept: application/vnd.github.v3.raw' -O -L https://raw.githubusercontent.com/uk-gov-dft/shell-scripts/master/run-regression.sh
+
+                          chmod +x run-regression-script.sh
+                          ./run-regression-script.sh
+                        '''
+                    }
+                    finally {
+                        archiveArtifacts allowEmptyArchive: true, artifacts: '**/docker.log'
+                        junit '**/TEST*.xml'
+                    }
+                  }
                 }
             }
         }
