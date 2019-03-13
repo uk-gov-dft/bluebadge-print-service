@@ -21,7 +21,6 @@ node {
         try {
             sh './gradlew --no-daemon --profile --configure-on-demand clean build bootJar artifactoryPublish artifactoryDeploy'
             sh 'mv build/reports/profile/profile-*.html build/reports/profile/index.html'
-            stash includes: 'build/**/*', name: 'build'
         }
         finally {
             junit '**/TEST*.xml'
@@ -35,28 +34,6 @@ node {
           reportFiles: 'index.html',
           reportName: "Gradle Profile Report"
         ])
-    }
-
-    stage ('DockerPublish') {
-      node('Functional') {
-        git(
-           url: "${REPONAME}",
-           credentialsId: 'dft-buildbot-valtech',
-           branch: "${BRANCH_NAME}"
-        )
-
-        unstash 'build'
-      
-        sh 'ls -la'
-
-        withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GITHUB_TOKEN')]) {
-          sh '''
-            curl -s -o docker-publish.sh -H "Authorization: token ${GITHUB_TOKEN}" -H 'Accept: application/vnd.github.v3.raw' -O -L https://raw.githubusercontent.com/uk-gov-dft/shell-scripts/master/docker-publish.sh
-            ls -la
-            bash docker-publish.sh
-          '''
-        }
-      }
     }
 
     stage ('OWASP Dependency Check') {
@@ -100,24 +77,12 @@ node {
             )
 
             timeout(time: 10, unit: 'MINUTES') {
-                withEnv(["SFTP_PORT=2222","SFTP_HOST=localhost"]) {
-                  withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GITHUB_TOKEN')]) {
-                    try {
-                        sh '''
-                          cd acceptance-tests
-                          curl -s -o run-regression-script.sh -H "Authorization: token ${GITHUB_TOKEN}" -H 'Accept: application/vnd.github.v3.raw' -O -L https://raw.githubusercontent.com/uk-gov-dft/shell-scripts/master/run-regression.sh
-
-                          chmod +x run-regression-script.sh
-                          export SFTP_HOST=localhost
-                          export SFTP_PORT=2222 
-                          ./run-regression-script.sh
-                        '''
-                    }
-                    finally {
-                        archiveArtifacts allowEmptyArchive: true, artifacts: '**/docker.log'
-                        junit '**/TEST*.xml'
-                    }
-                  }
+                try {
+                    sh 'bash -c "echo $PATH && export SFTP_HOST=localhost && export SFTP_PORT=2222 && cd acceptance-tests && ./run-regression.sh"'
+                }
+                finally {
+                    archiveArtifacts allowEmptyArchive: true, artifacts: '**/docker.log'
+                    junit '**/TEST*.xml'
                 }
             }
         }
