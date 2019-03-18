@@ -18,6 +18,7 @@
             <timestampFormat>yyyy-MM-dd' 'HH:mm:ss.SSS</timestampFormat>
             <appendLineSeparator>true</appendLineSeparator>
         </layout>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
     </appender>
 
     <springProfile name="dev">
