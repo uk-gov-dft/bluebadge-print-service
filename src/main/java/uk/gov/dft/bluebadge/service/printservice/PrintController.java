@@ -1,6 +1,7 @@
 package uk.gov.dft.bluebadge.service.printservice;
 
 import io.swagger.annotations.ApiParam;
+import javax.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,8 +12,6 @@ import uk.gov.dft.bluebadge.common.service.exception.InternalServerException;
 import uk.gov.dft.bluebadge.service.printservice.api.PrintBatchApi;
 import uk.gov.dft.bluebadge.service.printservice.model.Batch;
 import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBatchesResponse;
-
-import javax.validation.Valid;
 
 @RestController
 @Slf4j
