@@ -6,14 +6,14 @@ blue-badge:
       host: api.${bb_env}.${url}
       port: 443
       scheme: https
-      contextpath: /reference-data1
+      contextpath: /
 
 management:
   server:
     port: ${bb_health:8081}
 
 server:
-  port: ${bb_port:-8080}
+  port: ${bb_port:8080}
 
 amazon:
   bb-printer-bucket: uk-gov-dft-${bb_env}-printer
