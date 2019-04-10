@@ -18,4 +18,8 @@ server:
 amazon:
   bb-printer-bucket: uk-gov-dft-${bb_env}-printer
   bb-badge-bucket: uk-gov-dft-${bb_env}-badge
-
+  
+spring:
+  main:
+    banner-mode: "off"
+    
