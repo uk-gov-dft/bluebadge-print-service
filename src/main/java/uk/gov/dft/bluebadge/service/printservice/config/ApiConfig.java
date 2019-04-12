@@ -28,7 +28,8 @@ public class ApiConfig {
   RestTemplate referenceDataServiceRestTemplate(
       ClientCredentialsResourceDetails clientCredentialsResourceDetails,
       ServiceConfiguration referenceDataServiceConfiguration) {
-    return RestTemplateFactory.getClientRestTemplate(clientCredentialsResourceDetails, referenceDataServiceConfiguration);
+    return RestTemplateFactory.getClientRestTemplate(
+        clientCredentialsResourceDetails, referenceDataServiceConfiguration);
   }
 
   @Bean

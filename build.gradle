@@ -127,7 +127,7 @@ configurations.all {
 }
 
 dependencies {
-    ext.commonVersion = '0.7.7-feature_BBB-1321-api-version-accept-header-SNAPSHOT'
+    ext.commonVersion = '0.7.9-feature_BBB-1321-api-version-accept-header-SNAPSHOT'
 
     compile( group: 'uk.gov.dft.bluebadge', name: 'bluebadge-common', version: "${commonVersion}", changing: true ){
         exclude group: 'org.mybatis.spring.boot', module: 'mybatis-spring-boot-starter'

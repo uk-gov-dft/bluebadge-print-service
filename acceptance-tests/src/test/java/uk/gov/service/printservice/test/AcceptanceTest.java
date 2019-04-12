@@ -1,4 +1,4 @@
-package uk.gov.service.bluebadge.test;
+package uk.gov.service.printservice.test;
 
 import com.intuit.karate.junit4.Karate;
 import cucumber.api.CucumberOptions;
