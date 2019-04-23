@@ -6,6 +6,7 @@ Feature: Verify Retrieval of batch processing results
     * def result = callonce read('./oauth2.feature')
     * header Authorization = 'Bearer ' + result.accessToken
     * header Content-Type = 'application/json'
+    * header Accept = jsonVersionHeader
     * def S3Utils = Java.type('uk.gov.service.printservice.test.utils.S3Utils')
     * def System = Java.type('java.lang.System')
     * def env = System.getenv('bb_env')

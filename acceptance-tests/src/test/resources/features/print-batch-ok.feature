@@ -5,6 +5,7 @@ Feature: Verify Print batch ok
     * url baseUrl
     * def result = callonce read('./oauth2.feature')
     * header Authorization = 'Bearer ' + result.accessToken
+    * header Accept = jsonVersionHeader
     * def S3Utils = Java.type('uk.gov.service.printservice.test.utils.S3Utils')
     * def SFTPUtils = Java.type('uk.gov.service.printservice.test.utils.SFTPUtils')
     * def System = Java.type('java.lang.System')

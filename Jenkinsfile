@@ -19,7 +19,7 @@ node {
         // Set Environment Vairable if the CI env variable is set.
 
         try {
-            sh './gradlew --no-daemon --profile --configure-on-demand clean build bootJar artifactoryPublish artifactoryDeploy'
+            sh './gradlew --refresh-dependencies --no-daemon --profile --configure-on-demand clean build bootJar artifactoryPublish artifactoryDeploy'
             sh 'mv build/reports/profile/profile-*.html build/reports/profile/index.html'
             stash includes: 'build/**/*', name: 'build'
         }

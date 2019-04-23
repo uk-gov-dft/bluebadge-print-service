@@ -4,6 +4,7 @@ function() {
     managementBaseUrl: 'http://localhost:8881/manage',
     authServerUrl: 'http://localhost:8380/bb_auth',
     futureDate: '2022-01-01',
-    futureDatePlusYear: '2023-01-01'
+    futureDatePlusYear: '2023-01-01',
+    jsonVersionHeader: 'application/vnd.bluebadge-api.v1+json, application/json'
   }
 }

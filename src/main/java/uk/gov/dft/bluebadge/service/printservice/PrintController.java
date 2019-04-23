@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import uk.gov.dft.bluebadge.common.api.common.CommonResponseHandler;
 import uk.gov.dft.bluebadge.common.api.model.Error;
 import uk.gov.dft.bluebadge.common.service.exception.InternalServerException;
 import uk.gov.dft.bluebadge.service.printservice.api.PrintBatchApi;
@@ -15,6 +16,7 @@ import uk.gov.dft.bluebadge.service.printservice.model.ProcessedBatchesResponse;
 
 @RestController
 @Slf4j
+@CommonResponseHandler
 public class PrintController implements PrintBatchApi {
 
   private PrintService service;

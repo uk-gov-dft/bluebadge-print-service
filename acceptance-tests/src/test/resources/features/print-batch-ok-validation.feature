@@ -5,6 +5,7 @@ Feature: Verify Print batch ok validation
     * url baseUrl
     * def result = callonce read('./oauth2.feature')
     * header Authorization = 'Bearer ' + result.accessToken
+    * header Accept = jsonVersionHeader
     * def validateXmlPrintBatchRequest =
     """
     function(script) {
