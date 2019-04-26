@@ -15,7 +15,7 @@ Feature: Verify spring actuator endpoints
     When method GET
     Then status 200
     And match $.status == 'UP'
-    And match $.details.db contains "#notnull"
+    And match $.details contains "#notnull"
 
   Scenario: Verify loggers endpoint with no auth
     Given path '/actuator/loggers'
