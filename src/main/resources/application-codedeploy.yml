@@ -1,9 +1,9 @@
 blue-badge:
   auth-server:
-    url: https://api.${bb_env}.${url}/bb_auth
+    url: https://api-internal.${bb_env}.${url}/bb_auth
   referencedataservice:
     servicehost:
-      host: api.${bb_env}.${url}
+      host: api-internal.${bb_env}.${url}
       port: 443
       scheme: https
       contextpath: /
